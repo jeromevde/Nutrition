@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition Query</title>
+</head>
+<body>
+    <input id="food_query" type="search" name="food_query" size="60" maxlength="80" value="" class="full_width" placeholder="Search among 500,000 foods and recipes" autocomplete="off">
+    <button id="search_button">Search</button>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('search_button').addEventListener('click', queryFood);
+
+        async function queryFood() {
+            const query = document.getElementById('food_query').value;
+            const url = `https://www.nutritionvalue.org/foodsuggest.php?custom_foods=1&recipes=1&pages=1&source=search&pref=d&token=${encodeURIComponent(query)}&max_matches=10&use_similar=0`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            if (data && data.length > 0 && data[0].length > 1) {
+                data[0].slice(1).forEach(item => {
+                    const foodName = item.t[0];
+                    const foodId = item.t[1];
+                    const foodUrl = `https://www.nutritionvalue.org/${encodeURIComponent(foodName.replace(/,/g, '%2C'))}_nutritional_value.html`;
+
+                    const resultItem = document.createElement('div');
+                    resultItem.innerHTML = `<a href="${foodUrl}" target="_blank">${foodName}</a>`;
+                    resultsDiv.appendChild(resultItem);
+                });
+            } else {
+                resultsDiv.innerHTML = 'No results found.';
+            }
+        }
+    </script>
+</body>
+</html>
