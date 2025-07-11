@@ -5,6 +5,8 @@ import json
 import base64
 import csv
 from PIL import Image
+import os
+import re
 
 def query_openai(image_path, api_key=None):
     api_key = api_key or os.getenv("OPENAI_API_KEY")
@@ -14,10 +16,21 @@ def query_openai(image_path, api_key=None):
     with open(image_path, "rb") as f:
         img_b64 = base64.b64encode(f.read()).decode()
     
-    prompt = (
-        "Extract date, store, and for each product: name, quantity, unit price, total price, barcode. "
-        "Return only valid JSON: {date, store, items:[{product_name, quantity, unit_price, total_price, barcode}], total_amount}. "
-        "No markdown, no explanation."
+    prompt = ("""
+        Extract date, store, and for each product: name, price, barcode. 
+        Return only valid JSON: [{product_name, price, barcode}]
+        No markdown, no explanation
+        Follow these rules:
+        - Extract product names exactly as they appear on the receipt, preserving original spelling and avoiding substitutions
+            for example do not replace "hummus" with "CHOUX"
+            for example do not replace HET TRAAGSTE BROOD with HET TRADGSTE BROOD
+            for example, don't forget a HET TRAAGSTE BROOD ! even if a "NUTRI-BOOST" item was added in between the barcode and product item
+        - Ignore non-product terms like "NUTRI-BOOST"
+        - Capture all repeated products individually, even if they have identical names, prices, or barcodes.
+        - Ensure quantities, prices, and barcodes are correctly aligned with each product name, accounting for irregular receipt formatting.$
+        - for items priced in kg, add the kg unit to the quantity
+        - Do not include markdown, explanations, or additional text outside the JSON output, no ``` etc ...
+        """
     )
     
     client = openai.OpenAI(api_key=api_key)
@@ -33,30 +46,47 @@ def query_openai(image_path, api_key=None):
     
     return resp.choices[0].message.content.strip()
 
-def parse_and_save(raw, csv_path="parsed_receipt.csv"):
-    raw = raw.strip('`\n ')  # remove markdown if any
+def parse_and_save(raw, csv_path="parsed_receipt.csv", ticket_name=None):
+    raw = raw.lstrip('`\n json') if raw else raw  # one-line fix for leading junk "json" tag
     try:
         data = json.loads(raw)
     except Exception:
-        print("❌ Could not parse JSON")
+        print(f"Could not parse JSON for {ticket_name or csv_path}, below the raw markdown :")
+        print(raw)
         return None
     
-    print(f"Date: {data.get('date')}, Store: {data.get('store')}, Total: {data.get('total_amount')}")
-    for i, item in enumerate(data.get('items', []), 1):
-        print(f"{i}. {item.get('product_name')} | Qty: {item.get('quantity')} | Unit: {item.get('unit_price')} | Total: {item.get('total_price')} | Barcode: {item.get('barcode')}")
+    # Only print and save the minimal info: product_name, price, barcode
+    for i, item in enumerate(data, 1):
+        price = item.get('price')
+        if isinstance(price, str):
+            price = price.replace(',', '.')
+        print(f"{i}. {item.get('product_name')} | Price: {price} | Barcode: {item.get('barcode')}")
     
     with open(csv_path, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["product_name","quantity","unit_price","total_price","barcode"])
+        w = csv.DictWriter(f, fieldnames=["product_name","price","barcode"])
         w.writeheader()
-        w.writerows(data.get('items', []))
+        for item in data:
+            if isinstance(item['price'], str):
+                item['price'] = item['price'].replace(',', '.')
+            w.writerow(item)
     
     print(f"Saved to {csv_path}")
 
-#%%
-import os
-# os.environ["OPENAI_API_KEY"] = ""  # Set your OpenAI API key
-#%%
-raw = query_openai("tickets/downloaded_image (30).jpg")
-#%%
-parse_and_save(raw)
-# %%
+
+os.environ["OPENAI_API_KEY"] = ""  # Set your OpenAI API key
+
+
+if __name__ == "__main__":
+    tickets_dir = "tickets"
+    for fname in os.listdir(tickets_dir):
+        if fname.lower().endswith((".jpg", ".jpeg", ".png")):
+            base, _ = os.path.splitext(fname)
+            csv_path = os.path.join(tickets_dir, f"{base}.csv")
+            if os.path.exists(csv_path):
+                continue
+            img_path = os.path.join(tickets_dir, fname)
+            try:
+                raw = query_openai(img_path)
+                parse_and_save(raw, csv_path, ticket_name=fname)
+            except Exception as e:
+                print(f"Error processing {fname}: {e}")
