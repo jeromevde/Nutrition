@@ -7,7 +7,9 @@ import csv
 from PIL import Image
 import os
 import re
+import random
 
+#%%
 def query_openai(image_path, api_key=None):
     api_key = api_key or os.getenv("OPENAI_API_KEY")
     if not api_key: 
@@ -33,7 +35,7 @@ def query_openai(image_path, api_key=None):
         """
     )
     
-    client = openai.OpenAI(api_key=api_key)
+    client = openai.OpenAI(api_key=api_key, timeout=60, max_retries=1)
     resp = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": [
@@ -72,12 +74,13 @@ def parse_and_save(raw, csv_path="parsed_receipt.csv", ticket_name=None):
     
     print(f"Saved to {csv_path}")
 
-
-os.environ["OPENAI_API_KEY"] = ""  # Set your OpenAI API key
-
+# Set your OpenAI API key
+os.environ["OPENAI_API_KEY"] = ""
 
 if __name__ == "__main__":
     tickets_dir = "tickets"
+    tickets = os.listdir(tickets_dir)
+    random.shuffle(tickets)
     for fname in os.listdir(tickets_dir):
         if fname.lower().endswith((".jpg", ".jpeg", ".png")):
             base, _ = os.path.splitext(fname)
