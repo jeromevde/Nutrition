@@ -4,7 +4,6 @@ Batch OCR for receipts using OpenRouter's cheapest vision model.
 Recursively finds all .jpg files and processes them in parallel.
 """
 
-import openai
 import os
 import json
 import base64
@@ -12,6 +11,7 @@ import csv
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
+import httpx
 
 # Configuration
 MAX_WORKERS = 10  # Number of parallel requests
@@ -23,33 +23,52 @@ def query_openrouter(image_path, api_key):
         img_b64 = base64.b64encode(f.read()).decode()
     
     prompt = """
-Extract all products from this receipt. Return ONLY valid JSON array: [{product_name, price, barcode}]
+You are a receipt OCR system. Extract ALL products from this receipt.
+
+CRITICAL: Return ONLY a valid JSON array, nothing else. No markdown, no explanations.
+Format: [{"product_name": "...", "price": "...", "barcode": "..."}, ...]
+
 Rules:
-- Extract product names exactly as shown
-- Ignore non-product items like "NUTRI-BOOST"
-- Include all items, even duplicates
-- For kg-priced items, include unit in quantity
-- No markdown, no explanations, just JSON
+- Extract exact product names as shown on receipt
+- Include all items, even if similar/duplicates
+- For prices, use format like "3.50" or "1.99" 
+- For barcode, use value if visible, otherwise leave empty string ""
+- If kg-priced, include unit in product_name like "Apples 1.5kg"
+- Return ONLY the JSON array, absolutely nothing else
 """
     
-    client = openai.OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
-        timeout=60,
-        max_retries=2
-    )
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
     
-    resp = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": [
-            {"type": "text", "text": prompt},
-            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
-        ]}],
-        max_tokens=4000,
-        temperature=0
-    )
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+                ]
+            }
+        ],
+        "max_tokens": 4000,
+        "temperature": 0
+    }
     
-    return resp.choices[0].message.content.strip()
+    client = httpx.Client(timeout=60.0)
+    try:
+        response = client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        response.raise_for_status()
+        result = response.json()
+        return result["choices"][0]["message"]["content"].strip()
+    finally:
+        client.close()
 
 def parse_and_save(raw_json, csv_path):
     """Parse JSON response and save to CSV."""
@@ -60,20 +79,36 @@ def parse_and_save(raw_json, csv_path):
         raw_json = '\n'.join(lines[1:-1]) if len(lines) > 2 else raw_json
     raw_json = raw_json.lstrip('`\n json').rstrip('`\n ')
     
+    # Try to extract JSON array from text
+    import re
+    json_match = re.search(r'\[.*\]', raw_json, re.DOTALL)
+    if json_match:
+        raw_json = json_match.group(0)
+    
+    # Fix common JSON issues
+    raw_json = raw_json.replace('\n', ' ').replace('\r', '')
+    raw_json = re.sub(r',\s*]', ']', raw_json)  # Remove trailing commas in arrays
+    raw_json = re.sub(r',\s*}', '}', raw_json)  # Remove trailing commas in objects
+    
     try:
         data = json.loads(raw_json)
+        if not isinstance(data, list):
+            data = [data]
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON: {e}")
+        # Last resort: return empty array to avoid complete failure
+        print(f"  ⚠️  Warning: Could not parse JSON properly, saving empty result")
+        data = []
     
     # Save to CSV
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["product_name", "price", "barcode"])
         w.writeheader()
         for item in data:
-            # Normalize price format
-            if isinstance(item.get('price'), str):
-                item['price'] = item['price'].replace(',', '.')
-            w.writerow(item)
+            if isinstance(item, dict):
+                # Normalize price format
+                if isinstance(item.get('price'), str):
+                    item['price'] = item['price'].replace(',', '.')
+                w.writerow(item)
     
     return len(data)
 
