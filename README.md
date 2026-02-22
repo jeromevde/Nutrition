@@ -82,8 +82,3 @@ automatically deployed to **GitHub Pages** on every push to `main`.
    - **Most Bought Foods** — purchase frequency with per-food nutrient profile
 
 ---
-
-## Live report
-
-👉 [jeromevde.github.io/Nutrition](https://jeromevde.github.io/Nutrition/)
-
