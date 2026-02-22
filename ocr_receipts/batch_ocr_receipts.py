@@ -1,7 +1,39 @@
 #!/usr/bin/env python3
 """
-Batch OCR for receipts using OpenRouter's cheapest vision model.
-Recursively finds all .jpg files and processes them in parallel.
+Batch Receipt OCR — Entry Point 1
+===================================
+Recursively finds all .jpg receipt images in the repo and OCRs them using
+OpenRouter's vision API, writing one CSV per image.
+
+Quick start
+-----------
+    export OPENROUTER_API_KEY="your-key-here"
+    pip install openai httpx
+    python3 batch_ocr_receipts.py
+
+What it does
+------------
+- Recursively finds all .jpg files under the repo root
+- Skips images that already have a matching .csv file (safe to re-run)
+- Processes up to MAX_WORKERS receipts in parallel
+- Uses `qwen/qwen-2-vl-7b-instruct` (~50× cheaper than GPT-4o, ~$0.03–0.08
+  per 100 receipts) — edit MODEL below to switch
+
+Output
+------
+Each <image>.jpg gets a matching <image>.csv with columns:
+    product_name, price, barcode
+
+Configuration
+-------------
+Tweak these constants at the top of this file:
+    MAX_WORKERS = 10   # parallel requests
+    MODEL = "qwen/qwen-2-vl-7b-instruct"
+
+After OCR, run the nutrient analysis pipeline:
+    cd nutrient_analysis
+    python 01_build_mapping.py   # LLM-maps product names → USDA foods
+    python 02_nutrition_report.py  # builds the interactive HTML report
 """
 
 import os
