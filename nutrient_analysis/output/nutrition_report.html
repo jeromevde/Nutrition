@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+<title>Nutrition Report 2023–2025</title>
+
+<style>
+:root {
+  --blue:#2c7be5; --green:#28a745; --yellow:#ffc107; --red:#dc3545;
+  --bg:#f5f7fa; --card:#fff; --text:#333; --muted:#888;
+}
+* { box-sizing: border-box; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); margin:0; }
+header { background:var(--blue); color:#fff; padding:24px 40px; }
+header h1 { margin:0; font-size:1.7rem; }
+header p  { margin:4px 0 0; opacity:.8; font-size:.9rem; }
+.wrap { max-width:1200px; margin:0 auto; padding:28px 40px; }
+h2 { color:var(--blue); border-bottom:2px solid var(--blue); padding-bottom:6px; margin-top:48px; }
+h3 { color:#555; margin-bottom:8px; }
+.note { background:#fff8e1; border-left:4px solid var(--yellow);
+        padding:12px 18px; border-radius:0 6px 6px 0; margin:16px 0; font-size:.88rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; margin:20px 0 36px; }
+.card { background:var(--card); border-radius:8px; padding:18px; box-shadow:0 1px 5px rgba(0,0,0,.1); }
+.card .lbl { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.card .val { font-size:1.8rem; font-weight:700; color:var(--blue); }
+.card .sub { font-size:.8rem; color:#666; }
+table { width:100%; border-collapse:collapse; background:var(--card);
+        border-radius:8px; box-shadow:0 1px 5px rgba(0,0,0,.1);
+        overflow:hidden; margin-bottom:28px; }
+th { background:var(--blue); color:#fff; padding:9px 14px; text-align:left; font-size:.82rem; }
+td { padding:7px 14px; border-bottom:1px solid #eee; font-size:.88rem; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:#f0f4ff; }
+.bar-wrap { display:inline-flex; align-items:center; gap:6px; }
+.bar-bg { background:#eee; border-radius:4px; height:13px; width:130px; display:inline-block; }
+.bar-fg { height:100%; border-radius:4px; display:block; transition:width .3s; }
+.ok   { background:var(--green); }
+.low  { background:var(--yellow); }
+.over { background:var(--red); }
+.pct  { font-size:.82rem; font-weight:700; min-width:42px; }
+.pct.ok   { color:var(--green); }
+.pct.low  { color:#9a6c00; }
+.pct.over { color:var(--red); }
+.pill { display:inline-block; background:#e8efff; color:var(--blue);
+        border-radius:12px; padding:2px 10px; margin:2px; font-size:.78rem; }
+.evo-up   { color:var(--green); }
+.evo-down { color:var(--red); }
+.evo-flat { color:var(--muted); }
+details summary { cursor:pointer; color:var(--blue); font-weight:600; margin:12px 0; }
+</style>
+
+</head>
+<body>
+<header>
+  <h1>🥗 Family Nutrition Report — 2023–2025</h1>
+  <p>Based on Delhaize receipt data · Scaled to 2500 kcal/day · USDA FoodData Central</p>
+</header>
+<div class="wrap">
+
+<div class="note">
+  <strong>How to read this report:</strong>
+  Each Delhaize receipt item is mapped to a USDA food database entry by an LLM.
+  Nutrient contributions use per-100g values multiplied by the grams extracted from
+  the product name (or a default serving if no weight is listed).
+  All baskets are then <strong>scaled to 2500 kcal</strong>,
+  so values represent "if the family ate this basket's mix of foods to reach
+  2500 kcal/day, how much of each nutrient would they get?"
+  Compared against adult DRVs. Match rate: 72.1% of rows.
+</div>
+
+<div class="grid">
+  <div class="card"><div class="lbl">Shopping trips</div><div class="val">91</div></div>
+  <div class="card"><div class="lbl">Total line items</div><div class="val">2,422</div></div>
+  <div class="card"><div class="lbl">Unique foods</div><div class="val">354</div></div>
+  <div class="card"><div class="lbl">Years tracked</div><div class="val">3</div></div>
+  <div class="card"><div class="lbl">Match rate</div><div class="val">72%</div></div>
+  <div class="card"><div class="lbl">Kcal reference</div><div class="val">2500</div><div class="sub">kcal/day</div></div>
+</div>
+
+<h2>📊 Yearly Nutrient Intake vs DRV (scaled to 2500 kcal/day)</h2>
+<p>Each value is the average across all shopping trips in that year, normalised to a 2500 kcal basket.</p>
+<h3>🗓 2023 <small style="color:#888">– 14 trips</small></h3>
+<table><tr><th>Nutrient</th><th>Per 2500 kcal basket avg</th><th>DRV</th><th>Unit</th><th>% of DRV</th></tr>
+<tr><td>Energy</td><td>2500.0</td><td>2500</td><td>KCAL</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:67%"></span></span><span class="pct ok">100%</span></span></td></tr>
+<tr><td>Protein</td><td>77.7</td><td>160</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:32%"></span></span><span class="pct low">49%</span></span></td></tr>
+<tr><td>Carbohydrate</td><td>347.5</td><td>320</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:72%"></span></span><span class="pct ok">109%</span></span></td></tr>
+<tr><td>Fiber</td><td>38.4</td><td>30</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:85%"></span></span><span class="pct over">128%</span></span></td></tr>
+<tr><td>Sugars, Total</td><td>2.9</td><td>50</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:4%"></span></span><span class="pct low">6%</span></span></td></tr>
+<tr><td>Total fat</td><td>185.1</td><td>80</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">231%</span></span></td></tr>
+<tr><td>Fatty acids, total saturated</td><td>62.7</td><td>20</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">314%</span></span></td></tr>
+<tr><td>Cholesterol</td><td>346.1</td><td>300</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:77%"></span></span><span class="pct ok">115%</span></span></td></tr>
+<tr><td>Calcium</td><td>707.5</td><td>1000</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:47%"></span></span><span class="pct ok">71%</span></span></td></tr>
+<tr><td>Iron</td><td>15.2</td><td>10</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">152%</span></span></td></tr>
+<tr><td>Magnesium</td><td>99.1</td><td>420</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:16%"></span></span><span class="pct low">24%</span></span></td></tr>
+<tr><td>Potassium</td><td>3770.1</td><td>3400</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:74%"></span></span><span class="pct ok">111%</span></span></td></tr>
+<tr><td>Sodium</td><td>4141.6</td><td>1500</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">276%</span></span></td></tr>
+<tr><td>Zinc</td><td>2.3</td><td>11</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:14%"></span></span><span class="pct low">20%</span></span></td></tr>
+<tr><td>Vitamin A, RAE</td><td>584.1</td><td>900</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:43%"></span></span><span class="pct low">65%</span></span></td></tr>
+<tr><td>Vitamin C</td><td>179.0</td><td>90</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">199%</span></span></td></tr>
+<tr><td>Vitamin D (D2 + D3)</td><td>1.0</td><td>20</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:3%"></span></span><span class="pct low">5%</span></span></td></tr>
+<tr><td>Vitamin B-12</td><td>0.5</td><td>2</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:13%"></span></span><span class="pct low">19%</span></span></td></tr>
+<tr><td>Folate, total</td><td>232.3</td><td>400</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:39%"></span></span><span class="pct low">58%</span></span></td></tr>
+<tr><td>Thiamin</td><td>0.3</td><td>1</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:16%"></span></span><span class="pct low">24%</span></span></td></tr>
+<tr><td>Riboflavin</td><td>0.6</td><td>1</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:28%"></span></span><span class="pct low">43%</span></span></td></tr>
+</table>
+<h3>🗓 2024 <small style="color:#888">– 47 trips</small></h3>
+<table><tr><th>Nutrient</th><th>Per 2500 kcal basket avg</th><th>DRV</th><th>Unit</th><th>% of DRV</th></tr>
+<tr><td>Energy</td><td>2500.0</td><td>2500</td><td>KCAL</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:67%"></span></span><span class="pct ok">100%</span></span></td></tr>
+<tr><td>Protein</td><td>72.0</td><td>160</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:30%"></span></span><span class="pct low">45%</span></span></td></tr>
+<tr><td>Carbohydrate</td><td>272.3</td><td>320</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:57%"></span></span><span class="pct ok">85%</span></span></td></tr>
+<tr><td>Fiber</td><td>31.2</td><td>30</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:69%"></span></span><span class="pct ok">104%</span></span></td></tr>
+<tr><td>Sugars, Total</td><td>3.7</td><td>50</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:5%"></span></span><span class="pct low">7%</span></span></td></tr>
+<tr><td>Total fat</td><td>119.8</td><td>80</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">150%</span></span></td></tr>
+<tr><td>Fatty acids, total saturated</td><td>35.6</td><td>20</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">178%</span></span></td></tr>
+<tr><td>Cholesterol</td><td>236.8</td><td>300</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:53%"></span></span><span class="pct ok">79%</span></span></td></tr>
+<tr><td>Calcium</td><td>843.7</td><td>1000</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:56%"></span></span><span class="pct ok">84%</span></span></td></tr>
+<tr><td>Iron</td><td>15.5</td><td>10</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">155%</span></span></td></tr>
+<tr><td>Magnesium</td><td>114.3</td><td>420</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:18%"></span></span><span class="pct low">27%</span></span></td></tr>
+<tr><td>Potassium</td><td>2146.5</td><td>3400</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:42%"></span></span><span class="pct low">63%</span></span></td></tr>
+<tr><td>Sodium</td><td>3619.1</td><td>1500</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">241%</span></span></td></tr>
+<tr><td>Zinc</td><td>2.0</td><td>11</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:12%"></span></span><span class="pct low">18%</span></span></td></tr>
+<tr><td>Vitamin A, RAE</td><td>825.6</td><td>900</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:61%"></span></span><span class="pct ok">92%</span></span></td></tr>
+<tr><td>Vitamin C</td><td>97.3</td><td>90</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:72%"></span></span><span class="pct ok">108%</span></span></td></tr>
+<tr><td>Vitamin D (D2 + D3)</td><td>1.4</td><td>20</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:5%"></span></span><span class="pct low">7%</span></span></td></tr>
+<tr><td>Vitamin B-12</td><td>0.3</td><td>2</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:9%"></span></span><span class="pct low">13%</span></span></td></tr>
+<tr><td>Folate, total</td><td>126.5</td><td>400</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:21%"></span></span><span class="pct low">32%</span></span></td></tr>
+<tr><td>Thiamin</td><td>0.4</td><td>1</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:22%"></span></span><span class="pct low">33%</span></span></td></tr>
+<tr><td>Riboflavin</td><td>0.3</td><td>1</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:18%"></span></span><span class="pct low">27%</span></span></td></tr>
+</table>
+<h3>🗓 2025 <small style="color:#888">– 30 trips</small></h3>
+<table><tr><th>Nutrient</th><th>Per 2500 kcal basket avg</th><th>DRV</th><th>Unit</th><th>% of DRV</th></tr>
+<tr><td>Energy</td><td>2500.0</td><td>2500</td><td>KCAL</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:67%"></span></span><span class="pct ok">100%</span></span></td></tr>
+<tr><td>Protein</td><td>66.9</td><td>160</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:28%"></span></span><span class="pct low">42%</span></span></td></tr>
+<tr><td>Carbohydrate</td><td>323.4</td><td>320</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:67%"></span></span><span class="pct ok">101%</span></span></td></tr>
+<tr><td>Fiber</td><td>35.2</td><td>30</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:78%"></span></span><span class="pct ok">117%</span></span></td></tr>
+<tr><td>Sugars, Total</td><td>1.6</td><td>50</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:2%"></span></span><span class="pct low">3%</span></span></td></tr>
+<tr><td>Total fat</td><td>107.9</td><td>80</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:90%"></span></span><span class="pct over">135%</span></span></td></tr>
+<tr><td>Fatty acids, total saturated</td><td>37.5</td><td>20</td><td>G</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">187%</span></span></td></tr>
+<tr><td>Cholesterol</td><td>242.3</td><td>300</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:54%"></span></span><span class="pct ok">81%</span></span></td></tr>
+<tr><td>Calcium</td><td>639.0</td><td>1000</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:43%"></span></span><span class="pct low">64%</span></span></td></tr>
+<tr><td>Iron</td><td>15.7</td><td>10</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">157%</span></span></td></tr>
+<tr><td>Magnesium</td><td>141.6</td><td>420</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:22%"></span></span><span class="pct low">34%</span></span></td></tr>
+<tr><td>Potassium</td><td>2637.6</td><td>3400</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:52%"></span></span><span class="pct ok">78%</span></span></td></tr>
+<tr><td>Sodium</td><td>9017.5</td><td>1500</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:100%"></span></span><span class="pct over">601%</span></span></td></tr>
+<tr><td>Zinc</td><td>2.8</td><td>11</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:17%"></span></span><span class="pct low">26%</span></span></td></tr>
+<tr><td>Vitamin A, RAE</td><td>1002.3</td><td>900</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg ok" style="width:74%"></span></span><span class="pct ok">111%</span></span></td></tr>
+<tr><td>Vitamin C</td><td>117.0</td><td>90</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg over" style="width:87%"></span></span><span class="pct over">130%</span></span></td></tr>
+<tr><td>Vitamin D (D2 + D3)</td><td>1.2</td><td>20</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:4%"></span></span><span class="pct low">6%</span></span></td></tr>
+<tr><td>Vitamin B-12</td><td>1.2</td><td>2</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:34%"></span></span><span class="pct low">51%</span></span></td></tr>
+<tr><td>Folate, total</td><td>246.7</td><td>400</td><td>UG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:41%"></span></span><span class="pct low">62%</span></span></td></tr>
+<tr><td>Thiamin</td><td>0.6</td><td>1</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:33%"></span></span><span class="pct low">49%</span></span></td></tr>
+<tr><td>Riboflavin</td><td>0.6</td><td>1</td><td>MG</td><td><span class="bar-wrap"><span class="bar-bg"><span class="bar-fg low" style="width:29%"></span></span><span class="pct low">43%</span></span></td></tr>
+</table>
+<h2>📈 Year-over-Year Evolution</h2>
+<table><tr><th>Nutrient</th>
+<th>2023</th>
+<th>2024</th>
+<th>2025</th>
+<th>Trend</th></tr>
+<tr><td>Energy <small>(KCAL)</small></td>
+<td style="color:#28a745;font-weight:600">2500.0</td>
+<td style="color:#28a745;font-weight:600">2500.0</td>
+<td style="color:#28a745;font-weight:600">2500.0</td>
+<td class="evo-flat">→</td>
+</tr>
+<tr><td>Protein <small>(G)</small></td>
+<td style="color:#ffc107;font-weight:600">77.7</td>
+<td style="color:#ffc107;font-weight:600">72.0</td>
+<td style="color:#ffc107;font-weight:600">66.9</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Carbohydrate <small>(G)</small></td>
+<td style="color:#28a745;font-weight:600">347.5</td>
+<td style="color:#28a745;font-weight:600">272.3</td>
+<td style="color:#28a745;font-weight:600">323.4</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Fiber <small>(G)</small></td>
+<td style="color:#dc3545;font-weight:600">38.4</td>
+<td style="color:#28a745;font-weight:600">31.2</td>
+<td style="color:#28a745;font-weight:600">35.2</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Sugars, Total <small>(G)</small></td>
+<td style="color:#ffc107;font-weight:600">2.9</td>
+<td style="color:#ffc107;font-weight:600">3.7</td>
+<td style="color:#ffc107;font-weight:600">1.6</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Total fat <small>(G)</small></td>
+<td style="color:#dc3545;font-weight:600">185.1</td>
+<td style="color:#dc3545;font-weight:600">119.8</td>
+<td style="color:#dc3545;font-weight:600">107.9</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Fatty acids, total saturated <small>(G)</small></td>
+<td style="color:#dc3545;font-weight:600">62.7</td>
+<td style="color:#dc3545;font-weight:600">35.6</td>
+<td style="color:#dc3545;font-weight:600">37.5</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Cholesterol <small>(MG)</small></td>
+<td style="color:#28a745;font-weight:600">346.1</td>
+<td style="color:#28a745;font-weight:600">236.8</td>
+<td style="color:#28a745;font-weight:600">242.3</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Calcium <small>(MG)</small></td>
+<td style="color:#28a745;font-weight:600">707.5</td>
+<td style="color:#28a745;font-weight:600">843.7</td>
+<td style="color:#ffc107;font-weight:600">639.0</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Iron <small>(MG)</small></td>
+<td style="color:#dc3545;font-weight:600">15.2</td>
+<td style="color:#dc3545;font-weight:600">15.5</td>
+<td style="color:#dc3545;font-weight:600">15.7</td>
+<td class="evo-flat">→</td>
+</tr>
+<tr><td>Magnesium <small>(MG)</small></td>
+<td style="color:#ffc107;font-weight:600">99.1</td>
+<td style="color:#ffc107;font-weight:600">114.3</td>
+<td style="color:#ffc107;font-weight:600">141.6</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Potassium <small>(MG)</small></td>
+<td style="color:#28a745;font-weight:600">3770.1</td>
+<td style="color:#ffc107;font-weight:600">2146.5</td>
+<td style="color:#28a745;font-weight:600">2637.6</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Sodium <small>(MG)</small></td>
+<td style="color:#dc3545;font-weight:600">4141.6</td>
+<td style="color:#dc3545;font-weight:600">3619.1</td>
+<td style="color:#dc3545;font-weight:600">9017.5</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Zinc <small>(MG)</small></td>
+<td style="color:#ffc107;font-weight:600">2.3</td>
+<td style="color:#ffc107;font-weight:600">2.0</td>
+<td style="color:#ffc107;font-weight:600">2.8</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Vitamin A, RAE <small>(UG)</small></td>
+<td style="color:#ffc107;font-weight:600">584.1</td>
+<td style="color:#28a745;font-weight:600">825.6</td>
+<td style="color:#28a745;font-weight:600">1002.3</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Vitamin C <small>(MG)</small></td>
+<td style="color:#dc3545;font-weight:600">179.0</td>
+<td style="color:#28a745;font-weight:600">97.3</td>
+<td style="color:#dc3545;font-weight:600">117.0</td>
+<td class="evo-down">↓</td>
+</tr>
+<tr><td>Vitamin D (D2 + D3) <small>(UG)</small></td>
+<td style="color:#ffc107;font-weight:600">1.0</td>
+<td style="color:#ffc107;font-weight:600">1.4</td>
+<td style="color:#ffc107;font-weight:600">1.2</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Vitamin B-12 <small>(UG)</small></td>
+<td style="color:#ffc107;font-weight:600">0.5</td>
+<td style="color:#ffc107;font-weight:600">0.3</td>
+<td style="color:#ffc107;font-weight:600">1.2</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Folate, total <small>(UG)</small></td>
+<td style="color:#ffc107;font-weight:600">232.3</td>
+<td style="color:#ffc107;font-weight:600">126.5</td>
+<td style="color:#ffc107;font-weight:600">246.7</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Thiamin <small>(MG)</small></td>
+<td style="color:#ffc107;font-weight:600">0.3</td>
+<td style="color:#ffc107;font-weight:600">0.4</td>
+<td style="color:#ffc107;font-weight:600">0.6</td>
+<td class="evo-up">↑</td>
+</tr>
+<tr><td>Riboflavin <small>(MG)</small></td>
+<td style="color:#ffc107;font-weight:600">0.6</td>
+<td style="color:#ffc107;font-weight:600">0.3</td>
+<td style="color:#ffc107;font-weight:600">0.6</td>
+<td class="evo-flat">→</td>
+</tr>
+</table>
+<h2>🛒 Per-Trip Breakdown</h2>
+<details><summary>Show all trips (Energy, Protein, Carbs, Fat after scaling)</summary>
+<table><tr><th>Date</th><th>Trip</th><th>Items</th><th>Energy (raw kcal)</th><th>Protein (g)</th><th>Carbs (g)</th><th>Fat (g)</th></tr>
+<tr><td>2023-01-10</td><td>2023_01_10.csv</td><td>14</td><td>621</td><td>225.2</td><td>1055.3</td><td>659.5</td></tr>
+<tr><td>2023-10-21</td><td>2023_10_21.csv</td><td>14</td><td>2257</td><td>64.8</td><td>279.1</td><td>129.7</td></tr>
+<tr><td>2023-10-25</td><td>2023_10_25.csv</td><td>31</td><td>13468</td><td>66.0</td><td>255.1</td><td>139.8</td></tr>
+<tr><td>2023-10-30</td><td>2023_10_30.csv</td><td>28</td><td>11144</td><td>52.5</td><td>236.2</td><td>178.7</td></tr>
+<tr><td>2023-11-01</td><td>2023_11_01.csv</td><td>27</td><td>8953</td><td>26.5</td><td>273.2</td><td>145.8</td></tr>
+<tr><td>2023-11-09</td><td>2023_11_09.csv</td><td>30</td><td>8294</td><td>76.3</td><td>141.4</td><td>183.8</td></tr>
+<tr><td>2023-11-15</td><td>2023_11_15.csv</td><td>12</td><td>3215</td><td>32.5</td><td>351.4</td><td>114.8</td></tr>
+<tr><td>2023-11-23</td><td>2023_11_23.csv</td><td>8</td><td>1385</td><td>74.9</td><td>259.4</td><td>143.5</td></tr>
+<tr><td>2023-12-02</td><td>2023_12_02.csv</td><td>26</td><td>4838</td><td>40.9</td><td>184.6</td><td>179.8</td></tr>
+<tr><td>2023-12-10</td><td>2023_12_10.csv</td><td>22</td><td>4700</td><td>102.0</td><td>320.7</td><td>89.3</td></tr>
+<tr><td>2023-12-14</td><td>2023_12_14.csv</td><td>18</td><td>2470</td><td>36.4</td><td>389.4</td><td>87.0</td></tr>
+<tr><td>2023-12-17</td><td>2023_12_17.csv</td><td>25</td><td>3305</td><td>128.5</td><td>402.8</td><td>207.3</td></tr>
+<tr><td>2023-12-23</td><td>2023_12_23.csv</td><td>10</td><td>1657</td><td>58.8</td><td>310.0</td><td>114.7</td></tr>
+<tr><td>2023-12-28</td><td>2023_12_28.csv</td><td>8</td><td>1790</td><td>102.2</td><td>406.8</td><td>217.5</td></tr>
+<tr><td>2024-01-03</td><td>2024_01_03.csv</td><td>28</td><td>19562</td><td>25.2</td><td>131.3</td><td>247.7</td></tr>
+<tr><td>2024-01-05</td><td>2024_01_05.csv</td><td>19</td><td>2679</td><td>91.4</td><td>328.8</td><td>86.9</td></tr>
+<tr><td>2024-01-09</td><td>2024_01_09.csv</td><td>16</td><td>1531</td><td>150.2</td><td>249.9</td><td>89.9</td></tr>
+<tr><td>2024-01-10</td><td>2024_01_10.csv</td><td>10</td><td>1091</td><td>19.5</td><td>490.7</td><td>63.0</td></tr>
+<tr><td>2024-01-11</td><td>2024_01_11.csv</td><td>1</td><td>55</td><td>22.7</td><td>68.1</td><td>227.0</td></tr>
+<tr><td>2024-01-14</td><td>2024_01_14.csv</td><td>22</td><td>2740</td><td>86.7</td><td>490.3</td><td>28.2</td></tr>
+<tr><td>2024-01-24</td><td>2024_01_24_b.csv</td><td>4</td><td>7766</td><td>17.2</td><td>258.7</td><td>135.1</td></tr>
+<tr><td>2024-02-08</td><td>2024_02_08.csv</td><td>27</td><td>10146</td><td>68.2</td><td>311.2</td><td>102.5</td></tr>
+<tr><td>2024-02-22</td><td>2024_02_22.csv</td><td>21</td><td>7160</td><td>51.0</td><td>363.3</td><td>88.6</td></tr>
+<tr><td>2024-03-05</td><td>2024_03_05.csv</td><td>35</td><td>11950</td><td>80.1</td><td>197.7</td><td>162.0</td></tr>
+<tr><td>2024-03-24</td><td>2024_03_24.csv</td><td>25</td><td>17504</td><td>37.6</td><td>174.8</td><td>176.6</td></tr>
+<tr><td>2024-03-25</td><td>2024_03_25.csv</td><td>39</td><td>10631</td><td>106.5</td><td>195.3</td><td>184.8</td></tr>
+<tr><td>2024-03-25</td><td>2024_03_25_b.csv</td><td>27</td><td>8651</td><td>80.5</td><td>375.0</td><td>69.8</td></tr>
+<tr><td>2024-03-30</td><td>2024_03_30.csv</td><td>39</td><td>10631</td><td>106.5</td><td>195.3</td><td>184.8</td></tr>
+<tr><td>2024-04-18</td><td>2024_04_18.csv</td><td>35</td><td>10910</td><td>79.6</td><td>178.2</td><td>156.7</td></tr>
+<tr><td>2024-04-25</td><td>2024_04_25.csv</td><td>1</td><td>270</td><td>140.8</td><td>412.5</td><td>40.4</td></tr>
+<tr><td>2024-04-25</td><td>2024_04_25_b.csv</td><td>3</td><td>50</td><td>300.0</td><td>0.0</td><td>200.0</td></tr>
+<tr><td>2024-05-04</td><td>2024_05_04.csv</td><td>21</td><td>3941</td><td>67.6</td><td>377.5</td><td>91.9</td></tr>
+<tr><td>2024-05-08</td><td>2024_05_08.csv</td><td>57</td><td>23863</td><td>48.4</td><td>250.9</td><td>149.6</td></tr>
+<tr><td>2024-05-11</td><td>2024_05_11.csv</td><td>31</td><td>9892</td><td>98.9</td><td>82.8</td><td>188.2</td></tr>
+<tr><td>2024-06-02</td><td>2024_06_02.csv</td><td>34</td><td>15301</td><td>46.6</td><td>341.8</td><td>110.2</td></tr>
+<tr><td>2024-06-14</td><td>2024_06_14.csv</td><td>16</td><td>3470</td><td>114.9</td><td>280.1</td><td>107.6</td></tr>
+<tr><td>2024-07-11</td><td>2024_07_11.csv</td><td>5</td><td>2170</td><td>30.6</td><td>147.7</td><td>190.2</td></tr>
+<tr><td>2024-07-15</td><td>2024_07_15.csv</td><td>16</td><td>6310</td><td>26.5</td><td>246.0</td><td>56.9</td></tr>
+<tr><td>2024-07-21</td><td>2024_07_21.csv</td><td>22</td><td>6559</td><td>63.8</td><td>320.6</td><td>136.0</td></tr>
+<tr><td>2024-07-25</td><td>2024_07_25.csv</td><td>44</td><td>21915</td><td>50.1</td><td>316.3</td><td>121.7</td></tr>
+<tr><td>2024-07-30</td><td>2024_07_30.csv</td><td>2</td><td>10</td><td>0.0</td><td>0.0</td><td>0.0</td></tr>
+<tr><td>2024-07-30</td><td>2024_07_30_b.csv</td><td>24</td><td>5767</td><td>48.5</td><td>409.2</td><td>80.4</td></tr>
+<tr><td>2024-08-08</td><td>2024_08_08_b.csv</td><td>23</td><td>4709</td><td>41.1</td><td>290.7</td><td>137.8</td></tr>
+<tr><td>2024-08-28</td><td>2024_08_28.csv</td><td>32</td><td>3412</td><td>128.4</td><td>267.3</td><td>129.4</td></tr>
+<tr><td>2024-08-31</td><td>2024_08_31.csv</td><td>26</td><td>7455</td><td>80.4</td><td>349.3</td><td>93.2</td></tr>
+<tr><td>2024-08-31</td><td>2024_31_08.csv</td><td>27</td><td>8069</td><td>81.9</td><td>334.2</td><td>93.3</td></tr>
+<tr><td>2024-09-28</td><td>2024_09_28.csv</td><td>24</td><td>6385</td><td>76.8</td><td>188.1</td><td>163.9</td></tr>
+<tr><td>2024-10-13</td><td>2024_10_13.csv</td><td>20</td><td>7309</td><td>53.4</td><td>345.0</td><td>110.2</td></tr>
+<tr><td>2024-10-29</td><td>2024_10_29_b.csv</td><td>2</td><td>2750</td><td>0.0</td><td>681.8</td><td>0.0</td></tr>
+<tr><td>2024-10-31</td><td>2024_10_31.csv</td><td>6</td><td>1605</td><td>32.5</td><td>287.0</td><td>129.1</td></tr>
+<tr><td>2024-11-03</td><td>2024_11_03.csv</td><td>25</td><td>5816</td><td>117.4</td><td>353.9</td><td>85.3</td></tr>
+<tr><td>2024-11-08</td><td>2024_11_08.csv</td><td>18</td><td>3466</td><td>74.4</td><td>163.8</td><td>206.5</td></tr>
+<tr><td>2024-11-14</td><td>2024_11_14.csv</td><td>5</td><td>775</td><td>21.3</td><td>386.2</td><td>93.9</td></tr>
+<tr><td>2024-11-22</td><td>2024_11_22.csv</td><td>18</td><td>1303</td><td>109.7</td><td>308.0</td><td>70.3</td></tr>
+<tr><td>2024-12-01</td><td>2024_12_01.csv</td><td>15</td><td>8134</td><td>37.6</td><td>143.4</td><td>205.2</td></tr>
+<tr><td>2024-12-06</td><td>2024_12_06.csv</td><td>23</td><td>6283</td><td>28.3</td><td>164.7</td><td>203.6</td></tr>
+<tr><td>2024-12-12</td><td>2024_12_12.csv</td><td>12</td><td>4461</td><td>60.0</td><td>254.7</td><td>118.2</td></tr>
+<tr><td>2024-12-17</td><td>2024_12_17.csv</td><td>14</td><td>3029</td><td>100.7</td><td>187.3</td><td>132.0</td></tr>
+<tr><td>2024-12-20</td><td>2024_12_20.csv</td><td>2</td><td>184</td><td>169.3</td><td>352.0</td><td>35.6</td></tr>
+<tr><td>2024-12-28</td><td>2024_12_28.csv</td><td>23</td><td>22849</td><td>30.0</td><td>208.4</td><td>41.8</td></tr>
+<tr><td>2024-12-31</td><td>2024_12_31.csv</td><td>11</td><td>3835</td><td>80.4</td><td>340.7</td><td>105.3</td></tr>
+<tr><td>2025-01-03</td><td>2025_01_03.csv</td><td>1</td><td>200</td><td>25.0</td><td>349.8</td><td>124.9</td></tr>
+<tr><td>2025-01-05</td><td>2025_01_05.csv</td><td>8</td><td>1330</td><td>113.4</td><td>261.6</td><td>122.1</td></tr>
+<tr><td>2025-01-06</td><td>2025_01_06.csv</td><td>2</td><td>610</td><td>69.6</td><td>372.8</td><td>90.1</td></tr>
+<tr><td>2025-01-13</td><td>2025_01_13.csv</td><td>13</td><td>2813</td><td>37.5</td><td>313.7</td><td>124.4</td></tr>
+<tr><td>2025-01-17</td><td>2025_01_17.csv</td><td>16</td><td>43929</td><td>25.5</td><td>150.6</td><td>17.5</td></tr>
+<tr><td>2025-01-20</td><td>2025_01_20.csv</td><td>21</td><td>8688</td><td>42.3</td><td>399.9</td><td>74.1</td></tr>
+<tr><td>2025-01-22</td><td>2025_01_22.csv</td><td>8</td><td>6553</td><td>39.9</td><td>451.5</td><td>151.6</td></tr>
+<tr><td>2025-02-02</td><td>2025_02_02.csv</td><td>7</td><td>6080</td><td>68.2</td><td>383.0</td><td>81.0</td></tr>
+<tr><td>2025-02-05</td><td>2025_02_05.csv</td><td>25</td><td>10831</td><td>39.1</td><td>334.3</td><td>141.2</td></tr>
+<tr><td>2025-02-07</td><td>2025_02_07.csv</td><td>14</td><td>5877</td><td>53.5</td><td>318.2</td><td>103.7</td></tr>
+<tr><td>2025-02-15</td><td>2025_02_15.csv</td><td>19</td><td>4104</td><td>103.6</td><td>300.9</td><td>101.4</td></tr>
+<tr><td>2025-02-18</td><td>2025_02_18.csv</td><td>10</td><td>4182</td><td>28.1</td><td>255.7</td><td>157.6</td></tr>
+<tr><td>2025-02-22</td><td>2025_02_22.csv</td><td>18</td><td>8943</td><td>51.9</td><td>298.9</td><td>118.7</td></tr>
+<tr><td>2025-02-25</td><td>2025_02_25.csv</td><td>7</td><td>1600</td><td>61.7</td><td>443.7</td><td>53.8</td></tr>
+<tr><td>2025-03-02</td><td>2025_03_02.csv</td><td>20</td><td>5302</td><td>70.1</td><td>344.9</td><td>66.8</td></tr>
+<tr><td>2025-03-05</td><td>2025_03_05.csv</td><td>34</td><td>4213</td><td>72.7</td><td>414.0</td><td>55.8</td></tr>
+<tr><td>2025-03-14</td><td>2025_03_14.csv</td><td>25</td><td>4124</td><td>121.7</td><td>394.1</td><td>199.5</td></tr>
+<tr><td>2025-03-19</td><td>2025_03_19.csv</td><td>13</td><td>1885</td><td>60.3</td><td>484.4</td><td>32.7</td></tr>
+<tr><td>2025-03-21</td><td>2025_03_21.csv</td><td>40</td><td>13513</td><td>122.7</td><td>137.5</td><td>165.7</td></tr>
+<tr><td>2025-03-29</td><td>2025_03_29.csv</td><td>24</td><td>6328</td><td>56.0</td><td>278.4</td><td>124.7</td></tr>
+<tr><td>2025-05-13</td><td>2025_05_13.csv</td><td>5</td><td>580</td><td>159.5</td><td>171.6</td><td>133.6</td></tr>
+<tr><td>2025-05-28</td><td>2025_05_28.csv</td><td>26</td><td>9298</td><td>78.9</td><td>350.8</td><td>89.4</td></tr>
+<tr><td>2025-05-31</td><td>2025_05_31.csv</td><td>20</td><td>7958</td><td>50.0</td><td>240.0</td><td>148.2</td></tr>
+<tr><td>2025-06-05</td><td>2025_06_05.csv</td><td>17</td><td>5169</td><td>39.4</td><td>495.0</td><td>57.0</td></tr>
+<tr><td>2025-06-12</td><td>2025_06_12.csv</td><td>5</td><td>3532</td><td>74.7</td><td>104.5</td><td>195.0</td></tr>
+<tr><td>2025-06-22</td><td>2025_06_22.csv</td><td>37</td><td>11948</td><td>73.3</td><td>183.1</td><td>171.2</td></tr>
+<tr><td>2025-06-27</td><td>2025_06_27.csv</td><td>23</td><td>13050</td><td>88.3</td><td>445.5</td><td>46.2</td></tr>
+<tr><td>2025-07-05</td><td>2025_07_05.csv</td><td>13</td><td>5623</td><td>49.6</td><td>459.7</td><td>42.6</td></tr>
+<tr><td>2025-07-16</td><td>2025_07_16.csv</td><td>20</td><td>6702</td><td>66.5</td><td>272.6</td><td>118.6</td></tr>
+<tr><td>2025-07-22</td><td>2025_07_22.csv</td><td>32</td><td>8210</td><td>63.5</td><td>292.6</td><td>126.7</td></tr>
+</table></details>
+<h2>🏆 Most Purchased Foods</h2>
+<h3>2023</h3><p>
+<span class="pill">Cream, fluid, heavy whipping (15)</span>
+<span class="pill">VEAL DUMPLINGS, VEAL (12)</span>
+<span class="pill">MANGO (11)</span>
+<span class="pill">MOZZARELLA (11)</span>
+<span class="pill">JAMBON DE PARIS HAM, JAMBON DE PARIS (10)</span>
+<span class="pill">PAIN AU LAIT (9)</span>
+<span class="pill">Avocados, raw, all commercial varieties (8)</span>
+<span class="pill">Banana, raw (8)</span>
+<span class="pill">Lays Garlic 1.5z (7)</span>
+<span class="pill">BUTTER, SALTED (7)</span>
+<span class="pill">MOZZARELLA & PESTO PIZZA (7)</span>
+<span class="pill">PORK LOIN FILET (6)</span>
+<span class="pill">CHOCOLAT LAIT MILK CHOCOLATE (6)</span>
+<span class="pill">GROUND BEEF (5)</span>
+<span class="pill">GREEN BEANS (5)</span>
+<span class="pill">PINK LADY APPLES, PINK LADY (5)</span>
+<span class="pill">PIZZA (5)</span>
+<span class="pill">EGGS (4)</span>
+<span class="pill">Egg, whole, raw, fresh (4)</span>
+<span class="pill">NUGGETS (4)</span>
+<span class="pill">MINI BURGER GUMMI CANDY, MINI BURGER (4)</span>
+<span class="pill">LINDT, EXCELLENCE DARK CHOCOLATE (4)</span>
+<span class="pill">POSTOBON, SODA, POMME MELA APPLE (4)</span>
+<span class="pill">Squash, zucchini, raw (4)</span>
+<span class="pill">LINDT, 70% COCOA SMOOTH DARK EXCELLENCE BAR (3)</span>
+</p>
+<h3>2024</h3><p>
+<span class="pill">JAMBON DE PARIS HAM, JAMBON DE PARIS (42)</span>
+<span class="pill">MOZZARELLA (36)</span>
+<span class="pill">VEAL DUMPLINGS, VEAL (34)</span>
+<span class="pill">MANGO (31)</span>
+<span class="pill">Avocados, raw, all commercial varieties (31)</span>
+<span class="pill">LINDT, EXCELLENCE DARK CHOCOLATE (28)</span>
+<span class="pill">Banana, raw (25)</span>
+<span class="pill">Carrot, dehydrated (24)</span>
+<span class="pill">POSTOBON, SODA, POMME MELA APPLE (22)</span>
+<span class="pill">CHICKEN (21)</span>
+<span class="pill">PAIN AU LAIT (16)</span>
+<span class="pill">BRESAOLA DRY-CURED BEEF, BRESAOLA (16)</span>
+<span class="pill">GROUND BEEF (14)</span>
+<span class="pill">Strawberries, raw (14)</span>
+<span class="pill">CALVES LIVER PATE, CALVES LIVER (11)</span>
+<span class="pill">CHERRY TOMATO BRUSCHETTA, CHERRY TOMATO (10)</span>
+<span class="pill">TENDERLOIN FILET (9)</span>
+<span class="pill">TOM TOM SAUCE, TOM TOM (9)</span>
+<span class="pill">MESCLUN GOAT CHEESE SALAD (8)</span>
+<span class="pill">PENNE (8)</span>
+<span class="pill">SLOW ROASTED BEEF, SLOW ROASTED (8)</span>
+<span class="pill">HUMMUS (8)</span>
+<span class="pill">Kiwifruit, green, raw (8)</span>
+<span class="pill">Tom Collins (7)</span>
+<span class="pill">MILK CHOCOLATE (7)</span>
+</p>
+<h3>2025</h3><p>
+<span class="pill">VEAL DUMPLINGS, VEAL (30)</span>
+<span class="pill">Avocados, raw, all commercial varieties (26)</span>
+<span class="pill">Carrot, dehydrated (20)</span>
+<span class="pill">MANGO (17)</span>
+<span class="pill">Salt, table (14)</span>
+<span class="pill">Banana, raw (13)</span>
+<span class="pill">PINK LADY APPLES, PINK LADY (11)</span>
+<span class="pill">Veal, chop (10)</span>
+<span class="pill">Tom Collins (9)</span>
+<span class="pill">TANGERINE (9)</span>
+<span class="pill">GUACAMOLE (9)</span>
+<span class="pill">Veal, ground (8)</span>
+<span class="pill">Pork, cured, ham, patties, unheated (8)</span>
+<span class="pill">TOM TOM SAUCE, TOM TOM (8)</span>
+<span class="pill">BRESAOLA DRY-CURED BEEF, BRESAOLA (7)</span>
+<span class="pill">BURGER (7)</span>
+<span class="pill">BUTTER, SALTED (7)</span>
+<span class="pill">Cream, fluid, heavy whipping (6)</span>
+<span class="pill">THIN BREADSTICKS, THIN (6)</span>
+<span class="pill">Strawberries, raw (6)</span>
+<span class="pill">CHICKEN BREAST (6)</span>
+<span class="pill">BEEF (6)</span>
+<span class="pill">JAMBON DE PARIS HAM, JAMBON DE PARIS (6)</span>
+<span class="pill">HUMMUS (6)</span>
+<span class="pill">Squash, zucchini, raw (5)</span>
+</p>
+<h2>🗂 Food Category Distribution</h2>
+<h3>2023</h3>
+<table><tr><th>Category</th><th>Items</th><th>%</th><th>Bar</th></tr>
+<tr><td>Dairy and Egg Products</td><td>19</td><td>7.0%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:6%"></span></span></td></tr>
+<tr><td>Fruits and Fruit Juices</td><td>19</td><td>7.0%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:6%"></span></span></td></tr>
+<tr><td>Chocolate</td><td>17</td><td>6.2%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:6%"></span></span></td></tr>
+<tr><td>Breads & Buns</td><td>16</td><td>5.9%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:5%"></span></span></td></tr>
+<tr><td>Other</td><td>14</td><td>5.1%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:5%"></span></span></td></tr>
+<tr><td>Canned Meat</td><td>12</td><td>4.4%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Cheese</td><td>12</td><td>4.4%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Frozen Appetizers & Hors D'oeuvres</td><td>12</td><td>4.4%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Frozen Fruit & Fruit Juice Concentrates</td><td>11</td><td>4.0%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Cooked & Prepared</td><td>10</td><td>3.7%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Candy</td><td>9</td><td>3.3%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Bananas</td><td>8</td><td>2.9%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Pizza</td><td>8</td><td>2.9%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Vegetables and Vegetable Products</td><td>8</td><td>2.9%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Butter & Spread</td><td>7</td><td>2.6%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+</table>
+<h3>2024</h3>
+<table><tr><th>Category</th><th>Items</th><th>%</th><th>Bar</th></tr>
+<tr><td>Fruits and Fruit Juices</td><td>75</td><td>7.9%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:7%"></span></span></td></tr>
+<tr><td>Vegetables and Vegetable Products</td><td>52</td><td>5.5%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:5%"></span></span></td></tr>
+<tr><td>Cooked & Prepared</td><td>47</td><td>4.9%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Pepperoni, Salami & Cold Cuts</td><td>44</td><td>4.6%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Canned Meat</td><td>43</td><td>4.5%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Chocolate</td><td>43</td><td>4.5%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Cheese</td><td>42</td><td>4.4%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Breads & Buns</td><td>38</td><td>4.0%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Frozen Appetizers & Hors D'oeuvres</td><td>34</td><td>3.6%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Frozen Fruit & Fruit Juice Concentrates</td><td>31</td><td>3.3%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Soda</td><td>30</td><td>3.2%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Pickles, Olives, Peppers & Relishes</td><td>27</td><td>2.8%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Bananas</td><td>25</td><td>2.6%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Other</td><td>25</td><td>2.6%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Butter & Spread</td><td>21</td><td>2.2%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+</table>
+<h3>2025</h3>
+<table><tr><th>Category</th><th>Items</th><th>%</th><th>Bar</th></tr>
+<tr><td>Fruits and Fruit Juices</td><td>42</td><td>8.0%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:8%"></span></span></td></tr>
+<tr><td>Vegetables and Vegetable Products</td><td>41</td><td>7.8%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:7%"></span></span></td></tr>
+<tr><td>Frozen Appetizers & Hors D'oeuvres</td><td>30</td><td>5.7%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:5%"></span></span></td></tr>
+<tr><td>Breads & Buns</td><td>21</td><td>4.0%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Canned Meat</td><td>21</td><td>4.0%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:4%"></span></span></td></tr>
+<tr><td>Pasta by Shape & Type</td><td>19</td><td>3.6%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Cheese</td><td>18</td><td>3.4%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Frozen Fruit & Fruit Juice Concentrates</td><td>17</td><td>3.3%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Spices and Herbs</td><td>17</td><td>3.3%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Dips & Salsa</td><td>16</td><td>3.1%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:3%"></span></span></td></tr>
+<tr><td>Pre-Packaged Fruit & Vegetables</td><td>15</td><td>2.9%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Other</td><td>14</td><td>2.7%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Soda</td><td>14</td><td>2.7%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Bananas</td><td>13</td><td>2.5%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+<tr><td>Pepperoni, Salami & Cold Cuts</td><td>11</td><td>2.1%</td><td><span class="bar-bg"><span class="bar-fg ok" style="width:2%"></span></span></td></tr>
+</table>
+</div></body></html>
