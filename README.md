@@ -17,22 +17,17 @@ scrape_extract_data/
   batch_ocr_receipts.py        ← Step 2:  OCR ticket images → CSV
   _observe.py                  ← shared observe-mode module (auto-triggered on failure)
   delhaize/
-    tickets/                   ← Delhaize ticket images (.jpg) + parsed CSVs
   carrefour/
-    carrefour_favorites.csv
   colruyt/
-    colruyt_favorites.csv
-  sessions/                    ← observe-mode recordings (auto-created on failure)
+  sessions/                    ← observe-mode recordings, auto-created on failure, user performs some actions
+                                 saves logs for LLM-based scraper fixing
 
 nutrient_analysis/
   01_build_mapping.py          ← Step 3a: map products → USDA foods (FAISS + LLM)
   02_nutrition_report.py       ← Step 3b: compute nutrients + build HTML report
   output/
-    purchases_enriched.csv
-    delhaize_mapping.csv
+    a_few_csvs_with_data.csv...
     nutrition_report.html      ← deployed to GitHub Pages on push to main
-    nutrition_yearly.csv
-    nutrition_pertrip.csv
 ```
 
 ---
@@ -47,7 +42,7 @@ pip install playwright && playwright install chromium
 ```
 
 ```bash
-python scrape_extract_data/scrape_delhaize.py    # → delhaize/tickets/*.jpg
+python scrape_extract_data/scrape_delhaize.py    # → delhaize/*.jpg
 python scrape_extract_data/scrape_carrefour.py   # → carrefour/carrefour_favorites.csv
 python scrape_extract_data/scrape_colruyt.py     # → colruyt/colruyt_favorites.csv
 ```
@@ -88,7 +83,7 @@ python scrape_extract_data/batch_ocr_receipts.py --batch     # multi-image batch
 python scrape_extract_data/batch_ocr_receipts.py --batch --batch-size 6
 ```
 
-Scans `scrape_extract_data/delhaize/tickets/` — skips already-processed images.
+Scans `scrape_extract_data/delhaize/` — skips already-processed images.
 Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 
 > Carrefour and Colruyt produce CSVs directly — no OCR step needed.

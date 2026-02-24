@@ -296,10 +296,10 @@ def main():
         print("Get your key from: https://openrouter.ai/keys")
         return 1
     
-    # Find all receipts in delhaize/tickets/ (where scrape_delhaize.py saves them)
+    # Find all receipts in delhaize/ (where scrape_delhaize.py saves them)
     HERE = Path(__file__).parent
     print("🔍 Scanning for receipt images...")
-    receipts = find_all_receipts(HERE / "delhaize" / "tickets")
+    receipts = find_all_receipts(HERE / "delhaize")
     
     if not receipts:
         print("No JPG files found!")
