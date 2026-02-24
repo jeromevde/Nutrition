@@ -92,42 +92,28 @@ def scrape_delhaize(pw) -> None:
     rows = page.query_selector_all('[data-testid="my-receipts-list-row"]')
     print(f"  Found {len(rows)} receipts")
 
-    MODAL_SEL = '[data-testid="modal-main-content"]'
+    # Timings mirrored from the working scrape_delhaize_tickets.js
+    MODAL_OPEN_WAIT  = 1500   # ms to let image load after clicking receipt
+    MODAL_CLOSE_WAIT = 1000   # ms after clicking close before next receipt
 
     def _close_modal():
-        """Close the Delhaize receipt modal and wait for it to disappear."""
-        # Try specific close buttons first, then fall back to Escape
-        CLOSE_SELECTORS = [
-            '[data-testid="modal-main-content"] [aria-label*="sluit" i]',
-            '[data-testid="modal-main-content"] [aria-label*="close" i]',
-            '[data-testid="modal-close-button"]',
-            '[data-testid*="close"]',
-        ]
-        closed = False
-        for sel in CLOSE_SELECTORS:
-            btn = page.query_selector(sel)
-            if btn and btn.is_visible():
-                try:
-                    btn.click()
-                    closed = True
-                    break
-                except Exception:
-                    continue
-
-        if not closed:
+        """Close the modal using the same selector order as the working JS scraper."""
+        close = (
+            page.query_selector('[aria-label*="Sluit"]') or
+            page.query_selector('[aria-label*="Close"]') or
+            page.query_selector('[aria-label*="sluiten"]') or
+            page.query_selector('[role="dialog"] button') or
+            page.query_selector('button.close, .modal-close')
+        )
+        if close:
+            close.click()
+        else:
             page.keyboard.press("Escape")
-
-        # Wait for the modal to actually vanish
-        try:
-            page.wait_for_selector(MODAL_SEL, state="hidden", timeout=4000)
-        except Exception:
-            page.keyboard.press("Escape")
-            page.wait_for_timeout(800)
+        page.wait_for_timeout(MODAL_CLOSE_WAIT)
 
     saved = 0
     for i in range(len(rows)):
-        # Re-query the row by index each time — avoids stale element references
-        # after the DOM is mutated by modal open/close
+        # Re-query rows each iteration to avoid stale element references
         all_rows = page.query_selector_all('[data-testid="my-receipts-list-row"]')
         if i >= len(all_rows):
             break
@@ -147,7 +133,6 @@ def scrape_delhaize(pw) -> None:
             print(f"  [{i+1}/{len(rows)}] Already saved {img_path.name}, skipping")
             continue
 
-        # Open receipt modal
         btn = row.query_selector('[data-testid="my-receipts-list-button"]')
         if not btn:
             print(f"  [{i+1}/{len(rows)}] No button for {date_text}, skipping")
@@ -155,33 +140,18 @@ def scrape_delhaize(pw) -> None:
 
         btn.scroll_into_view_if_needed()
         btn.click()
+        page.wait_for_timeout(MODAL_OPEN_WAIT)
 
-        # Wait for the Delhaize modal content to appear
-        try:
-            page.wait_for_selector(MODAL_SEL, state="visible", timeout=8000)
-        except Exception:
-            print(f"  [{i+1}/{len(rows)}] Modal didn't open for {date_text}")
-            _close_modal()
-            continue
-
-        # Wait for the ticket image to load inside the modal (up to 8 s)
-        img = None
-        IMG_SELECTORS = (
-            'img[src^="data:image/jpeg;base64"]',
-            'img[src^="data:image/png;base64"]',
-            'div[data-testid="modal-main-content"] img[src]',
-            'img[alt*="Kasticket" i]',
-            'img[alt*="kassaticket" i]',
-            'img[alt*="ticket" i]',
+        # Query image globally — same priority order as the working JS scraper
+        img = (
+            page.query_selector('img[src^="data:image/jpeg;base64"]') or
+            page.query_selector('img[src^="data:image/png;base64"]') or
+            page.query_selector('div[data-testid="modal-main-content"] img') or
+            page.query_selector('img[alt*="Kasticket" i]') or
+            page.query_selector('img[alt*="kassaticket" i]') or
+            page.query_selector('img[alt*="ticket" i]') or
+            page.query_selector('[role="dialog"] img[src^="data:image"]')
         )
-        for sel in IMG_SELECTORS:
-            try:
-                page.wait_for_selector(sel, timeout=8000)
-                img = page.query_selector(sel)
-                if img:
-                    break
-            except Exception:
-                continue
 
         if img:
             src = img.get_attribute("src") or ""
@@ -192,13 +162,11 @@ def scrape_delhaize(pw) -> None:
                 print(f"  [{i+1}/{len(rows)}] Saved {img_path.name}")
                 saved += 1
             else:
-                print(f"  [{i+1}/{len(rows)}] Image found but not base64 for {date_text}")
+                print(f"  [{i+1}/{len(rows)}] Image not base64 for {date_text}")
         else:
-            print(f"  [{i+1}/{len(rows)}] No image loaded for {date_text}")
+            print(f"  [{i+1}/{len(rows)}] No image found for {date_text} (modal too slow?)")
 
-        # Always close the modal before moving on
         _close_modal()
-        page.wait_for_timeout(400)
 
     print(f"  Done — saved {saved} new receipt images")
     ctx.close()
