@@ -1,0 +1,13 @@
+# Runtime outputs
+scraper.log
+.browser_profile/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# macOS
+.DS_Store
