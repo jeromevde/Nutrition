@@ -59,7 +59,7 @@ def scrape_delhaize(pw) -> None:
     """
     Navigate to Delhaize My Receipts page.
     Wait for user to log in, then iterate receipts, open each modal,
-    extract the ticket image, and parse product lines.
+    extract the ticket image, and save it.
     """
     print("\n═══ Delhaize ═══")
     ctx = _launch_browser(pw)
@@ -88,11 +88,54 @@ def scrape_delhaize(pw) -> None:
         page.wait_for_timeout(800)
     page.wait_for_timeout(1500)
 
+    # Re-query rows AFTER expanding (DOM may have changed)
     rows = page.query_selector_all('[data-testid="my-receipts-list-row"]')
     print(f"  Found {len(rows)} receipts")
 
+    def _close_modal():
+        """Click the modal close button and wait until the dialog disappears."""
+        # Try close buttons from most-specific to least-specific
+        # Delhaize uses an X button with aria-label containing "sluit" / "close"
+        CLOSE_SELECTORS = [
+            '[role="dialog"] [aria-label*="sluit" i]',
+            '[role="dialog"] [aria-label*="close" i]',
+            '[role="dialog"] [aria-label*="sluiten" i]',
+            '[data-testid="modal-close-button"]',
+            '[data-testid*="close"]',
+            # Last resort: first button that looks like an X (single char content)
+        ]
+        closed = False
+        for sel in CLOSE_SELECTORS:
+            btn = page.query_selector(sel)
+            if btn:
+                try:
+                    btn.click()
+                    closed = True
+                    break
+                except Exception:
+                    continue
+
+        if not closed:
+            # Fall back to Escape key
+            page.keyboard.press("Escape")
+
+        # Wait for the dialog to actually vanish before moving on
+        try:
+            page.wait_for_selector('[role="dialog"]', state="hidden", timeout=3000)
+        except Exception:
+            # If it doesn't vanish, press Escape once more as a last resort
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(800)
+
     saved = 0
-    for i, row in enumerate(rows, 1):
+    for i in range(len(rows)):
+        # Re-query the row by index each time — avoids stale element references
+        # after the DOM is mutated by modal open/close
+        all_rows = page.query_selector_all('[data-testid="my-receipts-list-row"]')
+        if i >= len(all_rows):
+            break
+        row = all_rows[i]
+
         date_el = row.query_selector('[data-testid="my-receipts-date"]')
         if not date_el:
             continue
@@ -101,50 +144,64 @@ def scrape_delhaize(pw) -> None:
         if len(parts) != 3:
             continue
         dd, mm, yyyy = parts
-        csv_name = f"{yyyy}_{mm}_{dd}.csv"
-        csv_path = DELHAIZE_DIR / csv_name
+        img_path = DELHAIZE_DIR / f"{yyyy}_{mm}_{dd}.jpg"
 
-        if csv_path.exists():
-            continue   # already scraped
+        if img_path.exists():
+            print(f"  [{i+1}/{len(rows)}] Already saved {img_path.name}, skipping")
+            continue
 
         # Open receipt modal
         btn = row.query_selector('[data-testid="my-receipts-list-button"]')
         if not btn:
+            print(f"  [{i+1}/{len(rows)}] No button for {date_text}, skipping")
             continue
+
         btn.scroll_into_view_if_needed()
         btn.click()
-        page.wait_for_timeout(1200)
 
-        # Try to extract the ticket image (base64 JPEG)
-        img = page.query_selector(
-            'img[src^="data:image/jpeg;base64"], '
-            'div[data-testid="modal-main-content"] img, '
-            'img[alt*="Kasticket" i], img[alt*="kassaticket" i], img[alt*="ticket" i]'
+        # Wait for dialog to open
+        try:
+            page.wait_for_selector('[role="dialog"]', state="visible", timeout=5000)
+        except Exception:
+            print(f"  [{i+1}/{len(rows)}] Modal didn't open for {date_text}")
+            _close_modal()
+            continue
+
+        # Wait for the ticket image to load inside the modal (up to 8 s)
+        img = None
+        IMG_SELECTORS = (
+            'img[src^="data:image/jpeg;base64"]',
+            'img[src^="data:image/png;base64"]',
+            'div[data-testid="modal-main-content"] img[src]',
+            'img[alt*="Kasticket" i]',
+            'img[alt*="kassaticket" i]',
+            'img[alt*="ticket" i]',
         )
+        for sel in IMG_SELECTORS:
+            try:
+                page.wait_for_selector(sel, timeout=8000)
+                img = page.query_selector(sel)
+                if img:
+                    break
+            except Exception:
+                continue
 
         if img:
             src = img.get_attribute("src") or ""
             if src.startswith("data:image"):
-                # Save image for later OCR
-                import base64
+                import base64 as _b64
                 b64 = src.split(",", 1)[1] if "," in src else src
-                img_path = DELHAIZE_DIR / f"{yyyy}_{mm}_{dd}.jpg"
-                img_path.write_bytes(base64.b64decode(b64))
-                print(f"  [{i}/{len(rows)}] Saved image {img_path.name}")
+                img_path.write_bytes(_b64.b64decode(b64))
+                print(f"  [{i+1}/{len(rows)}] Saved {img_path.name}")
                 saved += 1
+            else:
+                print(f"  [{i+1}/{len(rows)}] Image found but not base64 for {date_text}")
         else:
-            print(f"  [{i}/{len(rows)}] No image found for {date_text}")
+            print(f"  [{i+1}/{len(rows)}] No image loaded for {date_text}")
 
-        # Close modal
-        close = page.query_selector(
-            '[aria-label*="Sluit"], [aria-label*="Close"], '
-            '[aria-label*="sluiten"], [role="dialog"] button'
-        )
-        if close:
-            close.click()
-        else:
-            page.keyboard.press("Escape")
-        page.wait_for_timeout(600)
+        # Always close the modal before moving on
+        _close_modal()
+        page.wait_for_timeout(400)
 
     print(f"  Done — saved {saved} new receipt images")
     ctx.close()
