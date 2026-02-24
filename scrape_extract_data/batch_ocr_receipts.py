@@ -45,9 +45,18 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import httpx
 
+# Repo root is two levels up from this file (scrape_extract_data/)
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
 # Configuration
-MAX_WORKERS = 10  # Number of parallel requests
+MAX_WORKERS = 10  # Number of parallel requests (single-image mode)
 MODEL = "qwen/qwen-2-vl-7b-instruct"  # Cheapest vision model on OpenRouter
+
+# Batch mode — group N images per LLM call (set to 1 to disable batching)
+BATCH_SIZE = 4  # images per API call (only used with --batch flag)
+
+
+# ── Single-image OCR (default) ───────────────────────────────────────────────
 
 def query_openrouter(image_path, api_key):
     """OCR a receipt image using OpenRouter."""
@@ -174,7 +183,112 @@ def find_all_receipts(root_dir):
     root = Path(root_dir)
     return list(root.rglob("*.jpg")) + list(root.rglob("*.jpeg")) + list(root.rglob("*.JPG"))
 
+
+# ── Batch-image OCR (optional, --batch flag) ────────────────────────────────
+
+def query_openrouter_batch(image_paths: list, api_key: str) -> str:
+    """
+    Send multiple receipt images in a single multi-modal API call.
+    The LLM returns a JSON object keyed by image index.
+    """
+    content: list[dict] = []
+    prompt_text = (
+        "You are a receipt OCR system. You will receive MULTIPLE receipt images, "
+        f"numbered 0 to {len(image_paths)-1}.\n\n"
+        "For EACH image, extract ALL products.\n\n"
+        "Return ONLY a valid JSON object (no markdown, no explanation) with this structure:\n"
+        '{"0": [{"product_name":"...","price":"...","barcode":"..."},...], '
+        '"1": [...], ...}\n\n'
+        "Rules:\n"
+        "- Use the image index (starting from 0) as the key\n"
+        "- Extract exact product names as shown on each receipt\n"
+        "- For prices, use format like \"3.50\" or \"1.99\"\n"
+        "- For barcode, use value if visible, otherwise \"\"\n"
+        "- If kg-priced, include unit in product_name\n"
+    )
+    content.append({"type": "text", "text": prompt_text})
+    for i, path in enumerate(image_paths):
+        with open(path, "rb") as f:
+            img_b64 = base64.b64encode(f.read()).decode()
+        content.append({"type": "text", "text": f"--- Image {i} ---"})
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}
+        })
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": MODEL,
+        "messages": [{"role": "user", "content": content}],
+        "max_tokens": 4000 * len(image_paths),
+        "temperature": 0,
+    }
+
+    client = httpx.Client(timeout=120.0)
+    try:
+        response = client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"].strip()
+    finally:
+        client.close()
+
+
+def process_batch(image_paths: list, api_key: str) -> dict:
+    """
+    Process a batch of images in one API call. Returns {path: status_dict}.
+    """
+    results: dict = {}
+    start = time.time()
+
+    try:
+        raw = query_openrouter_batch(image_paths, api_key)
+        # Parse outer JSON
+        raw = raw.strip()
+        if raw.startswith("```"):
+            lines = raw.split("\n")
+            raw = "\n".join(lines[1:-1]) if len(lines) > 2 else raw
+        raw = raw.lstrip("`\n json").rstrip("`\n ")
+
+        import re as _re
+        json_match = _re.search(r'\{.*\}', raw, _re.DOTALL)
+        if json_match:
+            raw = json_match.group(0)
+
+        batch_data = json.loads(raw)
+        elapsed = time.time() - start
+
+        for i, path in enumerate(image_paths):
+            key = str(i)
+            items = batch_data.get(key, [])
+            if not isinstance(items, list):
+                items = []
+            csv_path = path.with_suffix(".csv")
+            num = parse_and_save(json.dumps(items), csv_path)
+            results[path] = {"status": "success", "items": num, "time": elapsed / len(image_paths)}
+
+    except Exception as e:
+        # On failure, mark all as failed
+        for path in image_paths:
+            results[path] = {"status": "failed", "error": str(e)}
+
+    return results
+
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Batch OCR receipt images")
+    parser.add_argument("--batch", action="store_true",
+                        help=f"Send {BATCH_SIZE} images per API call (faster, optional)")
+    parser.add_argument("--batch-size", type=int, default=BATCH_SIZE,
+                        help=f"Images per batch (default: {BATCH_SIZE})")
+    args = parser.parse_args()
+
     # Check for API key
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
@@ -182,9 +296,9 @@ def main():
         print("Get your key from: https://openrouter.ai/keys")
         return 1
     
-    # Find all receipts
+    # Find all receipts under scrapers/ (where ticket jpgs live)
     print("🔍 Scanning for receipt images...")
-    receipts = find_all_receipts(".")
+    receipts = find_all_receipts(REPO_ROOT / "scrapers")
     
     if not receipts:
         print("No JPG files found!")
@@ -202,34 +316,55 @@ def main():
     if not to_process:
         print("✅ All receipts already processed!")
         return 0
-    
-    print(f"🚀 Processing {len(to_process)} receipts with {MAX_WORKERS} workers...\n")
-    
-    # Process in parallel
+
     results = {"success": 0, "failed": 0, "total_items": 0}
     failed_files = []
-    
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(process_receipt, img, api_key): img for img in to_process}
-        
-        for i, future in enumerate(as_completed(futures), 1):
-            img_path = futures[future]
-            result = future.result()
+
+    if args.batch:
+        # ── Batch mode: group images into multi-image API calls ──────────────
+        bs = args.batch_size
+        print(f"🚀 Processing {len(to_process)} receipts in batches of {bs}...\n")
+        for batch_start in range(0, len(to_process), bs):
+            batch = to_process[batch_start:batch_start + bs]
+            batch_num = batch_start // bs + 1
+            total_batches = (len(to_process) + bs - 1) // bs
+            print(f"  Batch {batch_num}/{total_batches} ({len(batch)} images) …", end=" ", flush=True)
+
+            batch_results = process_batch(batch, api_key)
+            for path, info in batch_results.items():
+                rel_path = path.relative_to(REPO_ROOT)
+                if info["status"] == "success":
+                    results["success"] += 1
+                    results["total_items"] += info["items"]
+                else:
+                    results["failed"] += 1
+                    failed_files.append((rel_path, info.get("error", "unknown")))
+            print("done")
+    else:
+        # ── Single-image mode (default): parallel workers ────────────────────
+        print(f"🚀 Processing {len(to_process)} receipts with {MAX_WORKERS} workers...\n")
+
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = {executor.submit(process_receipt, img, api_key): img for img in to_process}
             
-            if result[1] == "skipped":
-                continue
-            
-            path, info = result
-            rel_path = path.relative_to(".")
-            
-            if info["status"] == "success":
-                results["success"] += 1
-                results["total_items"] += info["items"]
-                print(f"✓ [{i}/{len(to_process)}] {rel_path} → {info['items']} items ({info['time']:.1f}s)")
-            else:
-                results["failed"] += 1
-                failed_files.append((rel_path, info["error"]))
-                print(f"✗ [{i}/{len(to_process)}] {rel_path} → FAILED: {info['error']}")
+            for i, future in enumerate(as_completed(futures), 1):
+                img_path = futures[future]
+                result = future.result()
+                
+                if result[1] == "skipped":
+                    continue
+                
+                path, info = result
+                rel_path = path.relative_to(REPO_ROOT)
+                
+                if info["status"] == "success":
+                    results["success"] += 1
+                    results["total_items"] += info["items"]
+                    print(f"✓ [{i}/{len(to_process)}] {rel_path} → {info['items']} items ({info['time']:.1f}s)")
+                else:
+                    results["failed"] += 1
+                    failed_files.append((rel_path, info["error"]))
+                    print(f"✗ [{i}/{len(to_process)}] {rel_path} → FAILED: {info['error']}")
     
     # Summary
     print(f"\n{'='*60}")
