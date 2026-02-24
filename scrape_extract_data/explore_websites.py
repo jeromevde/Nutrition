@@ -263,6 +263,13 @@ def main() -> int:
 
     try:
         with sync_playwright() as pw:
+            # clean up a stale lock before we try to open the profile
+            lock = PROFILE_DIR / "SingletonLock"
+            try:
+                if lock.exists():
+                    lock.unlink()
+            except Exception:
+                pass
             ctx = pw.chromium.launch_persistent_context(
                 user_data_dir=str(PROFILE_DIR),
                 headless=False,
