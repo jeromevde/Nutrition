@@ -10,66 +10,91 @@ interactive HTML report with nutrient intake vs. DRVs.
 ## Repository layout
 
 ```
-scrape_groceries.py            ← Entry point 0: browser scraper (Playwright)
-batch_ocr_receipts.py          ← Entry point 1: OCR receipt photos → CSV
-nutrient_analysis/
-  01_build_mapping.py          ← Entry point 2a: map products → USDA foods (FAISS + LLM)
-  02_nutrition_report.py       ← Entry point 2b: compute nutrients + build report
+scrape_extract_data/               ← Step 1 & 2: scrape + OCR
+  scrape_delhaize.py               ← download Delhaize ticket images (.jpg)
+  scrape_carrefour.py              ← scrape Carrefour frequently-purchased items
+  scrape_colruyt.py                ← scrape Colruyt favourites
+  batch_ocr_receipts.py            ← OCR ticket images → CSV
+
+nutrient_analysis/                 ← Step 3: map + report
+  01_build_mapping.py              ← map products → USDA foods (FAISS + LLM)
+  02_nutrition_report.py           ← compute nutrients + build HTML report
   output/
-    purchases_enriched.csv     ← every purchase row with USDA match
-    delhaize_mapping.csv       ← unique product → pyfooda mapping
-    nutrition_report.html      ← the interactive report (deployed to GitHub Pages)
-    nutrition_yearly.csv       ← yearly averages vs DRV
-    nutrition_pertrip.csv      ← per-trip scaled nutrients
+    purchases_enriched.csv         ← every purchase row with USDA match
+    delhaize_mapping.csv           ← unique product → pyfooda mapping
+    nutrition_report.html          ← the interactive report (→ GitHub Pages)
+    nutrition_yearly.csv           ← yearly averages vs DRV
+    nutrition_pertrip.csv          ← per-trip scaled nutrients
+
 scrapers/
   delhaize/
-    tickets/                   ← raw parsed CSVs
-    scrape_delhaize_tickets.js ← legacy browser-console scraper
+    tickets/                       ← raw ticket images (.jpg) + parsed CSVs
+    scrape_delhaize_tickets.js     ← legacy browser-console scraper
   colruyt/
+    colruyt_favorites.csv
   carrefour/
+    favorite_items.csv
 ```
 
 ---
 
-## Entry point 0 — Scrape groceries (Playwright)
+## Step 1 — Scrape groceries (Playwright)
 
-Automated browser-based scraping. Opens a real browser, lets you log in,
-then auto-downloads receipt data:
+Automated browser-based scraping. Opens a real browser window, lets you log in,
+then auto-downloads receipt data. Login sessions are remembered between runs
+(stored in `.browser_profile/`).
 
+**Install once:**
 ```bash
 pip install playwright && playwright install chromium
-python scrape_groceries.py                    # all stores
-python scrape_groceries.py --store delhaize   # single store
-python scrape_groceries.py --store carrefour
-python scrape_groceries.py --store colruyt
 ```
 
-Login sessions are remembered between runs (stored in `.browser_profile/`).
+**Delhaize** — downloads receipt ticket images as `.jpg` files:
+```bash
+python scrape_extract_data/scrape_delhaize.py
+```
+
+**Carrefour** — scrapes frequently-purchased product names:
+```bash
+python scrape_extract_data/scrape_carrefour.py
+```
+
+**Colruyt** — scrapes favourite product names:
+```bash
+python scrape_extract_data/scrape_colruyt.py
+```
+
+> Each script opens the relevant page and waits up to 5 minutes for you to log in.
+> Once the expected page elements appear, scraping starts automatically.
 
 ---
 
-## Entry point 1 — OCR receipts (optional)
+## Step 2 — OCR Delhaize receipts
 
-Convert `.jpg` receipt photos into structured CSVs:
+Convert the downloaded `.jpg` ticket images into structured CSVs
+(`product_name`, `price`, `barcode`):
 
 ```bash
-export OPENROUTER_API_KEY="your-key-here"
+export OPENROUTER_API_KEY="your-key-here"   # get one at openrouter.ai/keys
 pip install httpx
-python3 batch_ocr_receipts.py            # single-image mode (parallel workers)
-python3 batch_ocr_receipts.py --batch    # multi-image batching (fewer API calls)
-python3 batch_ocr_receipts.py --batch --batch-size 6
+
+python scrape_extract_data/batch_ocr_receipts.py              # parallel (default)
+python scrape_extract_data/batch_ocr_receipts.py --batch      # multi-image batching
+python scrape_extract_data/batch_ocr_receipts.py --batch --batch-size 6
 ```
 
-- Recursively scans for all `.jpg` files
-- Skips images that already have a matching `.csv`
+- Scans `scrapers/` recursively for all `.jpg` files
+- Skips images that already have a matching `.csv` — safe to re-run
 - Default: 10 parallel single-image calls; `--batch` groups images per API call
-- Uses `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts)
+- Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts)
+
+> **Carrefour and Colruyt** scrapers produce CSVs directly — no OCR step needed.
 
 ---
 
-## Entry point 2 — Nutrient report
+## Step 3 — Nutrient report
 
-After receipts are parsed, build the report:
+After all CSVs are in place, build the nutrition mapping and HTML report:
 
 ```bash
 pip install pandas numpy pyfooda sentence-transformers faiss-cpu openai
@@ -77,14 +102,14 @@ export OPENROUTER_API_KEY="your-key-here"
 
 cd nutrient_analysis
 
-# Step 1: map product names → USDA foods (FAISS semantic search + LLM)
+# 3a: map product names → USDA foods (FAISS semantic search + LLM)
 python 01_build_mapping.py
 
-# Step 2: compute nutrients + generate the HTML report
+# 3b: compute nutrients + generate the interactive HTML report
 python 02_nutrition_report.py
 ```
 
-The report lands at `nutrient_analysis/output/nutrition_report.html` and is
+The report is written to `nutrient_analysis/output/nutrition_report.html` and is
 automatically deployed to **GitHub Pages** on every push to `main`.
 
 ---
@@ -101,5 +126,3 @@ automatically deployed to **GitHub Pages** on every push to `main`.
    - **Nutrients** — avg % of DRV per year, click any row to see top contributing foods
    - **Purchases** — all items grouped by date or by name (original → matched)
    - **Unmatched** — items the LLM couldn't map, for debugging and improving coverage
-
----
