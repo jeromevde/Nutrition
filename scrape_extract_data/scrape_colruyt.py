@@ -16,6 +16,7 @@ Output:
 from __future__ import annotations
 import csv
 import sys
+import time
 from pathlib import Path
 
 HERE        = Path(__file__).parent                       # scrape_extract_data/
@@ -24,19 +25,13 @@ PROFILE_DIR = REPO_ROOT / ".browser_profile"
 
 PROFILE_DIR.mkdir(exist_ok=True)
 
-
-def _ensure_profile():
-    lock = PROFILE_DIR / "SingletonLock"
-    try:
-        if lock.exists():
-            lock.unlink()
-    except Exception:
-        pass
+_t0 = time.time()
+def _log(msg: str) -> None:
+    print(f"  [{time.time()-_t0:6.1f}s] {msg}", flush=True)
 
 
 def _launch_browser(pw):
     """Launch a persistent Chromium context so login sessions are remembered."""
-    _ensure_profile()
     return pw.chromium.launch_persistent_context(
         user_data_dir=str(PROFILE_DIR),
         headless=False,
@@ -59,7 +54,7 @@ def scrape_colruyt(pw) -> None:
         wait_until="domcontentloaded",
     )
     print("  → Browser opened. Please log in if needed.")
-    print("  → Waiting for product cards …")
+    _log("waiting for product cards (up to 5 min) …")
 
     try:
         page.wait_for_selector(
@@ -67,12 +62,11 @@ def scrape_colruyt(pw) -> None:
             timeout=300_000,
         )
     except Exception:
-        print("  ✗ Timed out. Did you log in?")
+        _log("✗ Timed out. Did you log in?")
         ctx.close()
         return
 
-    # Scroll to load all
-    print("  Scrolling to load all products …")
+    _log("scrolling to load all products …")
     prev_count = 0
     for _ in range(50):
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
@@ -87,7 +81,7 @@ def scrape_colruyt(pw) -> None:
     cards = page.query_selector_all(
         "a.card.card--article, .product-card, .favorite-item"
     )
-    print(f"  Found {len(cards)} product cards")
+    _log(f"found {len(cards)} product cards")
 
     items: list[dict] = []
     for card in cards:
@@ -105,7 +99,7 @@ def scrape_colruyt(pw) -> None:
         w.writeheader()
         w.writerows(items)
 
-    print(f"  Saved {len(items)} items → {out_path}")
+    _log(f"saved {len(items)} items → {out_path}")
     ctx.close()
 
 

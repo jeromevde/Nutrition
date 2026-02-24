@@ -16,6 +16,7 @@ Output:
 from __future__ import annotations
 import csv
 import sys
+import time
 from pathlib import Path
 
 HERE          = Path(__file__).parent                     # scrape_extract_data/
@@ -24,19 +25,13 @@ PROFILE_DIR   = REPO_ROOT / ".browser_profile"
 
 PROFILE_DIR.mkdir(exist_ok=True)
 
-
-def _ensure_profile():
-    lock = PROFILE_DIR / "SingletonLock"
-    try:
-        if lock.exists():
-            lock.unlink()
-    except Exception:
-        pass
+_t0 = time.time()
+def _log(msg: str) -> None:
+    print(f"  [{time.time()-_t0:6.1f}s] {msg}", flush=True)
 
 
 def _launch_browser(pw):
     """Launch a persistent Chromium context so login sessions are remembered."""
-    _ensure_profile()
     return pw.chromium.launch_persistent_context(
         user_data_dir=str(PROFILE_DIR),
         headless=False,
@@ -59,17 +54,16 @@ def scrape_carrefour(pw) -> None:
         wait_until="domcontentloaded",
     )
     print("  → Browser opened. Please log in if needed.")
-    print("  → Waiting for product tiles …")
+    _log("waiting for .product-tile (up to 5 min) …")
 
     try:
         page.wait_for_selector(".product-tile", timeout=300_000)
     except Exception:
-        print("  ✗ Timed out. Did you log in and navigate to the page?")
+        _log("✗ Timed out. Did you log in and navigate to the page?")
         ctx.close()
         return
 
-    # Scroll down to load all products
-    print("  Scrolling to load all products …")
+    _log("scrolling to load all products …")
     prev_count = 0
     for _ in range(50):
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
@@ -80,7 +74,7 @@ def scrape_carrefour(pw) -> None:
         prev_count = len(tiles)
 
     tiles = page.query_selector_all(".product-tile")
-    print(f"  Found {len(tiles)} product tiles")
+    _log(f"found {len(tiles)} product tiles")
 
     items: list[dict] = []
     for tile in tiles:
@@ -97,7 +91,7 @@ def scrape_carrefour(pw) -> None:
         w.writeheader()
         w.writerows(items)
 
-    print(f"  Saved {len(items)} items → {out_path}")
+    _log(f"saved {len(items)} items → {out_path}")
     ctx.close()
 
 
