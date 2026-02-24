@@ -1,17 +1,19 @@
 # Nutrition Tracker
 
-Personal nutrition tracking pipeline built on top of **Delhaize supermarket receipts**.
-It OCRs paper receipts, maps products to the USDA FoodData Central database via LLM,
-and generates an interactive HTML report with nutrient intake vs. DRVs and most-purchased foods.
+Personal nutrition tracking pipeline built on top of **Belgian supermarket receipts**
+(Delhaize, Carrefour, Colruyt). It scrapes purchase data, maps products to the
+USDA FoodData Central database via LLM + semantic search, and generates an
+interactive HTML report with nutrient intake vs. DRVs.
 
 ---
 
 ## Repository layout
 
 ```
+scrape_groceries.py            ← Entry point 0: browser scraper (Playwright)
 batch_ocr_receipts.py          ← Entry point 1: OCR receipt photos → CSV
 nutrient_analysis/
-  01_build_mapping.py          ← Entry point 2a: map products → USDA foods
+  01_build_mapping.py          ← Entry point 2a: map products → USDA foods (FAISS + LLM)
   02_nutrition_report.py       ← Entry point 2b: compute nutrients + build report
   output/
     purchases_enriched.csv     ← every purchase row with USDA match
@@ -21,44 +23,61 @@ nutrient_analysis/
     nutrition_pertrip.csv      ← per-trip scaled nutrients
 scrapers/
   delhaize/
-    tickets/                   ← raw parsed CSVs from the JS scraper
-    scrape_delhaize_tickets.js ← browser-side scraper for the Delhaize app
-    parse_delhaize_tickets.py  ← alternative: local parsing
+    tickets/                   ← raw parsed CSVs
+    scrape_delhaize_tickets.js ← legacy browser-console scraper
   colruyt/
   carrefour/
 ```
 
 ---
 
-## Entry point 1 — OCR receipts
+## Entry point 0 — Scrape groceries (Playwright)
+
+Automated browser-based scraping. Opens a real browser, lets you log in,
+then auto-downloads receipt data:
+
+```bash
+pip install playwright && playwright install chromium
+python scrape_groceries.py                    # all stores
+python scrape_groceries.py --store delhaize   # single store
+python scrape_groceries.py --store carrefour
+python scrape_groceries.py --store colruyt
+```
+
+Login sessions are remembered between runs (stored in `.browser_profile/`).
+
+---
+
+## Entry point 1 — OCR receipts (optional)
 
 Convert `.jpg` receipt photos into structured CSVs:
 
 ```bash
 export OPENROUTER_API_KEY="your-key-here"
 pip install httpx
-python3 batch_ocr_receipts.py
+python3 batch_ocr_receipts.py            # single-image mode (parallel workers)
+python3 batch_ocr_receipts.py --batch    # multi-image batching (fewer API calls)
+python3 batch_ocr_receipts.py --batch --batch-size 6
 ```
 
 - Recursively scans for all `.jpg` files
 - Skips images that already have a matching `.csv`
-- Runs up to 10 requests in parallel (configurable via `MAX_WORKERS`)
-- Uses `qwen/qwen-2-vl-7b-instruct` — ~50× cheaper than GPT-4o (~$0.03–0.08 / 100 receipts)
-- Each image produces a CSV with columns: `product_name`, `price`, `barcode`
+- Default: 10 parallel single-image calls; `--batch` groups images per API call
+- Uses `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts)
 
 ---
 
 ## Entry point 2 — Nutrient report
 
-After receipts are parsed (either via OCR or the JS scraper), build the report:
+After receipts are parsed, build the report:
 
 ```bash
-pip install pandas numpy pyfooda rank_bm25 openai
+pip install pandas numpy pyfooda sentence-transformers faiss-cpu openai
 export OPENROUTER_API_KEY="your-key-here"
 
 cd nutrient_analysis
 
-# Step 1: map Delhaize product names → USDA FoodData Central entries
+# Step 1: map product names → USDA foods (FAISS semantic search + LLM)
 python 01_build_mapping.py
 
 # Step 2: compute nutrients + generate the HTML report
@@ -72,13 +91,15 @@ automatically deployed to **GitHub Pages** on every push to `main`.
 
 ## How the analysis works
 
-1. Each purchase row is matched to a USDA food entry by an LLM (via BM25 candidates).
-2. Nutrient values (per 100 g, USDA standard) are scaled by the grams extracted from
-   the product name (or a default serving size when unavailable).
+1. Each product name is matched to a USDA food entry using **FAISS** semantic
+   similarity (sentence-transformers) to find top candidates, then an **LLM**
+   picks the best match and infers the package weight in grams.
+2. Nutrient values (per 100 g, USDA standard) are scaled by the extracted grams.
 3. Each shopping basket is **scaled to 2 500 kcal/day** so baskets of different sizes
    are comparable and can be judged against adult Dietary Reference Values (DRVs).
-4. The report shows two interactive views:
-   - **Nutrients** — % of DRV per year with top contributing foods per nutrient
-   - **Most Bought Foods** — purchase frequency with per-food nutrient profile
+4. The report shows three interactive views:
+   - **Nutrients** — avg % of DRV per year, click any row to see top contributing foods
+   - **Purchases** — all items grouped by date or by name (original → matched)
+   - **Unmatched** — items the LLM couldn't map, for debugging and improving coverage
 
 ---

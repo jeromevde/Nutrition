@@ -329,17 +329,19 @@ def build_report_data(
         return entries
 
     def _purchases(yk: str) -> list:
-        """Build a flat list of all matched purchase rows for the JS table."""
-        sub = matched if yk == 'all' else matched[matched['year'] == int(yk)]
+        """Build a flat list of ALL purchase rows (matched + unmatched) for the JS table."""
+        sub = purchases if yk == 'all' else purchases[purchases['date'].dt.year == int(yk)]
         rows_out: list[dict] = []
         for _, row in sub.iterrows():
             g = row.get('grams_in_name')
+            action = str(row.get('llm_action', ''))
             rows_out.append({
                 'date':          str(row['date'])[:10],
                 'product_name':  str(row.get('product_name', '')),
-                'pyfooda_name':  str(row['pyfooda_name']),
+                'pyfooda_name':  str(row.get('pyfooda_name', '')) if action == 'match' else '',
                 'grams':         round(float(g), 1) if pd.notna(g) else None,
                 'price':         round(float(row['price']), 2) if pd.notna(row.get('price')) else None,
+                'matched':       action == 'match',
             })
         return rows_out
 
@@ -454,6 +456,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="ctrl-row" id="group-row">
       <button class="pill-btn sec active" data-group="date">By date</button>
       <button class="pill-btn sec" data-group="name">By name</button>
+      <button class="pill-btn sec" data-group="unmatched">Unmatched</button>
     </div>
     <div id="purchases-container"></div>
   </section>
@@ -483,7 +486,7 @@ function renderNutrients(){
   const nuts=DATA.nutrients[state.year];
   document.getElementById('nut-tbody').innerHTML=DATA.key_nutrients.map(n=>{
     const d=nuts[n];if(!d)return'';
-    const p=d.pct,w=p==null?0:Math.min(p/150*100,100);
+    const p=d.pct,w=p==null?0:Math.min(p,100);
     return `<tr data-nut="${n}"><td class="nut-name">${n}</td>`+
       `<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fg ${bc(p)}" style="width:${w.toFixed(0)}%"></div></div>`+
       `<span class="pct-badge ${pc(p)}">${p!=null?p+'%':'\u2014'}</span></div></td>`+
@@ -495,15 +498,38 @@ function renderNutrients(){
 }
 
 function renderPurchases(){
-  const rows=DATA.purchases[state.year]||[];
+  const allRows=DATA.purchases[state.year]||[];
   const c=document.getElementById('purchases-container');
-  if(!rows.length){c.innerHTML='<p style="color:var(--muted);padding:20px 0">No data.</p>';return;}
-  if(state.group==='date'){
-    // group by date
+  if(!allRows.length){c.innerHTML='<p style="color:var(--muted);padding:20px 0">No data.</p>';return;}
+
+  if(state.group==='unmatched'){
+    // show only unmatched rows
+    const um=allRows.filter(r=>!r.matched);
+    if(!um.length){c.innerHTML='<p style="color:var(--muted);padding:20px 0">All items matched!</p>';return;}
+    // group by product_name for de-dupe overview
+    const byName={};
+    um.forEach(r=>{
+      const k=r.product_name;
+      if(!byName[k])byName[k]={name:k,count:0,dates:[]};
+      byName[k].count++;byName[k].dates.push(r.date);
+    });
+    const entries=Object.values(byName).sort((a,b)=>b.count-a.count);
+    let h='<p style="color:var(--muted);font-size:.78rem;margin-bottom:8px">'+um.length+' unmatched rows ('+entries.length+' unique names)</p>';
+    h+='<table class="p-table"><thead><tr><th>Original name</th><th>Count</th><th>Last seen</th></tr></thead><tbody>';
+    entries.forEach(e=>{
+      const last=e.dates.sort().reverse()[0];
+      h+=`<tr style="background:#fef2f2"><td style="font-weight:500">${sh(e.name,55)}</td>`+
+        `<td style="font-weight:600;color:var(--red)">${e.count}</td>`+
+        `<td class="p-muted">${last}</td></tr>`;
+    });
+    h+='</tbody></table>';
+    c.innerHTML=h;
+  } else if(state.group==='date'){
+    const rows=allRows.filter(r=>r.matched);
     const byDate={};
     rows.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r);});
     const dates=Object.keys(byDate).sort().reverse();
-    let h='<table class="p-table"><thead><tr><th>Product</th><th>Matched</th><th>Grams</th><th>Price</th></tr></thead><tbody>';
+    let h='<table class="p-table"><thead><tr><th>Original name</th><th>Matched name</th><th>Grams</th><th>Price</th></tr></thead><tbody>';
     dates.forEach(d=>{
       h+=`<tr class="date-hdr"><td colspan="4">${d} (${byDate[d].length} items)</td></tr>`;
       byDate[d].forEach(r=>{
@@ -515,7 +541,8 @@ function renderPurchases(){
     h+='</tbody></table>';
     c.innerHTML=h;
   } else {
-    // group by name
+    // group by name (matched only)
+    const rows=allRows.filter(r=>r.matched);
     const byName={};
     rows.forEach(r=>{
       const k=r.pyfooda_name;
@@ -524,14 +551,14 @@ function renderPurchases(){
       if(r.grams!=null){e.grams.push(r.grams);e.totalG+=r.grams;}
     });
     const entries=Object.values(byName).sort((a,b)=>b.count-a.count);
-    let h='<table class="p-table"><thead><tr><th>Matched name</th><th>Count</th><th>Total g</th><th>Original names</th></tr></thead><tbody>';
+    let h='<table class="p-table"><thead><tr><th>Original names</th><th>Matched name</th><th>Count</th><th>Total g</th></tr></thead><tbody>';
     entries.forEach(e=>{
       const uniqOrig=[...new Set(e.orig)].slice(0,3).map(s=>sh(s,36)).join(', ');
       const extra=new Set(e.orig).size>3?' \u2026':'';
-      h+=`<tr><td style="font-weight:500">${sh(e.name,42)}</td>`+
+      h+=`<tr><td class="p-muted" style="font-size:.78rem">${uniqOrig}${extra}</td>`+
+        `<td style="font-weight:500">${sh(e.name,42)}</td>`+
         `<td style="font-weight:600;color:var(--accent)">${e.count}</td>`+
-        `<td class="p-grams">${e.totalG>0?fmt(e.totalG,0)+' g':'\u2014'}</td>`+
-        `<td class="p-muted" style="font-size:.78rem">${uniqOrig}${extra}</td></tr>`;
+        `<td class="p-grams">${e.totalG>0?fmt(e.totalG,0)+' g':'\u2014'}</td></tr>`;
     });
     h+='</tbody></table>';
     c.innerHTML=h;
@@ -607,7 +634,7 @@ def build_html(data: dict) -> str:
         else str(data['years'][0])
     )
     yr_btns = ''.join(
-        f'<button class="year-btn" data-year="{y}">{y}</button>'
+        f'<button class="pill-btn sec" data-year="{y}">{y}</button>'
         for y in data['years']
     )
     return (
