@@ -45,6 +45,13 @@ then auto-downloads receipt data. Login sessions are remembered between runs
 pip install playwright && playwright install chromium
 ```
 
+> ⚠️  If you see an error about `Failed to create a ProcessSingleton` or a
+> `SingletonLock` file when launching a script, close any other browser
+> windows that are using `.browser_profile` (or delete
+> `.browser_profile/SingletonLock`). The scrapers now automatically remove
+> stale lock files before startup.
+
+
 **Delhaize** — downloads receipt images as `.jpg` files into `scrape_extract_data/tickets/`:
 ```bash
 python scrape_extract_data/scrape_delhaize.py

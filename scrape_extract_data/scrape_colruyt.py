@@ -25,8 +25,18 @@ PROFILE_DIR = REPO_ROOT / ".browser_profile"
 PROFILE_DIR.mkdir(exist_ok=True)
 
 
+def _ensure_profile():
+    lock = PROFILE_DIR / "SingletonLock"
+    try:
+        if lock.exists():
+            lock.unlink()
+    except Exception:
+        pass
+
+
 def _launch_browser(pw):
     """Launch a persistent Chromium context so login sessions are remembered."""
+    _ensure_profile()
     return pw.chromium.launch_persistent_context(
         user_data_dir=str(PROFILE_DIR),
         headless=False,

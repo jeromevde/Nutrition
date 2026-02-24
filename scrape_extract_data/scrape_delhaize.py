@@ -29,8 +29,24 @@ DELHAIZE_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)
 
 
+def _ensure_profile():
+    """Remove stale lock file so Playwright can open the profile.
+
+    Sometimes Chromium leaves a `SingletonLock` in the profile directory if a
+    previous browser crashed or is still open.  We try to delete it quietly so
+    launching doesn't abort with a ProcessSingleton error.
+    """
+    lock = PROFILE_DIR / "SingletonLock"
+    try:
+        if lock.exists():
+            lock.unlink()
+    except Exception:
+        pass
+
+
 def _launch_browser(pw):
     """Launch a persistent Chromium context so login sessions are remembered."""
+    _ensure_profile()
     return pw.chromium.launch_persistent_context(
         user_data_dir=str(PROFILE_DIR),
         headless=False,
