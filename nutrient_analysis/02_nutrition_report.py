@@ -329,17 +329,49 @@ def build_report_data(
         return entries
 
     def _purchases(yk: str) -> list:
-        """Build a flat list of ALL purchase rows (matched + unmatched) for the JS table."""
+        """Build a flat list of ALL purchase rows (matched + unmatched) for the JS table.
+
+        For matched rows, always resolve an effective_grams value using the same
+        fallback chain as nutrient_contribution():
+          1. grams_in_name (explicit from product label)
+          2. portion_gram_weight from pyfooda (typical serving size)
+          3. DEFAULT_GRAMS (100 g) as last resort
+        The 'grams_source' field records which step was used so the UI can flag
+        inferred values clearly.
+        """
         sub = purchases if yk == 'all' else purchases[purchases['date'].dt.year == int(yk)]
         rows_out: list[dict] = []
         for _, row in sub.iterrows():
-            g = row.get('grams_in_name')
+            g_raw = row.get('grams_in_name')
             action = str(row.get('llm_action', ''))
+            pname  = str(row.get('pyfooda_name', '')) if action == 'match' else ''
+
+            # Resolve effective grams using the same fallback as nutrient_contribution()
+            if action == 'match' and pname:
+                if pd.notna(g_raw):
+                    eff_grams  = round(float(g_raw), 1)
+                    grams_src  = 'label'                  # weight read from product name
+                elif pname in foods_df.index:
+                    pw = foods_df.loc[pname].get('portion_gram_weight', np.nan)
+                    if pd.notna(pw) and float(pw) > 0:
+                        eff_grams = round(float(pw), 1)
+                        grams_src = 'portion'             # pyfooda typical serving
+                    else:
+                        eff_grams = float(DEFAULT_GRAMS)
+                        grams_src = 'default'             # 100 g fallback
+                else:
+                    eff_grams = float(DEFAULT_GRAMS)
+                    grams_src = 'default'
+            else:
+                eff_grams = None
+                grams_src = None
+
             rows_out.append({
                 'date':          str(row['date'])[:10],
                 'product_name':  str(row.get('product_name', '')),
-                'pyfooda_name':  str(row.get('pyfooda_name', '')) if action == 'match' else '',
-                'grams':         round(float(g), 1) if pd.notna(g) else None,
+                'pyfooda_name':  pname,
+                'grams':         eff_grams,
+                'grams_src':     grams_src,  # 'label' | 'portion' | 'default' | null
                 'price':         round(float(row['price']), 2) if pd.notna(row.get('price')) else None,
                 'matched':       action == 'match',
             })
@@ -415,6 +447,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .name-hdr td{background:#f8fafc;font-weight:600;font-size:.78rem;color:var(--accent);padding:8px 10px 4px}
 .p-muted{color:var(--muted)}
 .p-grams{font-weight:600;color:var(--text)}
+.g-portion{font-style:italic;color:var(--muted);font-weight:400}
+.g-default{font-style:italic;color:var(--yellow);font-weight:400}
 /* modal */
 #modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;align-items:center;justify-content:center}
 #modal-bg.open{display:flex}
@@ -474,6 +508,18 @@ function pc(p){return p==null?'pct-green':p>=70&&p<=120?'pct-green':p<70?'pct-ye
 function fmt(v,d){if(v==null)return'\u2014';d=d??1;return Number(v).toLocaleString(undefined,{maximumFractionDigits:d});}
 function sh(n,mx){mx=mx||48;return n.length>mx?n.slice(0,mx-1)+'\u2026':n;}
 
+// Format grams with source indicator:
+//   label   → "400 g"         (bold, extracted from product name)
+//   portion → "~69 g"ˢ        (italic muted, pyfooda serving size)
+//   default → "~100 g"ᵈ       (italic yellow, 100 g fallback)
+function fmtG(r){
+  if(r.grams==null)return'\u2014';
+  const v=fmt(r.grams,0)+'\u202fg';
+  if(r.grams_src==='label')  return`<span class="p-grams">${v}</span>`;
+  if(r.grams_src==='portion')return`<span class="g-portion" title="pyfooda serving size (not on label)">~${v}</span>`;
+  return`<span class="g-default" title="100 g default (no weight info)">~${v}</span>`;
+}
+
 function renderMeta(){
   const s=DATA.stats[state.year];
   document.getElementById('meta-bar').innerHTML=
@@ -501,6 +547,12 @@ function renderPurchases(){
   const allRows=DATA.purchases[state.year]||[];
   const c=document.getElementById('purchases-container');
   if(!allRows.length){c.innerHTML='<p style="color:var(--muted);padding:20px 0">No data.</p>';return;}
+
+  // Always render the grams legend (above any table)
+  const LEGEND=`<p style="font-size:.72rem;color:var(--muted);margin-bottom:8px">
+    Grams: <strong style="color:var(--text)">400 g</strong> from label &nbsp;·&nbsp;
+    <em class="g-portion">~69 g</em> pyfooda serving size &nbsp;·&nbsp;
+    <em class="g-default">~100 g</em> 100 g default (hover for details)</p>`;
 
   if(state.group==='unmatched'){
     // show only unmatched rows
@@ -534,34 +586,40 @@ function renderPurchases(){
       h+=`<tr class="date-hdr"><td colspan="4">${d} (${byDate[d].length} items)</td></tr>`;
       byDate[d].forEach(r=>{
         h+=`<tr><td>${sh(r.product_name,50)}</td><td class="p-muted">${sh(r.pyfooda_name,40)}</td>`+
-          `<td class="p-grams">${r.grams!=null?fmt(r.grams,0)+' g':'\u2014'}</td>`+
+          `<td>${fmtG(r)}</td>`+
           `<td class="p-muted">${r.price!=null?'\u20ac'+fmt(r.price,2):''}</td></tr>`;
       });
     });
     h+='</tbody></table>';
-    c.innerHTML=h;
+    c.innerHTML=LEGEND+h;
   } else {
     // group by name (matched only)
     const rows=allRows.filter(r=>r.matched);
     const byName={};
     rows.forEach(r=>{
       const k=r.pyfooda_name;
-      if(!byName[k])byName[k]={name:k,orig:[],dates:[],grams:[],count:0,totalG:0};
-      const e=byName[k];e.count++;e.orig.push(r.product_name);e.dates.push(r.date);
-      if(r.grams!=null){e.grams.push(r.grams);e.totalG+=r.grams;}
+      if(!byName[k])byName[k]={name:k,orig:[],count:0,totalG:0,nLabel:0};
+      const e=byName[k];e.count++;e.orig.push(r.product_name);
+      e.totalG+=(r.grams||0);
+      if(r.grams_src==='label')e.nLabel++;
     });
     const entries=Object.values(byName).sort((a,b)=>b.count-a.count);
     let h='<table class="p-table"><thead><tr><th>Original names</th><th>Matched name</th><th>Count</th><th>Total g</th></tr></thead><tbody>';
     entries.forEach(e=>{
       const uniqOrig=[...new Set(e.orig)].slice(0,3).map(s=>sh(s,36)).join(', ');
       const extra=new Set(e.orig).size>3?' \u2026':'';
+      const allLabel=e.nLabel===e.count;
+      const gStr=fmt(e.totalG,0)+'\u202fg';
+      const gCell=allLabel
+        ?`<span class="p-grams">${gStr}</span>`
+        :`<span class="g-portion" title="${e.nLabel}/${e.count} items had explicit weight; rest inferred">~${gStr}</span>`;
       h+=`<tr><td class="p-muted" style="font-size:.78rem">${uniqOrig}${extra}</td>`+
         `<td style="font-weight:500">${sh(e.name,42)}</td>`+
         `<td style="font-weight:600;color:var(--accent)">${e.count}</td>`+
-        `<td class="p-grams">${e.totalG>0?fmt(e.totalG,0)+' g':'\u2014'}</td></tr>`;
+        `<td>${gCell}</td></tr>`;
     });
     h+='</tbody></table>';
-    c.innerHTML=h;
+    c.innerHTML=LEGEND+h;
   }
 }
 
