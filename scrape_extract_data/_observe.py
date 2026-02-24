@@ -78,6 +78,25 @@ def observe_mode(page, ctx, reason: str) -> Path:
     print("  " + "═" * 58)
     print()
 
+    # Show a browser alert so the user notices immediately
+    try:
+        page.evaluate(
+            """(reason) => {
+              alert(
+                '⚠ SCRAPER STUCK — switching to Observe Mode\\n\\n'
+                + 'Reason: ' + reason + '\\n\\n'
+                + 'What to do:\\n'
+                + '  1. Navigate to the correct page if needed\\n'
+                + '  2. Click through the steps you want recorded\\n'
+                + '  3. Close this browser window when done\\n\\n'
+                + 'Everything you do is being logged in the terminal.'
+              );
+            }""",
+            reason,
+        )
+    except Exception:
+        pass  # page may be mid-navigation; terminal message is enough
+
     events: list[dict] = []
     t0 = time.time()
 

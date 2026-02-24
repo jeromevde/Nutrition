@@ -106,7 +106,11 @@ def scrape_delhaize(pw) -> None:
         if close:
             lbl = close.get_attribute("aria-label") or close.tag_name or "?"
             _log(f"  close modal ← [{lbl}]")
-            close.click()
+            try:
+                # force=True bypasses the modal-overlay div that intercepts pointer events
+                close.click(force=True)
+            except Exception:
+                page.keyboard.press("Escape")
         else:
             _log("  close modal ← Escape (no close button found)")
             page.keyboard.press("Escape")
