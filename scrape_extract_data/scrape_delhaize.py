@@ -13,7 +13,7 @@ Usage:
     pip install playwright && playwright install chromium
     python scrape_extract_data/scrape_delhaize.py
 
-Output: scrape_extract_data/delhaize/tickets/<yyyy>_<mm>_<dd>.jpg
+Output: scrape_extract_data/delhaize/<yyyy>_<mm>_<dd>.jpg
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ from pathlib import Path
 HERE         = Path(__file__).parent          # scrape_extract_data/
 sys.path.insert(0, str(HERE))                 # allow: from _observe import ...
 REPO_ROOT    = HERE.parent
-DATA_DIR     = HERE / "delhaize" / "tickets"
+DATA_DIR     = HERE / "delhaize"
 PROFILE_DIR  = REPO_ROOT / ".browser_profile"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)

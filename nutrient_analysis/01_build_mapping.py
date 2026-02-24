@@ -4,7 +4,7 @@ nutrient_analysis/01_build_mapping.py
 Builds a mapping: Delhaize product name → pyfooda food entry + grams.
 
 Pipeline:
-  1. Load all Delhaize ticket CSVs from scrapers/delhaize/tickets/
+  1. Load all Delhaize ticket CSVs from scrape_extract_data/delhaize/
   2. Pre-filter non-food rows (discounts, weight placeholders, malformed)
   3. For each unique product name → BM25 top-10 pyfooda candidates
   4. Batch 50 items at a time → OpenRouter LLM decides:
@@ -28,7 +28,7 @@ from pyfooda import api
 import openai
 
 # ── Config ────────────────────────────────────────────────────────────────────
-TICKETS_DIR = Path(__file__).parent.parent / "scrapers" / "delhaize" / "tickets"
+TICKETS_DIR = Path(__file__).parent.parent / "scrape_extract_data" / "delhaize"
 OUT_DIR     = Path(__file__).parent / "output"
 OUT_DIR.mkdir(exist_ok=True)
 
