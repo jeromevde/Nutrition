@@ -296,9 +296,10 @@ def main():
         print("Get your key from: https://openrouter.ai/keys")
         return 1
     
-    # Find all receipts under scrapers/ (where ticket jpgs live)
+    # Find all receipts in the tickets/ folder next to this script
+    HERE = Path(__file__).parent
     print("🔍 Scanning for receipt images...")
-    receipts = find_all_receipts(REPO_ROOT / "scrapers")
+    receipts = find_all_receipts(HERE / "tickets")
     
     if not receipts:
         print("No JPG files found!")

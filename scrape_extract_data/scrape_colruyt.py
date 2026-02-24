@@ -10,7 +10,7 @@ Usage:
     python scrape_colruyt.py
 
 Output:
-    scrapers/colruyt/colruyt_favorites.csv   (columns: product_name)
+    scrape_extract_data/colruyt_favorites.csv   (columns: product_name)
 """
 
 from __future__ import annotations
@@ -18,11 +18,10 @@ import csv
 import sys
 from pathlib import Path
 
-REPO_ROOT   = Path(__file__).parent.parent
-COLRUYT_DIR = REPO_ROOT / "scrapers" / "colruyt"
+HERE        = Path(__file__).parent                       # scrape_extract_data/
+REPO_ROOT   = HERE.parent
 PROFILE_DIR = REPO_ROOT / ".browser_profile"
 
-COLRUYT_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)
 
 
@@ -90,7 +89,7 @@ def scrape_colruyt(pw) -> None:
         if full.strip():
             items.append({"product_name": full})
 
-    out_path = COLRUYT_DIR / "colruyt_favorites.csv"
+    out_path = HERE / "colruyt_favorites.csv"
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["product_name"])
         w.writeheader()
