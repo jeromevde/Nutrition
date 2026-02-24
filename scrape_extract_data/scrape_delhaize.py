@@ -10,19 +10,19 @@ Usage:
     python scrape_delhaize.py
 
 Output:
-    scrapers/delhaize/tickets/<yyyy>_<mm>_<dd>.jpg
+    scrape_extract_data/tickets/<yyyy>_<mm>_<dd>.jpg
 
 After scraping, OCR the images:
-    python batch_ocr_receipts.py
+    python scrape_extract_data/batch_ocr_receipts.py
 """
 
 from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Repo root = two levels up from this file
-REPO_ROOT     = Path(__file__).parent.parent
-DELHAIZE_DIR  = REPO_ROOT / "scrapers" / "delhaize" / "tickets"
+HERE          = Path(__file__).parent                     # scrape_extract_data/
+REPO_ROOT     = HERE.parent
+DELHAIZE_DIR  = HERE / "tickets"
 PROFILE_DIR   = REPO_ROOT / ".browser_profile"
 
 DELHAIZE_DIR.mkdir(parents=True, exist_ok=True)

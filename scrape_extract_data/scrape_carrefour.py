@@ -10,7 +10,7 @@ Usage:
     python scrape_carrefour.py
 
 Output:
-    scrapers/carrefour/favorite_items.csv   (columns: product_name)
+    scrape_extract_data/carrefour_favorites.csv   (columns: product_name)
 """
 
 from __future__ import annotations
@@ -18,11 +18,10 @@ import csv
 import sys
 from pathlib import Path
 
-REPO_ROOT     = Path(__file__).parent.parent
-CARREFOUR_DIR = REPO_ROOT / "scrapers" / "carrefour"
+HERE          = Path(__file__).parent                     # scrape_extract_data/
+REPO_ROOT     = HERE.parent
 PROFILE_DIR   = REPO_ROOT / ".browser_profile"
 
-CARREFOUR_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)
 
 
@@ -82,7 +81,7 @@ def scrape_carrefour(pw) -> None:
         if name:
             items.append({"product_name": f"{brand} - {name}" if brand else name})
 
-    out_path = CARREFOUR_DIR / "favorite_items.csv"
+    out_path = HERE / "carrefour_favorites.csv"
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["product_name"])
         w.writeheader()
