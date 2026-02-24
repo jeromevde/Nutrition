@@ -1,15 +1,15 @@
-jupyter==1.0.0
-jupyterlab==4.0.9
-ipykernel==6.26.0
-pytesseract==0.3.10
-Pillow==10.1.0
-openai==1.51.0
 pandas==2.1.4
 numpy==1.26.2
-matplotlib==3.8.2
-seaborn==0.13.0
-requests==2.31.0
-beautifulsoup4==4.12.2
-selenium==4.16.0
-lxml==4.9.3
-openpyxl==3.1.2
+openai==1.51.0
+pyfooda>=0.6.0
+httpx>=0.25.0
+
+# Semantic search (replaces rank_bm25)
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+
+# Browser automation (optional, for scrape_groceries.py)
+playwright>=1.40.0
+
+# OCR (optional, for batch_ocr_receipts.py)
+Pillow>=10.1.0

@@ -22,9 +22,9 @@ from __future__ import annotations
 import os, re, glob, json, time, textwrap
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from pyfooda import api
-from rank_bm25 import BM25Okapi
 import openai
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -120,10 +120,36 @@ def filter_purchases(df: pd.DataFrame) -> pd.DataFrame:
     return df[~mask].copy()
 
 
-# ── BM25 helpers ──────────────────────────────────────────────────────────────
+# ── FAISS + sentence-embedding helpers ────────────────────────────────────────
+
+_faiss_index = None    # lazy-built FAISS index
+_food_names: list[str] = []
+_embedder = None
+
+def _ensure_index():
+    """Build the FAISS index from pyfooda food names (once)."""
+    global _faiss_index, _food_names, _embedder
+    if _faiss_index is not None:
+        return
+
+    import faiss
+    from sentence_transformers import SentenceTransformer
+
+    _embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
+    fd = api.get_fooddata_df()
+    _food_names = fd['foodName'].dropna().unique().tolist()
+    print(f"  Encoding {len(_food_names):,} food names with sentence-transformers …")
+    vecs = _embedder.encode(_food_names, show_progress_bar=True,
+                            batch_size=512, normalize_embeddings=True)
+    d = vecs.shape[1]
+    _faiss_index = faiss.IndexFlatIP(d)          # inner-product = cosine (normalised)
+    _faiss_index.add(np.ascontiguousarray(vecs.astype(np.float32)))
+    print(f"  FAISS index ready ({_faiss_index.ntotal} vectors, dim={d})")
+
 
 def _norm(name: str) -> str:
-    """Normalise a name for BM25 tokenisation."""
+    """Normalise a name for embedding search."""
     # Strip leading weight tokens (400G, 1.5L, 250GR …)
     name = re.sub(r'\b\d[\d,\.]*\s*[GKLgkl][GRLgrl]?\b', '', name)
     # Strip stray digits
@@ -131,18 +157,12 @@ def _norm(name: str) -> str:
     return name.lower().strip()
 
 
-def bm25_top_n(query: str, n: int = BM25_TOP_N) -> list[str]:
-    """Return up to n food names ranked by BM25, filtering obvious junk."""
-    results = api.find_closest_matches(query, n=n * 3)   # over-fetch then dedupe
-    seen, out = set(), []
-    for r in results:
-        key = r.lower()
-        if key not in seen:
-            seen.add(key)
-            out.append(r)
-        if len(out) >= n:
-            break
-    return out
+def faiss_top_n(query: str, n: int = BM25_TOP_N) -> list[str]:
+    """Return up to n food names ranked by cosine similarity via FAISS."""
+    _ensure_index()
+    q_vec = _embedder.encode([query], normalize_embeddings=True).astype(np.float32)
+    _, idxs = _faiss_index.search(q_vec, n)
+    return [_food_names[i] for i in idxs[0] if 0 <= i < len(_food_names)]
 
 
 def pyfooda_exact(name: str) -> str | None:
@@ -159,7 +179,7 @@ def resolve_match(llm_name: str, top10: list[str]) -> str:
     Map an LLM-provided food name to an actual pyfooda entry:
     1. If it's in top-10 (case-insensitive) → use it.
     2. Try exact lookup in full fooddata.
-    3. Fall back: BM25 search on the LLM name, take top-1.
+    3. Fall back: FAISS search on the LLM name, take top-1.
     """
     upper = llm_name.upper()
     for t in top10:
@@ -168,7 +188,7 @@ def resolve_match(llm_name: str, top10: list[str]) -> str:
     exact = pyfooda_exact(llm_name)
     if exact:
         return exact
-    fallback = bm25_top_n(llm_name, n=1)
+    fallback = faiss_top_n(llm_name, n=1)
     return fallback[0] if fallback else llm_name
 
 
@@ -193,9 +213,18 @@ SYSTEM_PROMPT = textwrap.dedent("""\
         STRONGLY PREFER to chose from the provided candidates list.
         Only suggest a different generic USDA name (e.g. "Hazelnut spread"
         for NUTELLA) when NONE of the candidates are appropriate.
-        Also extract the weight in grams from the product name:
-          400G → 400, 1.5KG → 1500, 0,600 Kg → 600, 1L → 1000.
-        Set grams to null if no weight is mentioned.
+
+        GRAMS EXTRACTION — IMPORTANT:
+        1. If the product name contains an explicit weight, convert to grams:
+           400G → 400, 1.5KG → 1500, 0,600 Kg → 600, 1L → 1000, 33CL → 330.
+        2. If NO explicit weight is mentioned, INFER the most probable weight
+           in grams for a typical retail package of that product. For example:
+           - a bag of chips → ~150, a can of soda → ~330, a bottle of juice → ~1000,
+           - a pack of butter → ~250, a pot of yogurt → ~125, a baguette → ~250,
+           - a pack of sliced cheese → ~200, a carton of eggs (6) → ~360, etc.
+           Use your best judgement based on standard Belgian/European retail sizes.
+        3. Only set grams to null when you truly cannot guess even a rough weight
+           (e.g. ambiguous non-food or unknown item).
 
     Respond ONLY with a valid JSON array – no markdown fences, no explanation:
     [
@@ -254,15 +283,16 @@ def build_mapping(
     if not unique_names:
         return []
 
-    print(f"\nBuilding BM25 index for {len(unique_names)} names…")
+    print(f"\nBuilding FAISS index for {len(unique_names)} names\u2026")
+    _ensure_index()     # build once before the loop
 
-    # Pre-compute BM25 top-10 for all names at once
+    # Pre-compute FAISS top-10 for all names at once
     name_to_top10: dict[str, list[str]] = {}
     for i, name in enumerate(unique_names, 1):
         query = _norm(name)
-        name_to_top10[name] = bm25_top_n(query) if query.strip() else []
+        name_to_top10[name] = faiss_top_n(query) if query.strip() else []
         if i % 100 == 0:
-            print(f"  BM25: {i}/{len(unique_names)}")
+            print(f"  FAISS: {i}/{len(unique_names)}")
 
     print(f"\nSending {len(unique_names)} items to LLM in batches of {LLM_BATCH}…")
 
@@ -357,10 +387,11 @@ def main() -> None:
 
     # ── 3. BM25 + LLM mapping ─────────────────────────────────────────────────
     print("\n" + "=" * 60)
-    print("Step 2 – Loading pyfooda BM25 index")
+    print("Step 2 \u2013 Building FAISS semantic search index")
     print("=" * 60)
     api.ensure_data_loaded()
-    print(f"pyfooda: {len(api._food_names):,} food names indexed.")
+    _ensure_index()
+    print(f"pyfooda: {len(_food_names):,} food names indexed.")
 
     unique_names = sorted(purchases['product_name'].unique())
     new_rows = build_mapping(unique_names, client, existing_names)
