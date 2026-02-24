@@ -2,15 +2,14 @@
 """
 scrape_carrefour.py — Carrefour frequently-purchased items scraper
 ==================================================================
-Opens the Carrefour "Frequently Purchased" page in a real browser,
-waits for you to log in, then scrapes all product names and brands.
+Opens the Carrefour "Frequently Purchased" page, waits for login, scrapes
+all product names. Automatically switches to OBSERVE MODE if 0 items are found
+(selector likely changed).
 
 Usage:
-    pip install playwright && playwright install chromium
-    python scrape_carrefour.py
+    python scrape_extract_data/scrape_carrefour.py
 
-Output:
-    scrape_extract_data/carrefour_favorites.csv   (columns: product_name)
+Output: scrape_extract_data/carrefour/carrefour_favorites.csv
 """
 
 from __future__ import annotations
@@ -19,10 +18,10 @@ import sys
 import time
 from pathlib import Path
 
-HERE          = Path(__file__).parent                     # scrape_extract_data/
-REPO_ROOT     = HERE.parent
-PROFILE_DIR   = REPO_ROOT / ".browser_profile"
-
+HERE        = Path(__file__).parent          # scrape_extract_data/sys.path.insert(0, str(HERE))                 # allow: from _observe import ...REPO_ROOT   = HERE.parent
+DATA_DIR    = HERE / "carrefour"
+PROFILE_DIR = REPO_ROOT / ".browser_profile"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)
 
 _t0 = time.time()
@@ -31,7 +30,6 @@ def _log(msg: str) -> None:
 
 
 def _launch_browser(pw):
-    """Launch a persistent Chromium context so login sessions are remembered."""
     return pw.chromium.launch_persistent_context(
         user_data_dir=str(PROFILE_DIR),
         headless=False,
@@ -41,10 +39,8 @@ def _launch_browser(pw):
 
 
 def scrape_carrefour(pw) -> None:
-    """
-    Navigate to Carrefour Frequently Purchased page,
-    wait for login, then scrape product names + brands.
-    """
+    from _observe import observe_mode
+
     print("═══ Carrefour ═══")
     ctx = _launch_browser(pw)
     page = ctx.pages[0] if ctx.pages else ctx.new_page()
@@ -59,8 +55,8 @@ def scrape_carrefour(pw) -> None:
     try:
         page.wait_for_selector(".product-tile", timeout=300_000)
     except Exception:
-        _log("✗ Timed out. Did you log in and navigate to the page?")
-        ctx.close()
+        _log("✗ Timed out — switching to observe mode")
+        observe_mode(page, ctx, "no .product-tile appeared after login")
         return
 
     _log("scrolling to load all products …")
@@ -85,7 +81,13 @@ def scrape_carrefour(pw) -> None:
         if name:
             items.append({"product_name": f"{brand} - {name}" if brand else name})
 
-    out_path = HERE / "carrefour_favorites.csv"
+    if not items:
+        reason = "0 product names extracted — name/brand selectors likely changed"
+        _log(f"✗ STUCK: {reason}")
+        observe_mode(page, ctx, reason)
+        return
+
+    out_path = DATA_DIR / "carrefour_favorites.csv"
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["product_name"])
         w.writeheader()
@@ -99,13 +101,13 @@ def main() -> int:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("Playwright not installed. Run:\n  pip install playwright && playwright install chromium")
+        print("Playwright not installed:\n  pip install playwright && playwright install chromium")
         return 1
 
     with sync_playwright() as pw:
         scrape_carrefour(pw)
 
-    print("\nNext step — build the nutrition mapping:")
+    print("\nNext: build the nutrition mapping:")
     print("  cd nutrient_analysis && python 01_build_mapping.py")
     return 0
 
