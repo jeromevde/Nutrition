@@ -65,7 +65,7 @@ def scrape_delhaize(pw) -> None:
     ctx = _launch_browser(pw)
     page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
-    page.goto("https://www.delhaize.be/nl/my-account/my-receipts", wait_until="domcontentloaded")
+    page.goto("https://www.delhaize.be/nl/my-account/loyalty/tickets", wait_until="domcontentloaded")
     print("  → Browser opened. Please log in if needed.")
     print("  → Waiting for receipts to appear …")
 
@@ -92,22 +92,21 @@ def scrape_delhaize(pw) -> None:
     rows = page.query_selector_all('[data-testid="my-receipts-list-row"]')
     print(f"  Found {len(rows)} receipts")
 
+    MODAL_SEL = '[data-testid="modal-main-content"]'
+
     def _close_modal():
-        """Click the modal close button and wait until the dialog disappears."""
-        # Try close buttons from most-specific to least-specific
-        # Delhaize uses an X button with aria-label containing "sluit" / "close"
+        """Close the Delhaize receipt modal and wait for it to disappear."""
+        # Try specific close buttons first, then fall back to Escape
         CLOSE_SELECTORS = [
-            '[role="dialog"] [aria-label*="sluit" i]',
-            '[role="dialog"] [aria-label*="close" i]',
-            '[role="dialog"] [aria-label*="sluiten" i]',
+            '[data-testid="modal-main-content"] [aria-label*="sluit" i]',
+            '[data-testid="modal-main-content"] [aria-label*="close" i]',
             '[data-testid="modal-close-button"]',
             '[data-testid*="close"]',
-            # Last resort: first button that looks like an X (single char content)
         ]
         closed = False
         for sel in CLOSE_SELECTORS:
             btn = page.query_selector(sel)
-            if btn:
+            if btn and btn.is_visible():
                 try:
                     btn.click()
                     closed = True
@@ -116,14 +115,12 @@ def scrape_delhaize(pw) -> None:
                     continue
 
         if not closed:
-            # Fall back to Escape key
             page.keyboard.press("Escape")
 
-        # Wait for the dialog to actually vanish before moving on
+        # Wait for the modal to actually vanish
         try:
-            page.wait_for_selector('[role="dialog"]', state="hidden", timeout=3000)
+            page.wait_for_selector(MODAL_SEL, state="hidden", timeout=4000)
         except Exception:
-            # If it doesn't vanish, press Escape once more as a last resort
             page.keyboard.press("Escape")
             page.wait_for_timeout(800)
 
@@ -159,9 +156,9 @@ def scrape_delhaize(pw) -> None:
         btn.scroll_into_view_if_needed()
         btn.click()
 
-        # Wait for dialog to open
+        # Wait for the Delhaize modal content to appear
         try:
-            page.wait_for_selector('[role="dialog"]', state="visible", timeout=5000)
+            page.wait_for_selector(MODAL_SEL, state="visible", timeout=8000)
         except Exception:
             print(f"  [{i+1}/{len(rows)}] Modal didn't open for {date_text}")
             _close_modal()
