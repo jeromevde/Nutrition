@@ -2,15 +2,14 @@
 """
 scrape_colruyt.py — Colruyt favourites scraper
 ===============================================
-Opens the Colruyt "My Products / Favourites" page in a real browser,
-waits for you to log in, then scrapes all product cards.
+Opens the Colruyt "My Products / Favourites" page, waits for login, scrapes
+all product cards. Automatically switches to OBSERVE MODE if 0 items are found
+(selector likely changed).
 
 Usage:
-    pip install playwright && playwright install chromium
-    python scrape_colruyt.py
+    python scrape_extract_data/scrape_colruyt.py
 
-Output:
-    scrape_extract_data/colruyt_favorites.csv   (columns: product_name)
+Output: scrape_extract_data/colruyt/colruyt_favorites.csv
 """
 
 from __future__ import annotations
@@ -19,10 +18,10 @@ import sys
 import time
 from pathlib import Path
 
-HERE        = Path(__file__).parent                       # scrape_extract_data/
-REPO_ROOT   = HERE.parent
+HERE        = Path(__file__).parent          # scrape_extract_data/sys.path.insert(0, str(HERE))                 # allow: from _observe import ...REPO_ROOT   = HERE.parent
+DATA_DIR    = HERE / "colruyt"
 PROFILE_DIR = REPO_ROOT / ".browser_profile"
-
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)
 
 _t0 = time.time()
@@ -31,7 +30,6 @@ def _log(msg: str) -> None:
 
 
 def _launch_browser(pw):
-    """Launch a persistent Chromium context so login sessions are remembered."""
     return pw.chromium.launch_persistent_context(
         user_data_dir=str(PROFILE_DIR),
         headless=False,
@@ -41,10 +39,8 @@ def _launch_browser(pw):
 
 
 def scrape_colruyt(pw) -> None:
-    """
-    Navigate to Colruyt My Products / Favourites page,
-    wait for login, then scrape product cards.
-    """
+    from _observe import observe_mode
+
     print("═══ Colruyt ═══")
     ctx = _launch_browser(pw)
     page = ctx.pages[0] if ctx.pages else ctx.new_page()
@@ -62,8 +58,8 @@ def scrape_colruyt(pw) -> None:
             timeout=300_000,
         )
     except Exception:
-        _log("✗ Timed out. Did you log in?")
-        ctx.close()
+        _log("✗ Timed out — switching to observe mode")
+        observe_mode(page, ctx, "no product cards appeared after login")
         return
 
     _log("scrolling to load all products …")
@@ -93,7 +89,13 @@ def scrape_colruyt(pw) -> None:
         if full.strip():
             items.append({"product_name": full})
 
-    out_path = HERE / "colruyt_favorites.csv"
+    if not items:
+        reason = "0 product names extracted — card selectors likely changed"
+        _log(f"✗ STUCK: {reason}")
+        observe_mode(page, ctx, reason)
+        return
+
+    out_path = DATA_DIR / "colruyt_favorites.csv"
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["product_name"])
         w.writeheader()
@@ -107,13 +109,13 @@ def main() -> int:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("Playwright not installed. Run:\n  pip install playwright && playwright install chromium")
+        print("Playwright not installed:\n  pip install playwright && playwright install chromium")
         return 1
 
     with sync_playwright() as pw:
         scrape_colruyt(pw)
 
-    print("\nNext step — build the nutrition mapping:")
+    print("\nNext: build the nutrition mapping:")
     print("  cd nutrient_analysis && python 01_build_mapping.py")
     return 0
 
