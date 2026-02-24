@@ -121,8 +121,8 @@ class SessionRecorder:
         if kind == "navigate":
             print(f"  [{t:7.2f}s] ► navigate  {ev['url']}")
         elif kind == "click":
-            txt = f" "{ev['text']}"" if ev.get("text") else ""
-            print(f"  [{t:7.2f}s] ● click    {ev['selector']}{txt}")
+            txt = (' "' + ev["text"] + '"') if ev.get("text") else ""
+            print(f"  [{t:7.2f}s] \u25cf click    {ev['selector']}{txt}")
         elif kind == "request":
             print(f"  [{t:7.2f}s] → request  {ev['method']} {ev['url'][:90]}")
         elif kind == "response":
@@ -190,7 +190,7 @@ def _attach_page_hooks(page, recorder: SessionRecorder):
     page.on("request", _on_request)
     page.on("response", _on_response)
 
-    # Downloads
+    # Downloads — attach once on the context (not per-page)
     def _on_download(download):
         recorder.log({
             "type": "download",
@@ -198,9 +198,9 @@ def _attach_page_hooks(page, recorder: SessionRecorder):
             "url": download.url,
         })
 
-    page.context.on("download", _on_download)
-
     # Click interception via injected JS
+    # expose_function persists on the context across navigations;
+    # ignore the error if it was already registered by a previous attach call.
     def _on_click(data: str):
         try:
             ev = json.loads(data)
@@ -212,7 +212,7 @@ def _attach_page_hooks(page, recorder: SessionRecorder):
     try:
         page.expose_function("__reportClick", _on_click)
     except Exception:
-        pass  # already exposed on this page
+        pass  # already exposed (persistent context or repeated attach)
 
     # Inject monitoring JS after every navigation
     def _inject():
@@ -226,7 +226,16 @@ def _attach_page_hooks(page, recorder: SessionRecorder):
 
 
 def _watch_for_new_pages(context, recorder: SessionRecorder):
-    """Attach hooks to any new tabs/popups the user opens."""
+    """Attach download listener + hooks to any new tabs/popups the user opens."""
+    # One download listener on the context covers all pages
+    def _on_download(download):
+        recorder.log({
+            "type": "download",
+            "suggested_filename": download.suggested_filename,
+            "url": download.url,
+        })
+    context.on("download", _on_download)
+
     def _on_page(page):
         _attach_page_hooks(page, recorder)
     context.on("page", _on_page)
@@ -263,13 +272,6 @@ def main() -> int:
 
     try:
         with sync_playwright() as pw:
-            # clean up a stale lock before we try to open the profile
-            lock = PROFILE_DIR / "SingletonLock"
-            try:
-                if lock.exists():
-                    lock.unlink()
-            except Exception:
-                pass
             ctx = pw.chromium.launch_persistent_context(
                 user_data_dir=str(PROFILE_DIR),
                 headless=False,
@@ -286,22 +288,21 @@ def main() -> int:
             if args.url and args.url != "about:blank":
                 page.goto(args.url, wait_until="domcontentloaded")
 
-            # Keep alive until the browser or user closes
-            print("  (Browser is open — do your thing, then close the window)\n")
-            while True:
-                try:
-                    # Poll whether any pages are still open
-                    if not ctx.pages:
-                        break
-                    time.sleep(0.5)
-                except Exception:
-                    break
+            # Keep alive until the browser window is closed or Ctrl+C
+            print("  (Browser is open \u2014 do your thing, then close the window)\n")
+            try:
+                ctx.wait_for_event("close", timeout=0)  # 0 = no timeout
+            except KeyboardInterrupt:
+                pass
+            except Exception:
+                pass  # window already closed
 
     except KeyboardInterrupt:
         print("\n  (Ctrl+C received)")
     except Exception as e:
-        if "Target page, context or browser has been closed" not in str(e):
-            print(f"  Session ended: {e}")
+        msg = str(e)
+        if not any(x in msg for x in ("closed", "has been closed", "Target closed")):
+            print(f"  Session ended unexpectedly: {e}")
 
     recorder.save(session_path)
     return 0
