@@ -238,7 +238,12 @@ SYSTEM_PROMPT = textwrap.dedent("""\
 
     CONTEXT: Names are abbreviated French/English grocery labels.
     Key French terms:
-      PATE = PASTA noodles (NOT meat pâté)  POULET = chicken  SAUMON = salmon
+      PATE/PATES alone = PASTA noodles (NOT meat pâté)
+      PATE + NOIR/NOI/NOIRE/CAMPAGNE/FOIE/LARD/CANARD = meat PÂTÉ →
+        pick from pate/liverwurst candidates, NEVER pasta
+      HACHIS = ground/minced meat blend  (HACHIS PORC-VEAU = ground pork+veal,
+        HACHIS BOEUF = ground beef, HACHIS P&V = ground pork & veal)
+      POULET = chicken  SAUMON = salmon
       OEUFS/OEUVS = eggs  LAIT = milk  BEURRE = butter  FROMAGE = cheese
       BOEUF = beef  PORC = pork  VEAU = veal  AGNEAU = lamb
       DLL/DELH/DLC/DLI/DOL/MKA = Delhaize house brand  BIO = organic
@@ -246,7 +251,9 @@ SYSTEM_PROMPT = textwrap.dedent("""\
       POUSE/POUSS/POUSSE = mixed salad shoots  MESCLUN = salad mix
 
     ── MATCHING RULES ────────────────────────────────────────────────────────
-    • STRONGLY PREFER to choose from the provided candidates list.
+    • pyfooda_name MUST be the EXACT string of one entry from the candidates
+      list. Do NOT invent or paraphrase — copy it character-for-character.
+      If no candidate fits, use action "ignore".
     • Prefer SPECIFIC names over single-word generics:
         "Potato chips, salted" beats "CHIPS"
         "Lemon-lime carbonated beverage" beats "LEMON"
