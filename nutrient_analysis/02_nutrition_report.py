@@ -452,6 +452,7 @@ def build_report_data(
 
             rows_out.append({
                 'date':          str(row['date'])[:10],
+                'source_file':   str(row.get('source_file', '')),
                 'product_name':  str(row.get('product_name', '')),
                 'pyfooda_name':  pname,
                 'grams':         eff_grams,
@@ -528,6 +529,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .p-table tbody tr:last-child td{border-bottom:none}
 .p-table tbody tr:hover{background:var(--accent-bg)}
 .date-hdr td{background:#f8fafc;font-weight:600;font-size:.78rem;color:var(--accent);padding:8px 10px 4px}
+.ticket-link{font-size:.72rem;font-weight:400;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 6px;text-decoration:none;margin-left:6px;white-space:nowrap}
+.ticket-link:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
 .name-hdr td{background:#f8fafc;font-weight:600;font-size:.78rem;color:var(--accent);padding:8px 10px 4px}
 .p-muted{color:var(--muted)}
 .p-grams{font-weight:600;color:var(--text)}
@@ -667,7 +670,10 @@ function renderPurchases(){
     const dates=Object.keys(byDate).sort().reverse();
     let h='<table class="p-table"><thead><tr><th>Original name</th><th>Matched name</th><th>Grams</th><th>Price</th></tr></thead><tbody>';
     dates.forEach(d=>{
-      h+=`<tr class="date-hdr"><td colspan="4">${d} (${byDate[d].length} items)</td></tr>`;
+      // collect unique source files for this date and link each one
+      const srcFiles=[...new Set(byDate[d].map(r=>r.source_file))].filter(Boolean);
+      const links=srcFiles.map(f=>{const img=f.replace(/\.csv$/i,'.jpg');return`<a class=\"ticket-link\" href=\"../../scrape_extract_data/delhaize/${img}\" target=\"_blank\">${img}</a>`;}).join(' ');
+      h+=`<tr class="date-hdr"><td colspan="4">${d} (${byDate[d].length} items) ${links}</td></tr>`;
       byDate[d].forEach(r=>{
         h+=`<tr><td>${sh(r.product_name,50)}</td><td class="p-muted">${sh(r.pyfooda_name,40)}</td>`+
           `<td>${fmtG(r)}</td>`+

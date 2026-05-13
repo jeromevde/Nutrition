@@ -54,6 +54,19 @@ import openai
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from _llm_client import make_client
 
+# ── Timestamped logging ───────────────────────────────────────────────────────
+_t0 = time.monotonic()
+_tprev: list[float] = [_t0]
+
+def tlog(msg: str, end: str = "\n", flush: bool = False) -> None:
+    """Print msg prefixed with [HH:MM:SS +step_elapsed / total] for profiling."""
+    now   = time.monotonic()
+    step  = now - _tprev[0]
+    total = now - _t0
+    _tprev[0] = now
+    ts = time.strftime("%H:%M:%S", time.localtime())
+    print(f"[{ts} +{step:5.1f}s / {total:6.1f}s] {msg}", end=end, flush=flush)
+
 # Repo root is two levels up from this file (scrape_extract_data/)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -285,24 +298,24 @@ def main():
 
     # Find all receipts in delhaize/ (where scrape_delhaize.py saves them)
     HERE = Path(__file__).parent
-    print("🔍 Scanning for receipt images...")
+    tlog("🔍 Scanning for receipt images...")
     receipts = find_all_receipts(HERE / "delhaize")
-    
+
     if not receipts:
-        print("No JPG files found!")
+        tlog("No JPG files found!")
         return 0
-    
-    print(f"Found {len(receipts)} images")
-    
+
+    tlog(f"Found {len(receipts)} images")
+
     # Filter out already processed
     to_process = [r for r in receipts if not r.with_suffix('.csv').exists()]
     already_done = len(receipts) - len(to_process)
-    
+
     if already_done > 0:
         print(f"📋 {already_done} already processed (skipping)")
-    
+
     if not to_process:
-        print("✅ All receipts already processed!")
+        tlog("✅ All receipts already processed!")
         return 0
 
     results = {"success": 0, "failed": 0, "total_items": 0}
@@ -311,12 +324,12 @@ def main():
     if args.batch:
         # ── Batch mode: group images into multi-image API calls ──────────────
         bs = args.batch_size
-        print(f"🚀 Processing {len(to_process)} receipts in batches of {bs}...\n")
+        tlog(f"🚀 Processing {len(to_process)} receipts in batches of {bs}...")
         for batch_start in range(0, len(to_process), bs):
             batch = to_process[batch_start:batch_start + bs]
             batch_num = batch_start // bs + 1
             total_batches = (len(to_process) + bs - 1) // bs
-            print(f"  Batch {batch_num}/{total_batches} ({len(batch)} images) …", end=" ", flush=True)
+            tlog(f"  Batch {batch_num}/{total_batches} ({len(batch)} images) …", end=" ", flush=True)
 
             batch_results = process_batch(batch, client, model)
             for path, info in batch_results.items():
@@ -330,45 +343,45 @@ def main():
             print("done")
     else:
         # ── Single-image mode (default): parallel workers ────────────────────
-        print(f"🚀 Processing {len(to_process)} receipts with {MAX_WORKERS} workers...\n")
+        tlog(f"🚀 Processing {len(to_process)} receipts with {MAX_WORKERS} workers...")
 
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = {executor.submit(process_receipt, img, client, model): img for img in to_process}
-            
+
             for i, future in enumerate(as_completed(futures), 1):
                 img_path = futures[future]
                 result = future.result()
-                
+
                 if result[1] == "skipped":
                     continue
-                
+
                 path, info = result
                 rel_path = path.relative_to(REPO_ROOT)
-                
+
                 if info["status"] == "success":
                     results["success"] += 1
                     results["total_items"] += info["items"]
-                    print(f"✓ [{i}/{len(to_process)}] {rel_path} → {info['items']} items ({info['time']:.1f}s)")
+                    tlog(f"✓ [{i}/{len(to_process)}] {rel_path} → {info['items']} items ({info['time']:.1f}s)")
                 else:
                     results["failed"] += 1
                     failed_files.append((rel_path, info["error"]))
-                    print(f"✗ [{i}/{len(to_process)}] {rel_path} → FAILED: {info['error']}")
-    
+                    tlog(f"✗ [{i}/{len(to_process)}] {rel_path} → FAILED: {info['error']}")
+
     # Summary
-    print(f"\n{'='*60}")
-    print(f"📊 SUMMARY")
-    print(f"{'='*60}")
-    print(f"✅ Processed: {results['success']}")
-    print(f"❌ Failed: {results['failed']}")
-    print(f"📦 Total items extracted: {results['total_items']}")
-    print(f"📋 Already done: {already_done}")
-    print(f"🏁 Total receipts: {len(receipts)}")
-    
+    tlog(f"\n{'='*60}")
+    tlog("📊 SUMMARY")
+    tlog(f"{'='*60}")
+    tlog(f"✅ Processed: {results['success']}")
+    tlog(f"❌ Failed: {results['failed']}")
+    tlog(f"📦 Total items extracted: {results['total_items']}")
+    tlog(f"📋 Already done: {already_done}")
+    tlog(f"🏁 Total receipts: {len(receipts)}")
+
     if failed_files:
         print(f"\n❌ Failed files:")
         for path, error in failed_files:
             print(f"  - {path}: {error}")
-    
+
     return 0 if results['failed'] == 0 else 1
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ COPILOT_PROXY_URL   = "http://127.0.0.1:3000/v1"
 
 # Model used when falling back to the Copilot Proxy.
 # Change to any model your Copilot subscription exposes (see GET /v1/models).
-COPILOT_PROXY_MODEL = "gpt-4o-mini"
+COPILOT_PROXY_MODEL = "gpt-5-mini"
 
 
 def _proxy_reachable() -> bool:
