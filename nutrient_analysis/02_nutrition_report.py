@@ -48,6 +48,12 @@ REPORT_TRIPS  = OUT_DIR / "nutrition_pertrip.csv"
 FAMILY_KCAL   = 2500          # reference daily energy for scaling
 DEFAULT_GRAMS = 100           # fallback when no weight info at all
 
+# Per-100g nutrient density cap: if a food's per-100g value exceeds this
+# multiple of the daily DRV, that nutrient is excluded from its contribution.
+# Catches pure condiments (table salt ≈ 16.8× DRV/100g) while keeping
+# normally salty foods (soy sauce ≈ 2.4×, cured meats < 1×).
+_PER100G_DRV_EXCL_MULT = 5.0
+
 KEY_NUTRIENTS = [
     "Energy",
     "Protein", "Carbohydrate", "Fiber", "Sugars, Total", "Total fat",
@@ -93,10 +99,14 @@ def nutrient_contribution(
     grams: float | None,
     foods_df: pd.DataFrame,
     nutrient_cols: list[str],
+    drv: dict[str, float] | None = None,
 ) -> dict[str, float]:
     """
     Return {nutrient: value} for a single purchase.
     Value = (grams / 100) × per_100g_value.
+
+    Nutrients where the food's per-100g density exceeds
+    _PER100G_DRV_EXCL_MULT × DRV are excluded (e.g. sodium in table salt).
     """
     if not pyfooda_name or pyfooda_name not in foods_df.index:
         return {}
@@ -112,8 +122,13 @@ def nutrient_contribution(
     result: dict[str, float] = {}
     for col in nutrient_cols:
         val = row.get(col, np.nan)
-        if pd.notna(val):
-            result[col] = float(val) * scale
+        if not pd.notna(val):
+            continue
+        # Exclude condiment-level density (per-100g value far exceeds daily DRV)
+        if drv and col in drv and drv[col] > 0:
+            if float(val) > _PER100G_DRV_EXCL_MULT * drv[col]:
+                continue
+        result[col] = float(val) * scale
     return result
 
 
@@ -123,6 +138,7 @@ def compute_trip_nutrition(
     purchases: pd.DataFrame,
     foods_df: pd.DataFrame,
     nutrient_cols: list[str],
+    drv: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     """
     For each shopping trip (source_file), sum nutrients across all matched items.
@@ -142,6 +158,7 @@ def compute_trip_nutrition(
                 row['grams_in_name'] if pd.notna(row['grams_in_name']) else None,
                 foods_df,
                 nutrient_cols,
+                drv=drv,
             )
             if contrib:
                 n_found += 1
@@ -252,6 +269,7 @@ def compute_food_contributions(
     purchases: pd.DataFrame,
     foods_df: pd.DataFrame,
     nutrient_cols: list[str],
+    drv: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     """
     For every matched purchase row compute raw nutrient grams contributed.
@@ -272,6 +290,7 @@ def compute_food_contributions(
             row['grams_in_name'] if pd.notna(row['grams_in_name']) else None,
             foods_df,
             nutrient_cols,
+            drv=drv,
         )
         cat = 'Other'
         if cat_col and row['pyfooda_name'] in foods_df.index:
@@ -423,6 +442,49 @@ def build_report_data(
         The 'grams_source' field records which step was used so the UI can flag
         inferred values clearly.
         """
+        # Pre-compute which nutrients are suppressed (density cap) per food
+        _sup_cache: dict[str, list[str]] = {}
+        def _suppressed_for(pname: str) -> list[str]:
+            if pname in _sup_cache:
+                return _sup_cache[pname]
+            result = []
+            if pname in foods_df.index:
+                frow = foods_df.loc[pname]
+                for nut in nutrient_cols:
+                    if nut not in drv or drv[nut] <= 0:
+                        continue
+                    val = frow.get(nut, np.nan)
+                    if pd.notna(val) and float(val) > _PER100G_DRV_EXCL_MULT * drv[nut]:
+                        result.append(nut)
+            _sup_cache[pname] = result
+            return result
+
+        def _item_nutrients(pname: str, grams: float | None) -> dict:
+            """Per-100g values + scaled contribution for a single matched item."""
+            if not pname or pname not in foods_df.index:
+                return {}
+            frow = foods_df.loc[pname]
+            g = grams if grams is not None else DEFAULT_GRAMS
+            scale = g / 100.0
+            out: dict = {}
+            for nut in nutrient_cols:
+                val = frow.get(nut, np.nan)
+                if not pd.notna(val):
+                    continue
+                v100 = float(val)
+                contrib = v100 * scale
+                drv_val = drv.get(nut)
+                suppressed = drv_val and drv_val > 0 and v100 > _PER100G_DRV_EXCL_MULT * drv_val
+                out[nut] = {
+                    'per100g':    round(v100, 3),
+                    'contrib':    round(contrib, 3),
+                    'unit':       units.get(nut, ''),
+                    'drv':        drv_val,
+                    'pct_drv':    round(contrib / drv_val * 100, 1) if drv_val else None,
+                    'suppressed': bool(suppressed),
+                }
+            return out
+
         sub = purchases if yk == 'all' else purchases[purchases['date'].dt.year == int(yk)]
         rows_out: list[dict] = []
         for _, row in sub.iterrows():
@@ -451,14 +513,16 @@ def build_report_data(
                 grams_src = None
 
             rows_out.append({
-                'date':          str(row['date'])[:10],
-                'source_file':   str(row.get('source_file', '')),
-                'product_name':  str(row.get('product_name', '')),
-                'pyfooda_name':  pname,
-                'grams':         eff_grams,
-                'grams_src':     grams_src,  # 'label' | 'portion' | 'default' | null
-                'price':         round(float(row['price']), 2) if pd.notna(row.get('price')) else None,
-                'matched':       action == 'match',
+                'date':                str(row['date'])[:10],
+                'source_file':         str(row.get('source_file', '')),
+                'product_name':        str(row.get('product_name', '')),
+                'pyfooda_name':        pname,
+                'grams':               eff_grams,
+                'grams_src':           grams_src,  # 'label' | 'portion' | 'default' | null
+                'price':               round(float(row['price']), 2) if pd.notna(row.get('price')) else None,
+                'matched':             action == 'match',
+                'suppressed_nutrients': _suppressed_for(pname) if pname else [],
+                'item_nutrients':      _item_nutrients(pname, eff_grams) if pname else {},
             })
         return rows_out
 
@@ -531,6 +595,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .date-hdr td{background:#f8fafc;font-weight:600;font-size:.78rem;color:var(--accent);padding:8px 10px 4px}
 .ticket-link{font-size:.72rem;font-weight:400;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 6px;text-decoration:none;margin-left:6px;white-space:nowrap}
 .ticket-link:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.sup-badge{font-size:.67rem;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 5px;margin-left:5px;white-space:nowrap;cursor:help}
+.p-clickrow{cursor:pointer}
+.p-clickrow:hover td{background:#f1f5f9}
 .name-hdr td{background:#f8fafc;font-weight:600;font-size:.78rem;color:var(--accent);padding:8px 10px 4px}
 .p-muted{color:var(--muted)}
 .p-grams{font-weight:600;color:var(--text)}
@@ -632,6 +699,8 @@ function renderNutrients(){
 
 function renderPurchases(){
   const allRows=DATA.purchases[state.year]||[];
+  // Expose current rows globally so openItemModal can look them up by index
+  window.DATA_ROWS=allRows;
   const c=document.getElementById('purchases-container');
   if(!allRows.length){c.innerHTML='<p style="color:var(--muted);padding:20px 0">No data.</p>';return;}
 
@@ -675,7 +744,11 @@ function renderPurchases(){
       const links=srcFiles.map(f=>{const img=f.replace(/\.csv$/i,'.jpg');return`<a class=\"ticket-link\" href=\"../../scrape_extract_data/delhaize/${img}\" target=\"_blank\">${img}</a>`;}).join(' ');
       h+=`<tr class="date-hdr"><td colspan="4">${d} (${byDate[d].length} items) ${links}</td></tr>`;
       byDate[d].forEach(r=>{
-        h+=`<tr><td>${sh(r.product_name,50)}</td><td class="p-muted">${sh(r.pyfooda_name,40)}</td>`+
+        const ri=allRows.indexOf(r);
+        const supBadge=r.suppressed_nutrients&&r.suppressed_nutrients.length
+          ?`<span class="sup-badge" title="Nutrient contribution suppressed (density cap): ${r.suppressed_nutrients.join(', ')}">⚠ suppressed: ${r.suppressed_nutrients.join(', ')}</span>`
+          :'';
+        h+=`<tr class="p-clickrow" onclick="openItemModal(DATA_ROWS[${ri}])"><td>${sh(r.product_name,50)}</td><td class="p-muted">${sh(r.pyfooda_name,40)}${supBadge}</td>`+
           `<td>${fmtG(r)}</td>`+
           `<td class="p-muted">${r.price!=null?'\u20ac'+fmt(r.price,2):''}</td></tr>`;
       });
@@ -720,6 +793,33 @@ function openModal(t,s,b){
   document.getElementById('modal-bg').classList.add('open');
 }
 function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
+
+function openItemModal(r){
+  if(!r.matched){openModal(r.product_name,'unmatched item','<p style="color:var(--muted)">This item was not matched to any USDA food entry.</p>');return;}
+  const nuts=r.item_nutrients||{};
+  const keys=Object.keys(nuts);
+  if(!keys.length){openModal(r.product_name,r.pyfooda_name+' · not found in database','<p style="color:var(--muted)">No pyfooda data available for this food.</p>');return;}
+  const gStr=r.grams!=null?fmt(r.grams,0)+'\u202fg':'?g';
+  const sub=`${r.pyfooda_name} · ${gStr} (${r.grams_src||'?'})`;
+  let h='<table class="mtable"><thead><tr>'
+    +'<th style="text-align:left">Nutrient</th>'
+    +'<th style="text-align:right">per 100g</th>'
+    +'<th style="text-align:right">this item</th>'
+    +'<th style="text-align:right">% DRV</th>'
+    +'</tr></thead><tbody>';
+  keys.forEach(n=>{
+    const d=nuts[n];
+    const sup=d.suppressed?'<span class="sup-badge" title="Excluded from totals (density cap)">⚠</span>':'';
+    const pct=d.pct_drv!=null?`<span class="${pc(d.pct_drv)}">${d.pct_drv}%</span>`:'—';
+    h+=`<tr${d.suppressed?' style="opacity:.45;text-decoration:line-through"':''}>`,
+    h+=`<td>${n}${sup}</td>`;
+    h+=`<td style="text-align:right;color:var(--muted)">${fmt(d.per100g)} ${d.unit}</td>`;
+    h+=`<td style="text-align:right;font-weight:500">${fmt(d.contrib)} ${d.unit}</td>`;
+    h+=`<td style="text-align:right">${pct}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  openModal(r.product_name,sub,h);
+}
 
 function openNutModal(nut){
   const d=DATA.nutrients[state.year][nut];if(!d)return;
@@ -816,7 +916,27 @@ def main() -> None:
         print(f"  (columns not in database: {missing})")
 
     tlog("Computing per-trip nutrition…")
-    trips_df = compute_trip_nutrition(purchases, foods_df, nutrient_cols)
+    # Report which food/nutrient pairs are suppressed by the density cap
+    # (only check foods actually in our purchases, not all 272k pyfooda entries)
+    _our_foods = purchases.loc[purchases['llm_action'] == 'match', 'pyfooda_name'].dropna().unique()
+    _our_df = foods_df.loc[foods_df.index.isin(_our_foods), [c for c in nutrient_cols if c in foods_df.columns]]
+    _suppressed = []
+    for nut in _our_df.columns:
+        if nut not in drv or drv[nut] <= 0:
+            continue
+        threshold = _PER100G_DRV_EXCL_MULT * drv[nut]
+        for food, val in _our_df[nut].dropna().items():
+            if float(val) > threshold:
+                _suppressed.append((food, nut, float(val), drv[nut]))
+    if _suppressed:
+        print(f"  Density cap ({_PER100G_DRV_EXCL_MULT}× DRV/100g) suppresses "
+              f"{len(_suppressed)} food/nutrient pair(s) in our data:")
+        for food, nut, val, ref in sorted(_suppressed, key=lambda x: -x[2]/x[3])[:10]:
+            print(f"    {food:40s}  {nut}: {val:,.0f} vs DRV {ref:.0f} "
+                  f"({val/ref:.0f}×)")
+        if len(_suppressed) > 10:
+            print(f"    … and {len(_suppressed)-10} more")
+    trips_df = compute_trip_nutrition(purchases, foods_df, nutrient_cols, drv=drv)
     tlog(f"  {len(trips_df)} trips processed")
 
     tlog("Detecting outlier trips…")
@@ -826,7 +946,7 @@ def main() -> None:
     yearly_df = compute_yearly(trips_df, nutrient_cols)
 
     tlog("Computing food nutrient contributions…")
-    food_contribs = compute_food_contributions(purchases, foods_df, nutrient_cols)
+    food_contribs = compute_food_contributions(purchases, foods_df, nutrient_cols, drv=drv)
 
     tlog("Writing CSVs…")
     trips_df.to_csv(REPORT_TRIPS, index=False)

@@ -291,9 +291,22 @@ SYSTEM_PROMPT = textwrap.dedent("""\
          Soup cube/tablet → 50   Spice jar → 50
          Bread (baguette) → 250   Bread loaf → 500
 
-    4. Maximum sanity: grams must be ≤ 2000 for a single retail unit.
-       If your calculation exceeds 2000 re-check — you probably misread a year
-       or multiplier as a weight.
+    4. USE PRICE to detect pack quantities — ONLY when no explicit weight or
+       quantity is present in the product name (rules 1–3 take priority):
+       Each item includes a "price_eur" field (median price paid at Delhaize).
+       Typical Belgian single-unit prices: apple/pear/peach/nectarine €0.30–0.60,
+       strawberry punnet €2–3, cherry bag €3–5, avocado €0.80–1.50,
+       single yogurt €0.70–1.20, single cheese slice pack €1.50–2.50.
+       If price_eur is provided and is unusually HIGH for one unit:
+         - Estimate the unit count = round(price_eur / typical_unit_price)
+         - Multiply the unit grams by that count for total grams.
+         Example: "NECTARINE JAUNE" price_eur=7.61 → ~15 nectarines → 15×150=2000
+         Example: "FRAISE" price_eur=3.50 → 1 punnet → 400 g
+         Example: "YAOURT NATURE" price_eur=4.20 → 6-pack yogurt → 6×125=750 g
+       When in doubt, prefer a round pack size (4, 6, 8, 10, 12).
+
+    5. Maximum sanity: grams must be ≤ 5000 for a single receipt line.
+       Lines above 5000 g are almost certainly an error.
 
     Respond ONLY with a valid JSON array – no markdown fences, no explanation:
     [
@@ -341,6 +354,7 @@ def build_mapping(
     client: openai.OpenAI,
     existing_names: set[str] | None = None,
     model: str = LLM_MODEL,
+    name_to_price: dict[str, float] | None = None,
 ) -> list[dict]:
     """
     For each unique product name:
@@ -376,6 +390,8 @@ def build_mapping(
                 "id":         gid,
                 "name":       name,
                 "candidates": name_to_top10[name],
+                **(  {"price_eur": round(name_to_price[name], 2)}
+                     if name_to_price and name in name_to_price else {}  ),
             }
             for gid, name in batch
         ]
@@ -494,7 +510,14 @@ def main() -> None:
     tlog(f"pyfooda: {len(_food_names):,} food names indexed.")
 
     unique_names = sorted(purchases['product_name'].unique())
-    new_rows = build_mapping(unique_names, client, existing_names, model)
+    # Median price per product name — passed to LLM for pack-size inference
+    name_to_price = (
+        purchases.groupby('product_name')['price']
+        .median()
+        .dropna()
+        .to_dict()
+    )
+    new_rows = build_mapping(unique_names, client, existing_names, model, name_to_price)
 
     if new_rows:
         new_df = pd.DataFrame(new_rows)
