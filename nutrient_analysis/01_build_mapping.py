@@ -31,6 +31,19 @@ import openai
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from _llm_client import make_client
 
+# ── Timestamped logging ──────────────────────────────────────────────────────────
+_t0 = time.monotonic()
+_tprev: list[float] = [_t0]  # mutable so nested functions can update it
+
+def tlog(msg: str, end: str = "\n", flush: bool = False) -> None:
+    """Print msg prefixed with [HH:MM:SS +step_elapsed / total] for profiling."""
+    now   = time.monotonic()
+    step  = now - _tprev[0]
+    total = now - _t0
+    _tprev[0] = now
+    ts = time.strftime("%H:%M:%S", time.localtime())
+    print(f"[{ts} +{step:5.1f}s / {total:6.1f}s] {msg}", end=end, flush=flush)
+
 # ── Config ────────────────────────────────────────────────────────────────────
 TICKETS_DIR = Path(__file__).parent.parent / "scrape_extract_data" / "delhaize"
 OUT_DIR     = Path(__file__).parent / "output"
@@ -163,13 +176,13 @@ def _ensure_index():
 
     fd = api.get_fooddata_df()
     _food_names = fd['foodName'].dropna().unique().tolist()
-    print(f"  Encoding {len(_food_names):,} food names with sentence-transformers …")
+    tlog(f"  Encoding {len(_food_names):,} food names with sentence-transformers …")
     vecs = _embedder.encode(_food_names, show_progress_bar=True,
                             batch_size=512, normalize_embeddings=True)
     d = vecs.shape[1]
     _faiss_index = faiss.IndexFlatIP(d)          # inner-product = cosine (normalised)
     _faiss_index.add(np.ascontiguousarray(vecs.astype(np.float32)))
-    print(f"  FAISS index ready ({_faiss_index.ntotal} vectors, dim={d})")
+    tlog(f"  FAISS index ready ({_faiss_index.ntotal} vectors, dim={d})")
 
 
 def _norm(name: str) -> str:
@@ -351,7 +364,7 @@ def build_mapping(
         if i % 100 == 0:
             print(f"  FAISS: {i}/{len(unique_names)}")
 
-    print(f"\nSending {len(unique_names)} items to LLM in batches of {LLM_BATCH}…")
+    tlog(f"\nSending {len(unique_names)} items to LLM in batches of {LLM_BATCH}…")
 
     all_results: list[dict] = []
     indexed = list(enumerate(unique_names))   # (global_id, name)
@@ -366,7 +379,7 @@ def build_mapping(
             }
             for gid, name in batch
         ]
-        print(f"  Batch {batch_start // LLM_BATCH + 1} "
+        tlog(f"  Batch {batch_start // LLM_BATCH + 1} "
               f"({batch_start + 1}–{min(batch_start + LLM_BATCH, len(indexed))}) …", end=" ", flush=True)
 
         llm_out = call_llm_batch(items_payload, client, model)
@@ -425,15 +438,15 @@ def main() -> None:
     client, model = make_client(LLM_MODEL)
 
     # ── 1. Load tickets ───────────────────────────────────────────────────────
-    print("=" * 60)
-    print("Step 1 – Loading tickets")
-    print("=" * 60)
+    tlog("=" * 60)
+    tlog("Step 1 – Loading tickets")
+    tlog("=" * 60)
     raw = load_all_tickets()
-    print(f"Raw rows: {len(raw):,}  |  Tickets: {raw['source_file'].nunique()}")
-    print(f"Date range: {raw['date'].min().date()} → {raw['date'].max().date()}")
+    tlog(f"Raw rows: {len(raw):,}  |  Tickets: {raw['source_file'].nunique()}")
+    tlog(f"Date range: {raw['date'].min().date()} → {raw['date'].max().date()}")
 
     purchases = filter_purchases(raw)
-    print(f"After filtering: {len(purchases):,} rows  |  "
+    tlog(f"After filtering: {len(purchases):,} rows  |  "
           f"Unique names: {purchases['product_name'].nunique()}")
 
     # ── 2. Load existing mapping (incremental) ────────────────────────────────
@@ -442,14 +455,15 @@ def main() -> None:
         existing_names = set(existing_df['delhaize_name'].str.upper())
         print(f"\nExisting mapping has {len(existing_df)} entries.")
 
+        names_to_remap: set[str] = set()
+
         # --remap-nullgrams: drop matched entries with no grams so they get re-run
         if args.remap_nullgrams:
             null_mask = (
                 (existing_df['action'] == 'match') &
                 existing_df['grams'].isna()
             )
-            to_drop = existing_df.loc[null_mask, 'delhaize_name'].str.upper()
-            existing_names -= set(to_drop)
+            names_to_remap |= set(existing_df.loc[null_mask, 'delhaize_name'].str.upper())
             print(f"  --remap-nullgrams: will re-run {null_mask.sum()} entries with null grams")
 
         # --remap-short: drop matched entries with suspiciously short pyfooda names
@@ -458,20 +472,26 @@ def main() -> None:
                 (existing_df['action'] == 'match') &
                 (existing_df['pyfooda_name'].str.len() <= 5)
             )
-            to_drop_s = existing_df.loc[short_mask, 'delhaize_name'].str.upper()
-            existing_names -= set(to_drop_s)
+            names_to_remap |= set(existing_df.loc[short_mask, 'delhaize_name'].str.upper())
             print(f"  --remap-short: will re-run {short_mask.sum()} entries with short pyfooda names")
+
+        if names_to_remap:
+            existing_names -= names_to_remap
+            # Also remove those rows from existing_df so the new results replace them
+            existing_df = existing_df[
+                ~existing_df['delhaize_name'].str.upper().isin(names_to_remap)
+            ].reset_index(drop=True)
     else:
         existing_df = pd.DataFrame()
         existing_names = set()
 
     # ── 3. BM25 + LLM mapping ─────────────────────────────────────────────────
-    print("\n" + "=" * 60)
-    print("Step 2 \u2013 Building FAISS semantic search index")
-    print("=" * 60)
+    tlog("\n" + "=" * 60)
+    tlog("Step 2 – Building FAISS semantic search index")
+    tlog("=" * 60)
     api.ensure_data_loaded()
     _ensure_index()
-    print(f"pyfooda: {len(_food_names):,} food names indexed.")
+    tlog(f"pyfooda: {len(_food_names):,} food names indexed.")
 
     unique_names = sorted(purchases['product_name'].unique())
     new_rows = build_mapping(unique_names, client, existing_names, model)
@@ -489,18 +509,21 @@ def main() -> None:
         for _, row in mapping_df.iterrows()
     ]
 
+    # Guard: keep only the last entry per delhaize_name (new rows win over old)
+    mapping_df = mapping_df.drop_duplicates(subset='delhaize_name', keep='last').reset_index(drop=True)
+
     mapping_df.to_csv(MAPPING_CSV, index=False)
 
     matched   = (mapping_df['action'] == 'match').sum()
     ignored   = (mapping_df['action'] == 'ignore').sum()
-    print(f"\nMapping saved → {MAPPING_CSV}")
-    print(f"  matched: {matched}  ignored: {ignored}  "
+    tlog(f"\nMapping saved → {MAPPING_CSV}")
+    tlog(f"  matched: {matched}  ignored: {ignored}  "
           f"({matched / len(mapping_df) * 100:.1f}% match rate)")
 
     # ── 4. Enrich purchases ───────────────────────────────────────────────────
-    print("\n" + "=" * 60)
-    print("Step 3 – Enriching purchase rows")
-    print("=" * 60)
+    tlog("\n" + "=" * 60)
+    tlog("Step 3 – Enriching purchase rows")
+    tlog("=" * 60)
 
     lookup = mapping_df.set_index('delhaize_name')[['pyfooda_name', 'grams', 'action']].to_dict('index')
 
@@ -516,7 +539,7 @@ def main() -> None:
     enriched.to_csv(PURCHASES_CSV, index=False)
 
     n_matched = (enriched['llm_action'] == 'match').sum()
-    print(f"Purchases enriched: {len(enriched):,} rows  |  "
+    tlog(f"Purchases enriched: {len(enriched):,} rows  |  "
           f"{n_matched:,} with a pyfooda match ({n_matched / len(enriched) * 100:.1f}%)")
     print(f"Saved → {PURCHASES_CSV}")
     print("\nDone. Run 02_nutrition_report.py next.")

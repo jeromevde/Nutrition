@@ -17,11 +17,25 @@ to DRVs.
 
 from __future__ import annotations
 import re
+import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from pyfooda import api
+
+# ── Timestamped logging ──────────────────────────────────────────────────────────
+_t0 = time.monotonic()
+_tprev: list[float] = [_t0]
+
+def tlog(msg: str, end: str = "\n", flush: bool = False) -> None:
+    """Print msg prefixed with [HH:MM:SS +step_elapsed / total] for profiling."""
+    now   = time.monotonic()
+    step  = now - _tprev[0]
+    total = now - _t0
+    _tprev[0] = now
+    ts = time.strftime("%H:%M:%S", time.localtime())
+    print(f"[{ts} +{step:5.1f}s / {total:6.1f}s] {msg}", end=end, flush=flush)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 OUT_DIR       = Path(__file__).parent / "output"
@@ -778,16 +792,16 @@ def main() -> None:
     if not PURCHASES_CSV.exists():
         raise FileNotFoundError(f"Run 01_build_mapping.py first. Missing: {PURCHASES_CSV}")
 
-    print("Loading pyfooda…")
+    tlog("Loading pyfooda…")
     foods_df, drv, units = load_pyfooda()
-    print(f"  {len(foods_df):,} foods · {len(drv)} DRV nutrients")
+    tlog(f"  {len(foods_df):,} foods · {len(drv)} DRV nutrients")
 
-    print("Loading purchases…")
+    tlog("Loading purchases…")
     purchases = pd.read_csv(PURCHASES_CSV, dtype=str)
     purchases['date']  = pd.to_datetime(purchases['date'])
     purchases['price'] = pd.to_numeric(purchases['price'], errors='coerce')
     purchases['grams_in_name'] = pd.to_numeric(purchases['grams_in_name'], errors='coerce')
-    print(f"  {len(purchases):,} rows  ·  "
+    tlog(f"  {len(purchases):,} rows  ·  "
           f"{(purchases['llm_action'] == 'match').sum():,} matched")
 
     nutrient_cols = [c for c in KEY_NUTRIENTS if c in foods_df.columns]
@@ -795,20 +809,20 @@ def main() -> None:
     if missing:
         print(f"  (columns not in database: {missing})")
 
-    print("Computing per-trip nutrition…")
+    tlog("Computing per-trip nutrition…")
     trips_df = compute_trip_nutrition(purchases, foods_df, nutrient_cols)
-    print(f"  {len(trips_df)} trips processed")
+    tlog(f"  {len(trips_df)} trips processed")
 
-    print("Detecting outlier trips…")
+    tlog("Detecting outlier trips…")
     trips_df = mark_outlier_trips(trips_df, nutrient_cols)
 
-    print("Computing yearly averages…")
+    tlog("Computing yearly averages…")
     yearly_df = compute_yearly(trips_df, nutrient_cols)
 
-    print("Computing food nutrient contributions…")
+    tlog("Computing food nutrient contributions…")
     food_contribs = compute_food_contributions(purchases, foods_df, nutrient_cols)
 
-    print("Writing CSVs…")
+    tlog("Writing CSVs…")
     trips_df.to_csv(REPORT_TRIPS, index=False)
     # Yearly with DRV annotation
     rows_out = []
@@ -828,16 +842,16 @@ def main() -> None:
     print(f"  {REPORT_TRIPS}")
     print(f"  {REPORT_YEARLY}")
 
-    print("Generating HTML report…")
+    tlog("Generating HTML report…")
     report_data = build_report_data(
         purchases, trips_df, yearly_df, foods_df, drv, units, nutrient_cols, food_contribs
     )
     html = build_html(report_data)
     REPORT_HTML.write_text(html, encoding="utf-8")
-    print(f"  {REPORT_HTML}")
+    tlog(f"  {REPORT_HTML}")
 
     # Quick console summary
-    print("\n── Yearly snapshot (% DRV at 2500 kcal) ──")
+    tlog("\n── Yearly snapshot (% DRV at 2500 kcal) ──")
     snap_nuts = ["Energy", "Protein", "Calcium", "Iron", "Vitamin C", "Vitamin D (D2 + D3)"]
     for year in sorted(yearly_df['year'].unique()):
         row = yearly_df[yearly_df['year'] == year].iloc[0]
@@ -849,7 +863,7 @@ def main() -> None:
                 parts_str.append(f"{n}: {v/d*100:.0f}%")
         print(f"  {year}: " + "  ".join(parts_str))
 
-    print("\nDone — open nutrition_report.html to explore the full report.")
+    tlog("\nDone — open nutrition_report.html to explore the full report.")
 
 
 if __name__ == "__main__":
