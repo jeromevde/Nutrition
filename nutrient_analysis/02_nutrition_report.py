@@ -148,26 +148,88 @@ def compute_trip_nutrition(
     trips_df = pd.DataFrame(trip_rows)
     trips_df['date'] = pd.to_datetime(trips_df['date'])
 
-    # ── Scale to FAMILY_KCAL reference ────────────────────────────────────────
-    # For each trip: multiply all nutrients by (FAMILY_KCAL / trip_energy)
-    # so baskets of different sizes are normalised to the same energy baseline.
-    energy_col = 'Energy' if 'Energy' in trips_df.columns else None
-    if energy_col:
-        trips_df['raw_energy'] = trips_df[energy_col]
-        scale = FAMILY_KCAL / trips_df[energy_col].replace(0, np.nan)
-        for col in nutrient_cols:
-            if col in trips_df.columns:
-                trips_df[col] = trips_df[col] * scale
-        trips_df['Energy'] = FAMILY_KCAL   # by definition after scaling
+    # Store raw energy for energy-weighted yearly scaling (done once at year level).
+    # Per-trip scaling is intentionally avoided: tiny trips (1-2 items) would
+    # receive enormous scale factors that distort yearly averages.
+    if 'Energy' in trips_df.columns:
+        trips_df['raw_energy'] = trips_df['Energy']
 
     return trips_df
 
 
-# ── Yearly averages ───────────────────────────────────────────────────────────
+# ── Outlier trip detection ────────────────────────────────────────────────────
+
+# Nutrients used to detect outlier trips (those most affected by bad matches)
+_OUTLIER_NUTRIENTS = ['Sodium', 'Total fat', 'Fatty acids, total saturated']
+_OUTLIER_IQR_MULT  = 3.0   # trips above Q3 + 3×IQR (per year) are flagged
+
+
+def mark_outlier_trips(
+    trips_df: pd.DataFrame,
+    nutrient_cols: list[str],
+) -> pd.DataFrame:
+    """Flag trips that are extreme outliers on key nutrients after energy-weighting.
+
+    For each year, each trip's nutrient value is scaled to the 2500 kcal
+    reference.  Trips that exceed Q3 + IQR_MULT×IQR on any checked nutrient
+    are marked ``is_outlier=True`` and excluded from yearly averages.
+    """
+    trips_df = trips_df.copy()
+    trips_df['is_outlier'] = False
+
+    if 'raw_energy' not in trips_df.columns:
+        return trips_df
+
+    check_cols = [n for n in _OUTLIER_NUTRIENTS if n in nutrient_cols]
+    if not check_cols:
+        return trips_df
+
+    for year, grp in trips_df.groupby('year'):
+        if len(grp) < 4:   # too few trips to compute meaningful IQR
+            continue
+        # scale each trip to 2500 kcal reference for comparison
+        scale_factors = FAMILY_KCAL / grp['raw_energy'].replace(0, np.nan)
+        scaled = grp[check_cols].multiply(scale_factors, axis=0)
+
+        outlier_mask = pd.Series(False, index=grp.index)
+        for col in check_cols:
+            q1, q3 = scaled[col].quantile([0.25, 0.75])
+            iqr    = q3 - q1
+            upper  = q3 + _OUTLIER_IQR_MULT * iqr
+            outlier_mask |= scaled[col] > upper
+
+        trips_df.loc[grp.index, 'is_outlier'] = outlier_mask
+
+    n = int(trips_df['is_outlier'].sum())
+    if n:
+        print(f"  Outlier detection: {n} trip(s) flagged and excluded from yearly averages:")
+        for _, row in trips_df[trips_df['is_outlier']].iterrows():
+            print(f"    {str(row['date'])[:10]}  {row['source_file']}")
+
+    return trips_df
+
+
+# ── Yearly averages (energy-weighted) ────────────────────────────────────────
 
 def compute_yearly(trips_df: pd.DataFrame, nutrient_cols: list[str]) -> pd.DataFrame:
-    agg = trips_df.groupby('year')[nutrient_cols].mean().reset_index()
-    return agg
+    """Sum raw nutrients across all non-outlier trips in each year, then scale
+    the yearly total to FAMILY_KCAL once.
+
+    Energy-weighting means a 5-item partial basket (low raw_energy) contributes
+    proportionally less to the yearly average than a full 40-item shop.
+    """
+    valid = trips_df[~trips_df['is_outlier']] if 'is_outlier' in trips_df.columns else trips_df
+
+    rows: list[dict] = []
+    for year, grp in valid.groupby('year'):
+        total_energy = float(grp['raw_energy'].sum()) if 'raw_energy' in grp.columns else 0.0
+        scale = FAMILY_KCAL / total_energy if total_energy > 0 else np.nan
+        row: dict = {'year': int(year)}
+        for nut in nutrient_cols:
+            if nut in grp.columns:
+                row[nut] = float(grp[nut].sum()) * scale
+        rows.append(row)
+    return pd.DataFrame(rows)
 
 
 # ── Per-food nutrient contributions ──────────────────────────────────────────
@@ -255,11 +317,19 @@ def build_report_data(
 
     def _nutrients(yk: str) -> dict:
         yr_t = trips_df if yk == 'all' else trips_df[trips_df['year'] == int(yk)]
+        # Exclude outlier trips from nutrient averages
+        if 'is_outlier' in yr_t.columns:
+            yr_t = yr_t[~yr_t['is_outlier']]
         out: dict = {}
+        if yr_t.empty:
+            return out
+        # Energy-weighted: scale the yearly raw sum to FAMILY_KCAL once
+        total_energy = float(yr_t['raw_energy'].sum()) if 'raw_energy' in yr_t.columns else 0.0
+        scale = FAMILY_KCAL / total_energy if total_energy > 0 else 0.0
         for nut in KEY_NUTRIENTS:
-            if nut not in yr_t.columns or yr_t.empty:
+            if nut not in yr_t.columns:
                 continue
-            val     = float(yr_t[nut].mean())
+            val     = float(yr_t[nut].sum()) * scale
             drv_val = drv.get(nut)
             out[nut] = {
                 'value': round(val, 2) if pd.notna(val) else None,
@@ -728,6 +798,9 @@ def main() -> None:
     print("Computing per-trip nutrition…")
     trips_df = compute_trip_nutrition(purchases, foods_df, nutrient_cols)
     print(f"  {len(trips_df)} trips processed")
+
+    print("Detecting outlier trips…")
+    trips_df = mark_outlier_trips(trips_df, nutrient_cols)
 
     print("Computing yearly averages…")
     yearly_df = compute_yearly(trips_df, nutrient_cols)

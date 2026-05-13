@@ -7,9 +7,13 @@ OpenRouter's vision API, writing one CSV per image.
 
 Quick start
 -----------
+    # Option A: OpenRouter (set key, then run)
     export OPENROUTER_API_KEY="your-key-here"
-    pip install openai httpx
     python3 batch_ocr_receipts.py
+
+    # Option B: VS Code Copilot Proxy (no key needed)
+    # Install hyorman/copilot-proxy extension, run "Copilot Proxy: Start Server",
+    # then just run the script — it auto-detects the local proxy.
 
 What it does
 ------------
@@ -37,13 +41,18 @@ After OCR, run the nutrient analysis pipeline:
 """
 
 import os
+import sys
 import json
 import base64
 import csv
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
-import httpx
+import openai
+
+# Allow importing shared _llm_client from the repo root
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from _llm_client import make_client
 
 # Repo root is two levels up from this file (scrape_extract_data/)
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -58,58 +67,40 @@ BATCH_SIZE = 4  # images per API call (only used with --batch flag)
 
 # ── Single-image OCR (default) ───────────────────────────────────────────────
 
-def query_openrouter(image_path, api_key):
-    """OCR a receipt image using OpenRouter."""
+_OCR_PROMPT = (
+    "You are a receipt OCR system. Extract ALL products from this receipt.\n\n"
+    "CRITICAL: Return ONLY a valid JSON array, nothing else. No markdown, no explanations.\n"
+    'Format: [{"product_name": "...", "price": "...", "barcode": "..."}, ...]\n\n'
+    "Rules:\n"
+    "- Extract exact product names as shown on receipt\n"
+    "- Include all items, even if similar/duplicates\n"
+    '- For prices, use format like "3.50" or "1.99"\n'
+    '- For barcode, use value if visible, otherwise leave empty string ""\n'
+    '- If kg-priced, include unit in product_name like "Apples 1.5kg"\n'
+    "- Return ONLY the JSON array, absolutely nothing else"
+)
+
+
+def query_llm(image_path, client: openai.OpenAI, model: str) -> str:
+    """OCR a single receipt image via any OpenAI-compatible client."""
     with open(image_path, "rb") as f:
         img_b64 = base64.b64encode(f.read()).decode()
-    
-    prompt = """
-You are a receipt OCR system. Extract ALL products from this receipt.
 
-CRITICAL: Return ONLY a valid JSON array, nothing else. No markdown, no explanations.
-Format: [{"product_name": "...", "price": "...", "barcode": "..."}, ...]
-
-Rules:
-- Extract exact product names as shown on receipt
-- Include all items, even if similar/duplicates
-- For prices, use format like "3.50" or "1.99" 
-- For barcode, use value if visible, otherwise leave empty string ""
-- If kg-priced, include unit in product_name like "Apples 1.5kg"
-- Return ONLY the JSON array, absolutely nothing else
-"""
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "model": MODEL,
-        "messages": [
+    resp = client.chat.completions.create(
+        model=model,
+        messages=[
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
-                ]
+                    {"type": "text", "text": _OCR_PROMPT},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}},
+                ],
             }
         ],
-        "max_tokens": 4000,
-        "temperature": 0
-    }
-    
-    client = httpx.Client(timeout=60.0)
-    try:
-        response = client.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers=headers,
-            json=payload
-        )
-        response.raise_for_status()
-        result = response.json()
-        return result["choices"][0]["message"]["content"].strip()
-    finally:
-        client.close()
+        max_tokens=4000,
+        temperature=0,
+    )
+    return resp.choices[0].message.content.strip()
 
 def parse_and_save(raw_json, csv_path):
     """Parse JSON response and save to CSV."""
@@ -153,7 +144,7 @@ def parse_and_save(raw_json, csv_path):
     
     return len(data)
 
-def process_receipt(image_path, api_key):
+def process_receipt(image_path, client: openai.OpenAI, model: str):
     """Process a single receipt image."""
     csv_path = image_path.with_suffix('.csv')
     
@@ -163,7 +154,7 @@ def process_receipt(image_path, api_key):
     
     try:
         start = time.time()
-        raw = query_openrouter(image_path, api_key)
+        raw = query_llm(image_path, client, model)
         num_items = parse_and_save(raw, csv_path)
         elapsed = time.time() - start
         
@@ -240,7 +231,7 @@ def query_openrouter_batch(image_paths: list, api_key: str) -> str:
         client.close()
 
 
-def process_batch(image_paths: list, api_key: str) -> dict:
+def process_batch(image_paths: list, client: openai.OpenAI, model: str) -> dict:
     """
     Process a batch of images in one API call. Returns {path: status_dict}.
     """
@@ -248,7 +239,7 @@ def process_batch(image_paths: list, api_key: str) -> dict:
     start = time.time()
 
     try:
-        raw = query_openrouter_batch(image_paths, api_key)
+        raw = query_llm_batch(image_paths, client, model)
         # Parse outer JSON
         raw = raw.strip()
         if raw.startswith("```"):
@@ -289,13 +280,9 @@ def main():
                         help=f"Images per batch (default: {BATCH_SIZE})")
     args = parser.parse_args()
 
-    # Check for API key
-    api_key = os.getenv("OPENROUTER_API_KEY")
-    if not api_key:
-        print("❌ ERROR: OPENROUTER_API_KEY environment variable not set!")
-        print("Get your key from: https://openrouter.ai/keys")
-        return 1
-    
+    # Resolve LLM backend (OpenRouter or Copilot Proxy)
+    client, model = make_client(MODEL)
+
     # Find all receipts in delhaize/ (where scrape_delhaize.py saves them)
     HERE = Path(__file__).parent
     print("🔍 Scanning for receipt images...")
@@ -331,7 +318,7 @@ def main():
             total_batches = (len(to_process) + bs - 1) // bs
             print(f"  Batch {batch_num}/{total_batches} ({len(batch)} images) …", end=" ", flush=True)
 
-            batch_results = process_batch(batch, api_key)
+            batch_results = process_batch(batch, client, model)
             for path, info in batch_results.items():
                 rel_path = path.relative_to(REPO_ROOT)
                 if info["status"] == "success":
@@ -346,7 +333,7 @@ def main():
         print(f"🚀 Processing {len(to_process)} receipts with {MAX_WORKERS} workers...\n")
 
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = {executor.submit(process_receipt, img, api_key): img for img in to_process}
+            futures = {executor.submit(process_receipt, img, client, model): img for img in to_process}
             
             for i, future in enumerate(as_completed(futures), 1):
                 img_path = futures[future]

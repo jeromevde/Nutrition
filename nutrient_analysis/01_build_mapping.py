@@ -19,13 +19,17 @@ Set OPENROUTER_API_KEY in your environment before running.
 """
 
 from __future__ import annotations
-import os, re, glob, json, time, textwrap
+import os, re, glob, json, time, textwrap, sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from pyfooda import api
 import openai
+
+# Allow importing shared _llm_client from the repo root
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from _llm_client import make_client
 
 # ── Config ────────────────────────────────────────────────────────────────────
 TICKETS_DIR = Path(__file__).parent.parent / "scrape_extract_data" / "delhaize"
@@ -71,6 +75,26 @@ _NON_FOOD_RE = re.compile(
 )
 
 # Also filter by negative price (discounts) – done separately on the price column
+
+
+# ── Grams sanity helpers ──────────────────────────────────────────────────────
+
+def _sanitize_grams(name: str, grams) -> float | None:  # noqa: ARG001
+    """Coerce LLM grams output to float | None (type safety only).
+
+    Year-as-grams and other semantic errors are prevented upstream by the
+    SYSTEM_PROMPT (rule 2: leading 4-digit year is not a weight).
+    This function only handles Python type edge-cases.
+    """
+    if grams is None:
+        return None
+    try:
+        g = float(grams)
+    except (TypeError, ValueError):
+        return None
+    if np.isnan(g):
+        return None
+    return g
 
 
 # ── Load tickets ──────────────────────────────────────────────────────────────
@@ -200,31 +224,63 @@ SYSTEM_PROMPT = textwrap.dedent("""\
     must map each one to the best USDA FoodData Central food entry.
 
     CONTEXT: Names are abbreviated French/English grocery labels.
-    Key French terms: PATE = pasta (NOT pâté), POULET = chicken, SAUMON = salmon,
-    OEUFS = eggs, LAIT = milk, BEURRE = butter, FROMAGE = cheese, BOEUF = beef,
-    PORC = pork, VEAU = veal, DLL/DELH = Delhaize brand, BIO = organic.
+    Key French terms:
+      PATE = PASTA noodles (NOT meat pâté)  POULET = chicken  SAUMON = salmon
+      OEUFS/OEUVS = eggs  LAIT = milk  BEURRE = butter  FROMAGE = cheese
+      BOEUF = beef  PORC = pork  VEAU = veal  AGNEAU = lamb
+      DLL/DELH/DLC/DLI/DOL/MKA = Delhaize house brand  BIO = organic
+      BLINI = small pancakes (NOT pasta)  SKYR = Icelandic yogurt
+      POUSE/POUSS/POUSSE = mixed salad shoots  MESCLUN = salad mix
 
-    For EACH item respond with one of:
-      • action "ignore" – NOT a real food product:
-        discount lines (21EME A 1/2 PRIX, 2+1 GRATUIT, NUTRI-BOOST),
-        quantity placeholders (2 x, 4 x, 0,600 Kg x),
-        bare barcodes, fees, bag charges, negative-price lines.
-      • action "match" – choose the best matching food:
-        STRONGLY PREFER to chose from the provided candidates list.
-        Only suggest a different generic USDA name (e.g. "Hazelnut spread"
-        for NUTELLA) when NONE of the candidates are appropriate.
+    ── MATCHING RULES ────────────────────────────────────────────────────────
+    • STRONGLY PREFER to choose from the provided candidates list.
+    • Prefer SPECIFIC names over single-word generics:
+        "Potato chips, salted" beats "CHIPS"
+        "Lemon-lime carbonated beverage" beats "LEMON"
+        "Paprika spice" is WRONG for "185G LAYS PAPRIKA" (a snack bag)
+    • If the product is a packaged snack (LAYS, PRINGLES, BUGLES, TORTILLA,
+      CHIPS, HUGLES), match to a snack/crisp entry — NEVER to a spice.
+    • If the product is a beverage (suffix ML/CL/L, SODA, SCHWEPPES, FANTA,
+      GINI, JUPILER, COLA, PROSECCO, ROSÉ), match to a beverage — NOT the fruit.
+    • Non-food items (serviettes/napkins, candles, flowers, clothing, stationery)
+      → action "ignore".
+    • Also ignore: discount lines (21EME A 1/2 PRIX, 2+1 GRATUIT, NUTRI-BOOST),
+      quantity placeholders (2 x, 4 x, 0,600 Kg x), bare barcodes, fees.
 
-        GRAMS EXTRACTION — IMPORTANT:
-        1. If the product name contains an explicit weight, convert to grams:
-           400G → 400, 1.5KG → 1500, 0,600 Kg → 600, 1L → 1000, 33CL → 330.
-        2. If NO explicit weight is mentioned, INFER the most probable weight
-           in grams for a typical retail package of that product. For example:
-           - a bag of chips → ~150, a can of soda → ~330, a bottle of juice → ~1000,
-           - a pack of butter → ~250, a pot of yogurt → ~125, a baguette → ~250,
-           - a pack of sliced cheese → ~200, a carton of eggs (6) → ~360, etc.
-           Use your best judgement based on standard Belgian/European retail sizes.
-        3. Only set grams to null when you truly cannot guess even a rough weight
-           (e.g. ambiguous non-food or unknown item).
+    ── GRAMS EXTRACTION — MANDATORY ─────────────────────────────────────────
+    Set grams to null ONLY for items you mark "ignore" or when truly impossible.
+    For EVERY "match" you MUST provide a numeric grams value.
+
+    1. EXPLICIT weight in the name → convert to grams exactly:
+         400G→400  1.5KG→1500  0,600Kg→600  1L→1000  33CL→330
+         500ML→500  75CL→750  6X25CL→150  2KG→2000  4X1L→4000
+
+    2. LEADING 4-DIGIT YEAR IS NOT A WEIGHT:
+         "2025 GINGER BIO" → year 2025 is the product year, NOT grams → infer 330
+         "2065 PEHL NEW BIO" → 2065 is not a weight → infer from product type
+
+    3. NO explicit weight → INFER typical Belgian retail package size:
+         Single fresh fruit (avocado, mango, lemon, lime) → 200, 400, 100, 80
+         Banana (loose, each) → 120   Orange/mandarin → 150   Shallot → 60
+         Fresh herb pot (basil, parsley, mint, chives) → 30
+         Bag of salad mix / mesclun / pousses → 150
+         Bag of chips 185G pack → 185   Generic crisp bag → 150
+         Bottle of juice/water (no size) → 500   Wine bottle → 750
+         Can of soda/beer 33cl → 330   Large soda bottle 1.5L → 1500
+         Pot of yogurt → 125   Skyr (large) → 450   Crème fraîche → 200
+         Pack of sliced cheese → 150   Block of butter → 250
+         Eggs carton 6pc → 360   Eggs carton 12pc → 720
+         Pasta box → 500   Couscous bag → 500   Flour 1kg → 1000
+         Pesto jar → 190   Hummus pot → 200   Guacamole → 150
+         Pizza (frozen) → 400   Nuggets pack → 300
+         Prosciutto/ham (sliced pack) → 100
+         Blinis pack → 200   Wraps (single) → 60
+         Soup cube/tablet → 50   Spice jar → 50
+         Bread (baguette) → 250   Bread loaf → 500
+
+    4. Maximum sanity: grams must be ≤ 2000 for a single retail unit.
+       If your calculation exceeds 2000 re-check — you probably misread a year
+       or multiplier as a weight.
 
     Respond ONLY with a valid JSON array – no markdown fences, no explanation:
     [
@@ -235,7 +291,7 @@ SYSTEM_PROMPT = textwrap.dedent("""\
 """)
 
 
-def call_llm_batch(items: list[dict], client: openai.OpenAI) -> list[dict]:
+def call_llm_batch(items: list[dict], client: openai.OpenAI, model: str) -> list[dict]:
     """
     items = [{"id": int, "name": str, "candidates": [str, ...]}, ...]
     Returns list of {"id", "action", "pyfooda_name"?, "grams"?}
@@ -245,7 +301,7 @@ def call_llm_batch(items: list[dict], client: openai.OpenAI) -> list[dict]:
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             resp = client.chat.completions.create(
-                model=LLM_MODEL,
+                model=model,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": user_msg},
@@ -271,6 +327,7 @@ def build_mapping(
     unique_names: list[str],
     client: openai.OpenAI,
     existing_names: set[str] | None = None,
+    model: str = LLM_MODEL,
 ) -> list[dict]:
     """
     For each unique product name:
@@ -312,7 +369,7 @@ def build_mapping(
         print(f"  Batch {batch_start // LLM_BATCH + 1} "
               f"({batch_start + 1}–{min(batch_start + LLM_BATCH, len(indexed))}) …", end=" ", flush=True)
 
-        llm_out = call_llm_batch(items_payload, client)
+        llm_out = call_llm_batch(items_payload, client, model)
         # Index by id for easy lookup
         by_id = {r["id"]: r for r in llm_out}
 
@@ -342,7 +399,7 @@ def build_mapping(
                     "action":        "match",
                     "pyfooda_name":  resolved,
                     "llm_raw_name":  raw_pyfname,
-                    "grams":         grams,
+                    "grams":         _sanitize_grams(name, grams),
                 })
 
         print("done")
@@ -353,16 +410,19 @@ def build_mapping(
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    api_key = os.getenv("OPENROUTER_API_KEY")
-    if not api_key:
-        raise EnvironmentError("Set OPENROUTER_API_KEY before running.")
-
-    client = openai.OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
-        timeout=120,
-        max_retries=2,
+    import argparse
+    parser = argparse.ArgumentParser(description="Build Delhaize → pyfooda mapping")
+    parser.add_argument(
+        "--remap-nullgrams", action="store_true",
+        help="Re-run LLM for matched entries that have no grams value (improves weight coverage)",
     )
+    parser.add_argument(
+        "--remap-short", action="store_true",
+        help="Re-run LLM for matched entries with a short pyfooda name (≤5 chars = likely bad generic match)",
+    )
+    args = parser.parse_args()
+
+    client, model = make_client(LLM_MODEL)
 
     # ── 1. Load tickets ───────────────────────────────────────────────────────
     print("=" * 60)
@@ -381,6 +441,26 @@ def main() -> None:
         existing_df = pd.read_csv(MAPPING_CSV)
         existing_names = set(existing_df['delhaize_name'].str.upper())
         print(f"\nExisting mapping has {len(existing_df)} entries.")
+
+        # --remap-nullgrams: drop matched entries with no grams so they get re-run
+        if args.remap_nullgrams:
+            null_mask = (
+                (existing_df['action'] == 'match') &
+                existing_df['grams'].isna()
+            )
+            to_drop = existing_df.loc[null_mask, 'delhaize_name'].str.upper()
+            existing_names -= set(to_drop)
+            print(f"  --remap-nullgrams: will re-run {null_mask.sum()} entries with null grams")
+
+        # --remap-short: drop matched entries with suspiciously short pyfooda names
+        if args.remap_short:
+            short_mask = (
+                (existing_df['action'] == 'match') &
+                (existing_df['pyfooda_name'].str.len() <= 5)
+            )
+            to_drop_s = existing_df.loc[short_mask, 'delhaize_name'].str.upper()
+            existing_names -= set(to_drop_s)
+            print(f"  --remap-short: will re-run {short_mask.sum()} entries with short pyfooda names")
     else:
         existing_df = pd.DataFrame()
         existing_names = set()
@@ -394,7 +474,7 @@ def main() -> None:
     print(f"pyfooda: {len(_food_names):,} food names indexed.")
 
     unique_names = sorted(purchases['product_name'].unique())
-    new_rows = build_mapping(unique_names, client, existing_names)
+    new_rows = build_mapping(unique_names, client, existing_names, model)
 
     if new_rows:
         new_df = pd.DataFrame(new_rows)
@@ -402,6 +482,12 @@ def main() -> None:
     else:
         mapping_df = existing_df
         print("No new names to map.")
+
+    # Sanitize grams on entire mapping (fixes pre-existing year-as-grams, caps outliers)
+    mapping_df['grams'] = [
+        _sanitize_grams(row['delhaize_name'], row['grams'])
+        for _, row in mapping_df.iterrows()
+    ]
 
     mapping_df.to_csv(MAPPING_CSV, index=False)
 
