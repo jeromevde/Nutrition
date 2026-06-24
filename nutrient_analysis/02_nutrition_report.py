@@ -904,6 +904,21 @@ def main() -> None:
 
     tlog("Loading purchases…")
     purchases = pd.read_csv(PURCHASES_CSV, dtype=str)
+
+    # Always re-join with the mapping CSV so manual corrections take effect
+    # immediately without needing to re-run 01_build_mapping.py.
+    if MAPPING_CSV.exists():
+        mapping = pd.read_csv(MAPPING_CSV, dtype=str).rename(columns={
+            'delhaize_name': 'product_name',
+            'action':        'llm_action',
+            'grams':         'grams_in_name',
+        })[['product_name', 'llm_action', 'pyfooda_name', 'grams_in_name']]
+        purchases = purchases.drop(
+            columns=['pyfooda_name', 'grams_in_name', 'llm_action'], errors='ignore'
+        ).merge(mapping, on='product_name', how='left')
+        purchases['llm_action']   = purchases['llm_action'].fillna('ignore')
+        purchases['pyfooda_name'] = purchases['pyfooda_name'].fillna('')
+
     purchases['date']  = pd.to_datetime(purchases['date'])
     purchases['price'] = pd.to_numeric(purchases['price'], errors='coerce')
     purchases['grams_in_name'] = pd.to_numeric(purchases['grams_in_name'], errors='coerce')

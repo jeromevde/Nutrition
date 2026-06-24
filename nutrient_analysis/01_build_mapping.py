@@ -211,12 +211,21 @@ def pyfooda_exact(name: str) -> str | None:
     return None
 
 
-def resolve_match(llm_name: str, top10: list[str]) -> str:
+# Minimum cosine similarity between what the LLM proposed and the FAISS
+# fallback result.  Below this threshold the fallback is rejected and the
+# entry is marked "ignore" rather than silently using a wrong food.
+_RESOLVE_SIM_THRESHOLD = 0.45
+
+
+def resolve_match(llm_name: str, top10: list[str]) -> str | None:
     """
     Map an LLM-provided food name to an actual pyfooda entry:
     1. If it's in top-10 (case-insensitive) → use it.
-    2. Try exact lookup in full fooddata.
-    3. Fall back: FAISS search on the LLM name, take top-1.
+    2. Try case-insensitive exact lookup in full fooddata.
+    3. FAISS fallback on the LLM name, top-1 — BUT only accepted when
+       cosine similarity between llm_name and the result is ≥
+       _RESOLVE_SIM_THRESHOLD.  Returns None (→ ignored) when the
+       fallback is semantically too far from what the LLM intended.
     """
     upper = llm_name.upper()
     for t in top10:
@@ -226,7 +235,18 @@ def resolve_match(llm_name: str, top10: list[str]) -> str:
     if exact:
         return exact
     fallback = faiss_top_n(llm_name, n=1)
-    return fallback[0] if fallback else llm_name
+    if not fallback:
+        return None
+    # Validate: is the fallback semantically close to what the LLM said?
+    _ensure_index()
+    vecs = _embedder.encode([llm_name, fallback[0]],
+                            normalize_embeddings=True).astype(np.float32)
+    sim = float(np.dot(vecs[0], vecs[1]))
+    if sim < _RESOLVE_SIM_THRESHOLD:
+        print(f"    [resolve] REJECTED fallback {fallback[0]!r} for LLM name "
+              f"{llm_name!r} (sim={sim:.2f} < {_RESOLVE_SIM_THRESHOLD})")
+        return None
+    return fallback[0]
 
 
 # ── LLM batch matching ────────────────────────────────────────────────────────
@@ -429,14 +449,25 @@ def build_mapping(
                     except ValueError:
                         grams = None
 
-                resolved = resolve_match(raw_pyfname, name_to_top10[name]) if raw_pyfname else ""
-                all_results.append({
-                    "delhaize_name": name,
-                    "action":        "match",
-                    "pyfooda_name":  resolved,
-                    "llm_raw_name":  raw_pyfname,
-                    "grams":         _sanitize_grams(name, grams),
-                })
+                resolved = resolve_match(raw_pyfname, name_to_top10[name]) if raw_pyfname else None
+                if not resolved:
+                    # LLM proposed a name that doesn't exist in pyfooda and
+                    # the FAISS fallback was too semantically distant to trust.
+                    all_results.append({
+                        "delhaize_name": name,
+                        "action":        "ignore",
+                        "pyfooda_name":  "",
+                        "llm_raw_name":  raw_pyfname,
+                        "grams":         None,
+                    })
+                else:
+                    all_results.append({
+                        "delhaize_name": name,
+                        "action":        "match",
+                        "pyfooda_name":  resolved,
+                        "llm_raw_name":  raw_pyfname,
+                        "grams":         _sanitize_grams(name, grams),
+                    })
 
         print("done")
 
