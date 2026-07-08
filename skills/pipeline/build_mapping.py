@@ -4,7 +4,7 @@ skills.pipeline.build_mapping
 Builds a mapping: Delhaize product name → pyfooda food entry + grams.
 
 Pipeline:
-    1. Load Delhaize OCR ticket CSVs from data/
+    1. Load Delhaize OCR ticket CSVs from data/scrapers/delhaize/
   2. Pre-filter non-food rows (discounts, weight placeholders, malformed)
   3. For each unique product name → BM25 top-10 pyfooda candidates
   4. Batch 50 items at a time → OpenRouter LLM decides:
@@ -27,7 +27,7 @@ import pandas as pd
 from pyfooda import api
 import openai
 
-from ..common import DATA_DIR, OUTPUT_DIR
+from ..common import DELHAIZE_SCRAPER_DIR, OUTPUT_DIR
 from ..llm_client import make_client
 
 # ── Timestamped logging ──────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ def tlog(msg: str, end: str = "\n", flush: bool = False) -> None:
     print(f"[{ts} +{step:5.1f}s / {total:6.1f}s] {msg}", end=end, flush=flush)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-TICKETS_DIR = DATA_DIR
+TICKETS_DIR = DELHAIZE_SCRAPER_DIR
 OUT_DIR     = OUTPUT_DIR
 OUT_DIR.mkdir(exist_ok=True)
 

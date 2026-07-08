@@ -11,10 +11,12 @@ HTML report with nutrient intake vs. DRVs.
 
 ```
 data/
-  *.csv                        ← parsed OCR/source files + generated analysis CSVs
+  *.csv                        ← generated analysis CSVs
   nutrition_report.html        ← generated interactive report
   scrapers/
-    delhaize/                  ← raw Delhaize receipt images (.jpg)
+    delhaize/                  ← raw Delhaize receipt images + parsed OCR CSVs
+    carrefour/                 ← parsed Carrefour source CSVs
+    colruyt/                   ← parsed Colruyt source CSVs
     sessions/                  ← observe-mode recordings for scraper fixing
 
 skills/
@@ -40,8 +42,8 @@ pip install playwright && playwright install chromium
 
 ```bash
 python -m skills.scrapers.delhaize    # → data/scrapers/delhaize/*.jpg
-python -m skills.scrapers.carrefour   # → data/carrefour_favorites.csv
-python -m skills.scrapers.colruyt     # → data/colruyt_favorites.csv
+python -m skills.scrapers.carrefour   # → data/scrapers/carrefour/carrefour_favorites.csv
+python -m skills.scrapers.colruyt     # → data/scrapers/colruyt/colruyt_favorites.csv
 ```
 
 Each script waits up to 5 minutes for login, then scrapes automatically.
@@ -80,7 +82,7 @@ python -m skills.ocr_batch --batch     # multi-image batching
 python -m skills.ocr_batch --batch --batch-size 6
 ```
 
-Scans `data/scrapers/delhaize/` — skips images that already have a parsed CSV in `data/`.
+Scans `data/scrapers/delhaize/` — skips images that already have a sibling parsed CSV.
 Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 
 > Carrefour and Colruyt produce CSVs directly — no OCR step needed.
@@ -108,8 +110,8 @@ The `skills/` package contains reusable modules for making the pipeline more
 LLM-driven and easier to extend to new grocery sources.
 
 ```bash
-python -m skills.source_normalizer data --source delhaize --output data/purchases_normalized.csv
-python -m skills.matcher data --dry-run --output /tmp/matcher_candidates.csv --limit 25
+python -m skills.source_normalizer data/scrapers/delhaize --source delhaize --output data/purchases_normalized.csv
+python -m skills.matcher data/scrapers/delhaize --dry-run --output /tmp/matcher_candidates.csv --limit 25
 python -m skills.pipeline.nutrition_report
 python -m skills.report_verifier
 ```

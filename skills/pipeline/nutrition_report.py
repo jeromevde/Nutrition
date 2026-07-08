@@ -49,6 +49,7 @@ REPORT_TRIPS  = OUT_DIR / "nutrition_pertrip.csv"
 
 FAMILY_KCAL   = 2500          # reference daily energy for scaling
 DEFAULT_GRAMS = 100           # fallback when no weight info at all
+MIN_COVERAGE_PCT = 70.0       # below this, nutrient values are informational only
 
 # Per-100g nutrient density cap: if a food's per-100g value exceeds this
 # multiple of the daily DRV, that nutrient is excluded from its contribution.
@@ -335,6 +336,69 @@ def build_report_data(
     matched['year'] = matched['date'].dt.year
     year_keys = ['all'] + [str(y) for y in years]
 
+    def _effective_grams(pname: str, grams: float | None) -> float | None:
+        if grams is not None and pd.notna(grams):
+            return float(grams)
+        if pname in foods_df.index:
+            pw = foods_df.loc[pname].get('portion_gram_weight', np.nan)
+            if pd.notna(pw) and float(pw) > 0:
+                return float(pw)
+        return float(DEFAULT_GRAMS)
+
+    def _valid_matched(yk: str) -> pd.DataFrame:
+        sub = matched if yk == 'all' else matched[matched['year'] == int(yk)]
+        if 'is_outlier' not in trips_df.columns:
+            return sub
+        trip_sub = trips_df if yk == 'all' else trips_df[trips_df['year'] == int(yk)]
+        valid_sources = set(trip_sub.loc[~trip_sub['is_outlier'], 'source_file'])
+        return sub[sub['source_file'].isin(valid_sources)]
+
+    def _nutrient_available(food_row: pd.Series, nut: str) -> bool:
+        val = food_row.get(nut, np.nan)
+        if not pd.notna(val):
+            return False
+        if nut in drv and drv[nut] > 0 and float(val) > _PER100G_DRV_EXCL_MULT * drv[nut]:
+            return False
+        return True
+
+    def _nutrient_coverage(yk: str) -> dict[str, dict]:
+        rows = _valid_matched(yk)
+        totals = {
+            nut: {'rows_with': 0, 'rows_total': 0, 'energy_with': 0.0, 'energy_total': 0.0}
+            for nut in KEY_NUTRIENTS
+        }
+        for _, row in rows.iterrows():
+            pname = str(row.get('pyfooda_name', ''))
+            if not pname or pname not in foods_df.index:
+                continue
+            food_row = foods_df.loc[pname]
+            if not _nutrient_available(food_row, 'Energy'):
+                continue
+            grams = _effective_grams(pname, row.get('grams_in_name'))
+            if grams is None:
+                continue
+            energy = float(food_row['Energy']) * grams / 100.0
+            if not np.isfinite(energy) or energy <= 0:
+                continue
+            for nut in KEY_NUTRIENTS:
+                totals[nut]['rows_total'] += 1
+                totals[nut]['energy_total'] += energy
+                if _nutrient_available(food_row, nut):
+                    totals[nut]['rows_with'] += 1
+                    totals[nut]['energy_with'] += energy
+
+        out: dict[str, dict] = {}
+        for nut, info in totals.items():
+            denom = info['energy_total']
+            pct = round(info['energy_with'] / denom * 100, 1) if denom > 0 else None
+            out[nut] = {
+                'coverage_pct': pct,
+                'coverage_low': bool(pct is not None and pct < MIN_COVERAGE_PCT),
+                'rows_with': int(info['rows_with']),
+                'rows_total': int(info['rows_total']),
+            }
+        return out
+
     def _stats(yk: str) -> dict:
         if yk == 'all':
             yr_p, yr_m, yr_t = purchases, matched, trips_df
@@ -361,16 +425,22 @@ def build_report_data(
         # Energy-weighted: scale the yearly raw sum to FAMILY_KCAL once
         total_energy = float(yr_t['raw_energy'].sum()) if 'raw_energy' in yr_t.columns else 0.0
         scale = FAMILY_KCAL / total_energy if total_energy > 0 else 0.0
+        coverage = _nutrient_coverage(yk)
         for nut in KEY_NUTRIENTS:
             if nut not in yr_t.columns:
                 continue
             val     = float(yr_t[nut].sum()) * scale
             drv_val = drv.get(nut)
+            cov     = coverage.get(nut, {})
             out[nut] = {
                 'value': round(val, 2) if pd.notna(val) else None,
                 'drv':   drv_val,
                 'unit':  units.get(nut, ''),
                 'pct':   round(val / drv_val * 100, 1) if drv_val and pd.notna(val) else None,
+                'coverage_pct': cov.get('coverage_pct'),
+                'coverage_low': cov.get('coverage_low', False),
+                'coverage_rows': cov.get('rows_with'),
+                'coverage_total_rows': cov.get('rows_total'),
             }
         return out
 
@@ -580,9 +650,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .bar-wrap{display:flex;align-items:center;gap:8px}
 .bar-bg{flex:1;max-width:160px;height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden}
 .bar-fg{height:100%;border-radius:4px}
-.bar-green{background:var(--green)}.bar-yellow{background:var(--yellow)}.bar-red{background:var(--red)}
+.bar-green{background:var(--green)}.bar-yellow{background:var(--yellow)}.bar-red{background:var(--red)}.bar-muted{background:var(--muted)}
 .pct-badge{font-size:.78rem;font-weight:700;min-width:40px;text-align:right}
-.pct-green{color:var(--green)}.pct-yellow{color:var(--yellow)}.pct-red{color:var(--red)}
+.pct-green{color:var(--green)}.pct-yellow{color:var(--yellow)}.pct-red{color:var(--red)}.pct-muted{color:var(--muted)}
+.cov-badge{font-size:.66rem;color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:1px 4px;white-space:nowrap}
+.cov-low{color:#92400e;background:#fef3c7;border-color:#fcd34d}
 .nut-val{color:var(--muted);font-size:.78rem}
 /* purchases table */
 .p-table{width:100%;border-collapse:collapse;background:var(--surface);
@@ -659,8 +731,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 <script>
 const DATA=__DATA_JSON__;
 let state={tab:'nutrients',year:'all',group:'date'};
-function bc(p){return p==null?'bar-green':p>=70&&p<=120?'bar-green':p<70?'bar-yellow':'bar-red';}
-function pc(p){return p==null?'pct-green':p>=70&&p<=120?'pct-green':p<70?'pct-yellow':'pct-red';}
+function lowCov(d){return d&&d.coverage_pct!=null&&d.coverage_pct<70;}
+function bc(p,d){return lowCov(d)?'bar-muted':p==null?'bar-green':p>=70&&p<=120?'bar-green':p<70?'bar-yellow':'bar-red';}
+function pc(p,d){return lowCov(d)?'pct-muted':p==null?'pct-green':p>=70&&p<=120?'pct-green':p<70?'pct-yellow':'pct-red';}
 function fmt(v,d){if(v==null)return'\u2014';d=d??1;return Number(v).toLocaleString(undefined,{maximumFractionDigits:d});}
 function sh(n,mx){mx=mx||48;return n.length>mx?n.slice(0,mx-1)+'\u2026':n;}
 
@@ -689,9 +762,12 @@ function renderNutrients(){
   document.getElementById('nut-tbody').innerHTML=DATA.key_nutrients.map(n=>{
     const d=nuts[n];if(!d)return'';
     const p=d.pct,w=p==null?0:Math.min(p,100);
+        const cov=d.coverage_pct;
+        const covClass=lowCov(d)?'cov-badge cov-low':'cov-badge';
+        const covBadge=cov!=null?`<span class="${covClass}" title="pyfooda coverage by known item energy">cov ${cov}%</span>`:'';
     return `<tr data-nut="${n}"><td class="nut-name">${n}</td>`+
-      `<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fg ${bc(p)}" style="width:${w.toFixed(0)}%"></div></div>`+
-      `<span class="pct-badge ${pc(p)}">${p!=null?p+'%':'\u2014'}</span></div></td>`+
+            `<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fg ${bc(p,d)}" style="width:${w.toFixed(0)}%"></div></div>`+
+            `<span class="pct-badge ${pc(p,d)}">${p!=null?p+'%':'\u2014'}</span>${covBadge}</div></td>`+
       `<td class="nut-val">${fmt(d.value)} ${d.unit}</td></tr>`;
   }).join('');
   document.querySelectorAll('#nut-tbody tr[data-nut]').forEach(tr=>{
@@ -826,7 +902,8 @@ function openItemModal(r){
 function openNutModal(nut){
   const d=DATA.nutrients[state.year][nut];if(!d)return;
   const top=(DATA.nutrient_top_foods[state.year]||{})[nut]||[];
-  const sub=`avg ${fmt(d.value)} ${d.unit} \u00b7 ${d.pct!=null?d.pct+'% of DRV':'no DRV'}`+(d.drv?` (DRV ${fmt(d.drv,0)} ${d.unit})`:'');
+    const cov=d.coverage_pct!=null?` \u00b7 coverage ${d.coverage_pct}%`:'';
+    const sub=`avg ${fmt(d.value)} ${d.unit} \u00b7 ${d.pct!=null?d.pct+'% of DRV':'no DRV'}`+cov+(d.drv?` (DRV ${fmt(d.drv,0)} ${d.unit})`:'');
   let body;
   if(!top.length){body='<p style="color:var(--muted);font-size:.82rem">No data.</p>';}
   else{
@@ -839,6 +916,9 @@ function openNutModal(nut){
         `<td style="text-align:right;color:var(--muted);font-size:.78rem">${fmt(f.amount)} ${d.unit}</td></tr>`;
     }).join('')+'</tbody></table>';
   }
+    if(lowCov(d)){
+        body='<p style="font-size:.78rem;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:4px;padding:6px 8px;margin-bottom:10px">Low pyfooda coverage: treat this value as incomplete, not as a reliable intake estimate.</p>'+body;
+    }
   openModal('Top sources: '+nut,(state.year==='all'?'all years':state.year)+' \u00b7 up to 10 foods',body);
 }
 

@@ -9,7 +9,7 @@ all product names. Automatically switches to OBSERVE MODE if 0 items are found
 Usage:
     python -m skills.scrapers.carrefour
 
-Output: data/carrefour_favorites.csv
+Output: data/scrapers/carrefour/carrefour_favorites.csv
 """
 
 from __future__ import annotations
@@ -17,9 +17,9 @@ import csv
 import sys
 import time
 
-from ..common import DATA_DIR as PARSED_DATA_DIR, ROOT_DIR
+from ..common import ROOT_DIR, SCRAPER_DATA_DIR
 
-DATA_DIR    = PARSED_DATA_DIR
+DATA_DIR    = SCRAPER_DATA_DIR / "carrefour"
 PROFILE_DIR = ROOT_DIR / ".browser_profile"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)

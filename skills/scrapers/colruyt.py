@@ -9,7 +9,7 @@ all product cards. Automatically switches to OBSERVE MODE if 0 items are found
 Usage:
     python -m skills.scrapers.colruyt
 
-Output: data/colruyt_favorites.csv
+Output: data/scrapers/colruyt/colruyt_favorites.csv
 """
 
 from __future__ import annotations
@@ -17,9 +17,9 @@ import csv
 import sys
 import time
 
-from ..common import DATA_DIR as PARSED_DATA_DIR, ROOT_DIR
+from ..common import ROOT_DIR, SCRAPER_DATA_DIR
 
-DATA_DIR    = PARSED_DATA_DIR
+DATA_DIR    = SCRAPER_DATA_DIR / "colruyt"
 PROFILE_DIR = ROOT_DIR / ".browser_profile"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)

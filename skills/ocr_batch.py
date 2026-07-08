@@ -50,7 +50,7 @@ import time
 import httpx
 import openai
 
-from .common import DATA_DIR, ROOT_DIR, SCRAPER_DATA_DIR
+from .common import DELHAIZE_SCRAPER_DIR, ROOT_DIR
 from .llm_client import make_client
 
 # ── Timestamped logging ───────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ def parse_and_save(raw_json, csv_path):
 
 def process_receipt(image_path, client: openai.OpenAI, model: str):
     """Process a single receipt image."""
-    csv_path = DATA_DIR / f"{image_path.stem}.csv"
+    csv_path = image_path.with_suffix('.csv')
     
     # Skip if already processed
     if csv_path.exists():
@@ -307,7 +307,7 @@ def process_batch(image_paths: list, client: openai.OpenAI, model: str) -> dict:
             items = batch_data.get(key, [])
             if not isinstance(items, list):
                 items = []
-            csv_path = DATA_DIR / f"{path.stem}.csv"
+            csv_path = path.with_suffix(".csv")
             num = parse_and_save(json.dumps(items), csv_path)
             results[path] = {"status": "success", "items": num, "time": elapsed / len(image_paths)}
 
@@ -332,7 +332,7 @@ def main():
 
     # Find all raw Delhaize receipt images in data/scrapers/delhaize/.
     tlog("🔍 Scanning for receipt images...")
-    receipts = find_all_receipts(SCRAPER_DATA_DIR / "delhaize")
+    receipts = find_all_receipts(DELHAIZE_SCRAPER_DIR)
 
     if not receipts:
         tlog("No JPG files found!")
@@ -341,7 +341,7 @@ def main():
     tlog(f"Found {len(receipts)} images")
 
     # Filter out already processed
-    to_process = [r for r in receipts if not (DATA_DIR / f"{r.stem}.csv").exists()]
+    to_process = [r for r in receipts if not r.with_suffix('.csv').exists()]
     already_done = len(receipts) - len(to_process)
 
     if already_done > 0:

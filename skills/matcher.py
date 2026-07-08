@@ -16,6 +16,7 @@ import pandas as pd
 from .common import (
     DEFAULT_MAPPING,
     DATA_DIR,
+    DELHAIZE_SCRAPER_DIR,
     DEFAULT_MATCHER_MODEL,
     batched,
     build_food_search_index,
@@ -239,7 +240,7 @@ def write_mapping(results: list[MatchResult], output_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="LLM match receipt product names to pyfooda foods")
-    parser.add_argument("inputs", nargs="*", type=Path, default=[DATA_DIR])
+    parser.add_argument("inputs", nargs="*", type=Path, default=[DELHAIZE_SCRAPER_DIR])
     parser.add_argument("--output", type=Path, default=DEFAULT_MAPPING)
     parser.add_argument("--batch-size", type=int, default=40)
     parser.add_argument("--top-n", type=int, default=10)
