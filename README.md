@@ -10,24 +10,21 @@ HTML report with nutrient intake vs. DRVs.
 ## Repository layout
 
 ```
-scrape_extract_data/
-  scrape_delhaize.py           ← Step 1a: download Delhaize ticket images (.jpg)
-  scrape_carrefour.py          ← Step 1b: scrape Carrefour frequently-purchased items
-  scrape_colruyt.py            ← Step 1c: scrape Colruyt favourites
-  batch_ocr_receipts.py        ← Step 2:  OCR ticket images → CSV
-  _observe.py                  ← shared observe-mode module (auto-triggered on failure)
-  delhaize/
-  carrefour/
-  colruyt/
-  sessions/                    ← observe-mode recordings, auto-created on failure, user performs some actions
-                                 saves logs for LLM-based scraper fixing
+data/
+  *.csv                        ← parsed OCR/source files + generated analysis CSVs
+  nutrition_report.html        ← generated interactive report
+  scrapers/
+    delhaize/                  ← raw Delhaize receipt images (.jpg)
+    sessions/                  ← observe-mode recordings for scraper fixing
 
-nutrient_analysis/
-  01_build_mapping.py          ← Step 3a: map products → USDA foods (FAISS + LLM)
-  02_nutrition_report.py       ← Step 3b: compute nutrients + build HTML report
-  output/
-    a_few_csvs_with_data.csv...
-    nutrition_report.html      ← deployed to GitHub Pages on push to main
+skills/
+  scrapers/                    ← Delhaize, Carrefour, Colruyt browser scrapers
+  pipeline/                    ← build mapping + nutrition report generation
+  ocr_batch.py                 ← batch receipt OCR entry point
+  matcher.py                   ← reusable semantic-search + LLM food matcher
+  report_verifier.py           ← audits report outliers and suspicious mappings
+  ocr.py                       ← reusable vision-LLM receipt OCR wrapper
+  source_normalizer.py         ← canonical schema for future grocery sources
 ```
 
 ---
@@ -42,9 +39,9 @@ pip install playwright && playwright install chromium
 ```
 
 ```bash
-python scrape_extract_data/scrape_delhaize.py    # → delhaize/*.jpg
-python scrape_extract_data/scrape_carrefour.py   # → carrefour/carrefour_favorites.csv
-python scrape_extract_data/scrape_colruyt.py     # → colruyt/colruyt_favorites.csv
+python -m skills.scrapers.delhaize    # → data/scrapers/delhaize/*.jpg
+python -m skills.scrapers.carrefour   # → data/carrefour_favorites.csv
+python -m skills.scrapers.colruyt     # → data/colruyt_favorites.csv
 ```
 
 Each script waits up to 5 minutes for login, then scrapes automatically.
@@ -65,7 +62,7 @@ If a scraper detects it is stuck — 3+ receipts in a row with no image found
 ```
 
 Every click and navigation is logged to the terminal and saved to
-`scrape_extract_data/sessions/observe_<timestamp>.json`.
+`data/scrapers/sessions/observe_<timestamp>.json`.
 Paste that file to an LLM to get a fixed scraper.
 
 ---
@@ -78,12 +75,12 @@ Convert `.jpg` ticket images → structured CSVs (`product_name`, `price`, `barc
 export OPENROUTER_API_KEY="your-key-here"
 pip install httpx
 
-python scrape_extract_data/batch_ocr_receipts.py             # parallel (default)
-python scrape_extract_data/batch_ocr_receipts.py --batch     # multi-image batching
-python scrape_extract_data/batch_ocr_receipts.py --batch --batch-size 6
+python -m skills.ocr_batch             # parallel (default)
+python -m skills.ocr_batch --batch     # multi-image batching
+python -m skills.ocr_batch --batch --batch-size 6
 ```
 
-Scans `scrape_extract_data/delhaize/` — skips already-processed images.
+Scans `data/scrapers/delhaize/` — skips images that already have a parsed CSV in `data/`.
 Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 
 > Carrefour and Colruyt produce CSVs directly — no OCR step needed.
@@ -96,13 +93,34 @@ Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 pip install pandas numpy pyfooda sentence-transformers faiss-cpu openai
 export OPENROUTER_API_KEY="your-key-here"
 
-cd nutrient_analysis
-python 01_build_mapping.py      # map products → USDA foods
-python 02_nutrition_report.py   # generate HTML report
+python -m skills.pipeline.build_mapping       # map products → USDA foods
+python -m skills.pipeline.nutrition_report    # generate HTML report
 ```
 
-Report: `nutrient_analysis/output/nutrition_report.html`, auto-deployed to
+Report: `data/nutrition_report.html`, auto-deployed to
 **GitHub Pages** on every push to `main`.
+
+---
+
+## LLM skills
+
+The `skills/` package contains reusable modules for making the pipeline more
+LLM-driven and easier to extend to new grocery sources.
+
+```bash
+python -m skills.source_normalizer data --source delhaize --output data/purchases_normalized.csv
+python -m skills.matcher data --dry-run --output /tmp/matcher_candidates.csv --limit 25
+python -m skills.pipeline.nutrition_report
+python -m skills.report_verifier
+```
+
+Suggested loop:
+
+```text
+scraper/OCR → source_normalizer → matcher → nutrition_report → report_verifier → targeted remap/fix
+```
+
+See `skills/README.md` for the skill-specific commands.
 
 ---
 
