@@ -11,6 +11,7 @@ under `data/scrapers/<source>/`.
 python -m skills.scrapers.delhaize
 python -m skills.ocr_batch
 python -m skills.pipeline.build_mapping
+python -m skills.nutrition_estimator --backend agent --limit 25
 python -m skills.pipeline.nutrition_report
 python -m skills.report_verifier
 ```
@@ -62,6 +63,45 @@ python -m skills.ocr data/scrapers/delhaize/2025_01_20.jpg --output-dir data/scr
 ```
 
 It returns canonical OCR rows: `product_name`, `price`, `barcode`.
+
+## `nutrition_estimator.py`
+
+LLM-estimates complete per-100g nutrition profiles for receipt items when pyfooda
+is sparse or suspicious. The prompt explicitly requests every nutrient used by
+the report and every output carries confidence, source, and min/max range.
+
+Agent backend, for using this coding agent/manual Copilot flow:
+
+```bash
+python -m skills.nutrition_estimator --backend agent --limit 25
+```
+
+This writes:
+
+- `data/nutrition_estimator_agent_requests.jsonl`
+- `data/nutrition_estimator_agent_prompt.md`
+
+After an agent or human writes response JSON/JSONL, import it:
+
+```bash
+python -m skills.nutrition_estimator --backend agent --agent-response data/nutrition_estimator_agent_responses.jsonl --output data/nutrition_estimates.csv
+```
+
+OpenRouter backend:
+
+```bash
+export OPENROUTER_API_KEY="..."
+python -m skills.nutrition_estimator --backend openrouter --model google/gemini-2.0-flash-001 --limit 25
+```
+
+Hugging Face Inference Providers backend:
+
+```bash
+export HF_TOKEN="..."
+python -m skills.nutrition_estimator --backend huggingface --model Qwen/Qwen2.5-72B-Instruct --limit 25
+```
+
+Default output: `data/nutrition_estimates.csv`.
 
 ## `source_normalizer.py`
 

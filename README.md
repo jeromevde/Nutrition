@@ -24,6 +24,7 @@ skills/
   pipeline/                    ← build mapping + nutrition report generation
   ocr_batch.py                 ← batch receipt OCR entry point
   matcher.py                   ← reusable semantic-search + LLM food matcher
+  nutrition_estimator.py       ← LLM-estimated full nutrient profiles with confidence
   report_verifier.py           ← audits report outliers and suspicious mappings
   ocr.py                       ← reusable vision-LLM receipt OCR wrapper
   source_normalizer.py         ← canonical schema for future grocery sources
@@ -112,6 +113,7 @@ LLM-driven and easier to extend to new grocery sources.
 ```bash
 python -m skills.source_normalizer data/scrapers/delhaize --source delhaize --output data/purchases_normalized.csv
 python -m skills.matcher data/scrapers/delhaize --dry-run --output /tmp/matcher_candidates.csv --limit 25
+python -m skills.nutrition_estimator --backend agent --limit 25
 python -m skills.pipeline.nutrition_report
 python -m skills.report_verifier
 ```

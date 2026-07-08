@@ -8,6 +8,7 @@ __all__ = [
     "common",
     "llm_client",
     "matcher",
+    "nutrition_estimator",
     "ocr",
     "ocr_batch",
     "pipeline",
