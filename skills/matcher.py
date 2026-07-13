@@ -104,7 +104,7 @@ class MatcherSkill:
         from pyfooda import api
 
         api.ensure_data_loaded()
-        food_names = api.get_fooddata_df()["foodName"].dropna().drop_duplicates().astype(str)
+        food_names = api.get_ingredients_df()["display_name"].dropna().drop_duplicates().astype(str)
         terms = [term for term in query.upper().split() if len(term) >= 3]
         if not terms:
             return []

@@ -113,15 +113,15 @@ class FoodSearchIndex:
 
 
 def build_food_search_index(model_name: str = "all-MiniLM-L6-v2") -> FoodSearchIndex:
-    """Build a FAISS semantic index over pyfooda food names."""
+    """Build a FAISS semantic index over pyfooda ingredient display names."""
     import faiss
     import numpy as np
     from pyfooda import api
     from sentence_transformers import SentenceTransformer
 
     api.ensure_data_loaded()
-    fooddata = api.get_fooddata_df()
-    food_names = fooddata["foodName"].dropna().drop_duplicates().tolist()
+    ingredients = api.get_ingredients_df()
+    food_names = ingredients["display_name"].dropna().drop_duplicates().astype(str).tolist()
     embedder = SentenceTransformer(model_name)
     vectors = embedder.encode(
         food_names,

@@ -51,6 +51,12 @@ FAMILY_KCAL   = 2500          # reference daily energy for scaling
 DEFAULT_GRAMS = 100           # fallback when no weight info at all
 MIN_COVERAGE_PCT = 70.0       # below this, nutrient values are informational only
 
+# If a nutrient looks low AND coverage is high, flag as "suspicious low".
+# This catches cases like Zinc looking near-zero even when coverage suggests we
+# should be seeing it (often indicates systematic matching bias / sparse rows).
+SUSPICIOUS_LOW_PCT_DRV = 35.0
+SUSPICIOUS_LOW_MIN_COVERAGE_PCT = 85.0
+
 # Per-100g nutrient density cap: if a food's per-100g value exceeds this
 # multiple of the daily DRV, that nutrient is excluded from its contribution.
 # Catches pure condiments (table salt ≈ 16.8× DRV/100g) while keeping
@@ -70,16 +76,9 @@ KEY_NUTRIENTS = [
 
 def load_pyfooda() -> tuple[pd.DataFrame, dict[str, float], dict[str, str]]:
     api.ensure_data_loaded()
-    foods_df = api.get_fooddata_df()
-    # De-duplicate: keep first occurrence per foodName (prefer sr_legacy/foundation)
-    priority = {"foundation_food": 0, "sr_legacy_food": 1, "survey_fndds_food": 2,
-                "sub_sample_food": 3, "agricultural_acquisition": 4, "branded_food": 5}
-    foods_df = foods_df.copy()
-    foods_df['_prio'] = foods_df['data_type'].map(priority).fillna(99)
-    foods_df = (foods_df
-                .sort_values(['foodName', '_prio'])
-                .drop_duplicates('foodName', keep='first')
-                .set_index('foodName'))
+    foods_df = api.get_ingredients_df().copy()
+    # Newer pyfooda exposes an ingredient-level canonical table.
+    foods_df = foods_df.drop_duplicates('display_name', keep='first').set_index('display_name')
 
     # DRV
     drv_df = api.get_drv_df()
@@ -117,9 +116,7 @@ def nutrient_contribution(
     row = foods_df.loc[pyfooda_name]
 
     if grams is None:
-        # Use pyfooda portion_gram_weight if available, else DEFAULT_GRAMS
-        pw = row.get("portion_gram_weight", np.nan)
-        grams = float(pw) if pd.notna(pw) and float(pw) > 0 else DEFAULT_GRAMS
+        grams = DEFAULT_GRAMS
 
     scale = grams / 100.0
     result: dict[str, float] = {}
@@ -147,7 +144,14 @@ def compute_trip_nutrition(
     For each shopping trip (source_file), sum nutrients across all matched items.
     Returns DataFrame with one row per trip.
     """
-    matched = purchases[purchases['llm_action'] == 'match'].copy()
+    # Only treat rows as "matched" if the pyfooda key exists in the current DB.
+    # After pyfooda dataset/API changes, old mapping files can keep "match" rows
+    # whose keys no longer exist. Including them would collapse energy totals and
+    # explode scaling (e.g. carbs become 200% and "Jam" becomes 100%).
+    matched = purchases[
+        (purchases['llm_action'] == 'match') &
+        (purchases['pyfooda_name'].isin(foods_df.index))
+    ].copy()
     matched['grams_in_name'] = pd.to_numeric(matched['grams_in_name'], errors='coerce')
 
     trip_rows = []
@@ -278,7 +282,10 @@ def compute_food_contributions(
     For every matched purchase row compute raw nutrient grams contributed.
     Returns a DataFrame with cols: year, pyfooda_name, category, count, <nutrients...>
     """
-    matched = purchases[purchases['llm_action'] == 'match'].copy()
+    matched = purchases[
+        (purchases['llm_action'] == 'match') &
+        (purchases['pyfooda_name'].isin(foods_df.index))
+    ].copy()
     matched['grams_in_name'] = pd.to_numeric(matched['grams_in_name'], errors='coerce')
     matched['year'] = matched['date'].dt.year
 
@@ -332,17 +339,16 @@ def build_report_data(
     food_contribs: pd.DataFrame,
 ) -> dict:
     years     = sorted(int(y) for y in yearly_df['year'].unique())
-    matched   = purchases[purchases['llm_action'] == 'match'].copy()
+    matched   = purchases[
+        (purchases['llm_action'] == 'match') &
+        (purchases['pyfooda_name'].isin(foods_df.index))
+    ].copy()
     matched['year'] = matched['date'].dt.year
     year_keys = ['all'] + [str(y) for y in years]
 
     def _effective_grams(pname: str, grams: float | None) -> float | None:
         if grams is not None and pd.notna(grams):
             return float(grams)
-        if pname in foods_df.index:
-            pw = foods_df.loc[pname].get('portion_gram_weight', np.nan)
-            if pd.notna(pw) and float(pw) > 0:
-                return float(pw)
         return float(DEFAULT_GRAMS)
 
     def _valid_matched(yk: str) -> pd.DataFrame:
@@ -364,7 +370,14 @@ def build_report_data(
     def _nutrient_coverage(yk: str) -> dict[str, dict]:
         rows = _valid_matched(yk)
         totals = {
-            nut: {'rows_with': 0, 'rows_total': 0, 'energy_with': 0.0, 'energy_total': 0.0}
+            nut: {
+                'rows_with': 0,
+                'rows_total': 0,
+                'energy_with': 0.0,
+                'energy_total': 0.0,
+                'foods_with': set(),
+                'foods_total': set(),
+            }
             for nut in KEY_NUTRIENTS
         }
         for _, row in rows.iterrows():
@@ -383,19 +396,31 @@ def build_report_data(
             for nut in KEY_NUTRIENTS:
                 totals[nut]['rows_total'] += 1
                 totals[nut]['energy_total'] += energy
+                totals[nut]['foods_total'].add(pname)
                 if _nutrient_available(food_row, nut):
                     totals[nut]['rows_with'] += 1
                     totals[nut]['energy_with'] += energy
+                    totals[nut]['foods_with'].add(pname)
 
         out: dict[str, dict] = {}
         for nut, info in totals.items():
             denom = info['energy_total']
             pct = round(info['energy_with'] / denom * 100, 1) if denom > 0 else None
+            row_pct = round(info['rows_with'] / max(info['rows_total'], 1) * 100, 1) if info['rows_total'] else None
+            foods_total = len(info['foods_total'])
+            foods_with = len(info['foods_with'])
+            food_pct = round(foods_with / max(foods_total, 1) * 100, 1) if foods_total else None
             out[nut] = {
+                # energy-weighted coverage (existing concept)
                 'coverage_pct': pct,
                 'coverage_low': bool(pct is not None and pct < MIN_COVERAGE_PCT),
+                # item coverage (what % of matched purchase rows have this nutrient)
+                'row_coverage_pct': row_pct,
+                'food_coverage_pct': food_pct,
                 'rows_with': int(info['rows_with']),
                 'rows_total': int(info['rows_total']),
+                'foods_with': int(foods_with),
+                'foods_total': int(foods_total),
             }
         return out
 
@@ -407,11 +432,21 @@ def build_report_data(
             yr_p = purchases[purchases['date'].dt.year == y]
             yr_m = matched[matched['year'] == y]
             yr_t = trips_df[trips_df['year'] == y]
+        # Two match rates:
+        # - llm_match: rows marked match in mapping (may be stale keys)
+        # - db_match:  rows that both match AND exist in current pyfooda DB (yr_m)
+        llm_matched_rows = int((yr_p.get('llm_action', pd.Series(dtype=str)) == 'match').sum())
+        matched_rows = int(len(yr_m))
+        total_rows = int(len(yr_p))
         return {
             'trips':     int(len(yr_t)),
-            'items':     int(len(yr_p)),
+            'items':     total_rows,
             'foods':     int(yr_m['pyfooda_name'].nunique()),
-            'match_pct': round(len(yr_m) / max(len(yr_p), 1) * 100, 1),
+            'llm_matched_items': llm_matched_rows,
+            'llm_match_pct': round(llm_matched_rows / max(total_rows, 1) * 100, 1),
+            'matched_items': matched_rows,
+            'unmatched_items': int(max(total_rows - matched_rows, 0)),
+            'match_pct': round(matched_rows / max(total_rows, 1) * 100, 1),
         }
 
     def _nutrients(yk: str) -> dict:
@@ -432,15 +467,27 @@ def build_report_data(
             val     = float(yr_t[nut].sum()) * scale
             drv_val = drv.get(nut)
             cov     = coverage.get(nut, {})
+            pct_drv = round(val / drv_val * 100, 1) if drv_val and pd.notna(val) else None
+            cov_pct = cov.get('coverage_pct')
             out[nut] = {
                 'value': round(val, 2) if pd.notna(val) else None,
                 'drv':   drv_val,
                 'unit':  units.get(nut, ''),
-                'pct':   round(val / drv_val * 100, 1) if drv_val and pd.notna(val) else None,
-                'coverage_pct': cov.get('coverage_pct'),
+                'pct':   pct_drv,
+                'coverage_pct': cov_pct,
                 'coverage_low': cov.get('coverage_low', False),
                 'coverage_rows': cov.get('rows_with'),
                 'coverage_total_rows': cov.get('rows_total'),
+                'row_coverage_pct': cov.get('row_coverage_pct'),
+                'food_coverage_pct': cov.get('food_coverage_pct'),
+                'coverage_foods': cov.get('foods_with'),
+                'coverage_total_foods': cov.get('foods_total'),
+                'suspicious_low': bool(
+                    pct_drv is not None
+                    and pct_drv < SUSPICIOUS_LOW_PCT_DRV
+                    and cov_pct is not None
+                    and cov_pct >= SUSPICIOUS_LOW_MIN_COVERAGE_PCT
+                ),
             }
         return out
 
@@ -509,8 +556,7 @@ def build_report_data(
         For matched rows, always resolve an effective_grams value using the same
         fallback chain as nutrient_contribution():
           1. grams_in_name (explicit from product label)
-          2. portion_gram_weight from pyfooda (typical serving size)
-          3. DEFAULT_GRAMS (100 g) as last resort
+          2. DEFAULT_GRAMS (100 g) as last resort
         The 'grams_source' field records which step was used so the UI can flag
         inferred values clearly.
         """
@@ -569,14 +615,6 @@ def build_report_data(
                 if pd.notna(g_raw):
                     eff_grams  = round(float(g_raw), 1)
                     grams_src  = 'label'                  # weight read from product name
-                elif pname in foods_df.index:
-                    pw = foods_df.loc[pname].get('portion_gram_weight', np.nan)
-                    if pd.notna(pw) and float(pw) > 0:
-                        eff_grams = round(float(pw), 1)
-                        grams_src = 'portion'             # pyfooda typical serving
-                    else:
-                        eff_grams = float(DEFAULT_GRAMS)
-                        grams_src = 'default'             # 100 g fallback
                 else:
                     eff_grams = float(DEFAULT_GRAMS)
                     grams_src = 'default'
@@ -698,6 +736,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 <body>
 <div class="wrap">
   <div class="meta" id="meta-bar"></div>
+  <div id="warn-bar" style="margin:6px 0 10px"></div>
   <div class="ctrl-row" id="tab-row">
     <button class="pill-btn active" data-tab="nutrients">Nutrients</button>
     <button class="pill-btn" data-tab="purchases">Purchases</button>
@@ -709,7 +748,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   <!-- nutrients view -->
   <section id="v-nutrients">
     <table class="nut-table">
-      <thead><tr><th>Nutrient</th><th style="min-width:200px">vs DRV</th><th>Value</th></tr></thead>
+      <thead><tr><th>Nutrient</th><th style="min-width:200px">vs DRV</th><th>Coverage</th><th>Value</th></tr></thead>
       <tbody id="nut-tbody"></tbody>
     </table>
   </section>
@@ -739,13 +778,11 @@ function sh(n,mx){mx=mx||48;return n.length>mx?n.slice(0,mx-1)+'\u2026':n;}
 
 // Format grams with source indicator:
 //   label   → "400 g"         (bold, extracted from product name)
-//   portion → "~69 g"ˢ        (italic muted, pyfooda serving size)
 //   default → "~100 g"ᵈ       (italic yellow, 100 g fallback)
 function fmtG(r){
   if(r.grams==null)return'\u2014';
   const v=fmt(r.grams,0)+'\u202fg';
   if(r.grams_src==='label')  return`<span class="p-grams">${v}</span>`;
-  if(r.grams_src==='portion')return`<span class="g-portion" title="pyfooda serving size (not on label)">~${v}</span>`;
   return`<span class="g-default" title="100 g default (no weight info)">~${v}</span>`;
 }
 
@@ -753,8 +790,32 @@ function renderMeta(){
   const s=DATA.stats[state.year];
   document.getElementById('meta-bar').innerHTML=
     `<span>${s.trips} trips</span><span>${s.items.toLocaleString()} items</span>`+
+    `<span>${s.matched_items.toLocaleString()} matched</span><span>${s.unmatched_items.toLocaleString()} unmatched</span>`+
     `<span>${s.foods} unique foods</span><span>${s.match_pct}% matched</span>`+
+    `<span>${s.llm_match_pct}% LLM-matched</span>`+
     `<span>${DATA.family_kcal} kcal ref</span>`;
+}
+
+function renderWarnings(){
+  const nuts=DATA.nutrients[state.year]||{};
+  const lowCovN=[], suspLowN=[];
+  Object.keys(nuts).forEach(k=>{
+    const d=nuts[k];
+    if(d.coverage_low) lowCovN.push(k);
+    if(d.suspicious_low) suspLowN.push(k);
+  });
+  const el=document.getElementById('warn-bar');
+  // User preference: do not show the "low coverage nutrients" cookie.
+  // Keep only genuinely suspicious-low warnings.
+  if((!suspLowN.length)){el.innerHTML='';return;}
+  const pill=(txt,style)=>`<span style="display:inline-block;font-size:.72rem;border-radius:999px;padding:3px 10px;border:1px solid ${style.b};background:${style.bg};color:${style.c};margin:0 6px 6px 0;white-space:nowrap">${txt}</span>`;
+  const warnStyle={bg:'#fef3c7',b:'#fcd34d',c:'#92400e'};
+  const badStyle={bg:'#fee2e2',b:'#fecaca',c:'#991b1b'};
+  let html='';
+  if(suspLowN.length){
+    html+=pill(`Suspicious low with good coverage (${suspLowN.length}): `+suspLowN.slice(0,6).join(', ')+(suspLowN.length>6?' …':''),badStyle);
+  }
+  el.innerHTML=html;
 }
 
 function renderNutrients(){
@@ -764,15 +825,24 @@ function renderNutrients(){
     const p=d.pct,w=p==null?0:Math.min(p,100);
         const cov=d.coverage_pct;
         const covClass=lowCov(d)?'cov-badge cov-low':'cov-badge';
-        const covBadge=cov!=null?`<span class="${covClass}" title="pyfooda coverage by known item energy">cov ${cov}%</span>`:'';
+        const covBadge=cov!=null?`<span class="${covClass}" title="Energy coverage: ${cov}%. Row coverage: ${d.row_coverage_pct??'—'}%. Food coverage: ${d.food_coverage_pct??'—'}%.">E ${cov}%</span>`:'';
+        const covText=
+          (d.coverage_pct==null && d.row_coverage_pct==null && d.food_coverage_pct==null)
+            ? '\u2014'
+            : `${covBadge} <span style="color:var(--muted);font-size:.72rem;white-space:nowrap" title="Row coverage = matched purchase rows with this nutrient. Food coverage = unique matched foods with this nutrient.">`+
+              `${d.row_coverage_pct!=null?('R '+d.row_coverage_pct+'%'):'R \u2014'} \u00b7 `+
+              `${d.food_coverage_pct!=null?('F '+d.food_coverage_pct+'%'):'F \u2014'}`+
+              `</span>`;
     return `<tr data-nut="${n}"><td class="nut-name">${n}</td>`+
             `<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fg ${bc(p,d)}" style="width:${w.toFixed(0)}%"></div></div>`+
-            `<span class="pct-badge ${pc(p,d)}">${p!=null?p+'%':'\u2014'}</span>${covBadge}</div></td>`+
+            `<span class="pct-badge ${pc(p,d)}">${p!=null?p+'%':'\u2014'}</span></div></td>`+
+      `<td>${covText}</td>`+
       `<td class="nut-val">${fmt(d.value)} ${d.unit}</td></tr>`;
   }).join('');
   document.querySelectorAll('#nut-tbody tr[data-nut]').forEach(tr=>{
     tr.addEventListener('click',()=>openNutModal(tr.dataset.nut));
   });
+  renderWarnings();
 }
 
 function renderPurchases(){
@@ -785,7 +855,6 @@ function renderPurchases(){
   // Always render the grams legend (above any table)
   const LEGEND=`<p style="font-size:.72rem;color:var(--muted);margin-bottom:8px">
     Grams: <strong style="color:var(--text)">400 g</strong> from label &nbsp;·&nbsp;
-    <em class="g-portion">~69 g</em> pyfooda serving size &nbsp;·&nbsp;
     <em class="g-default">~100 g</em> 100 g default (hover for details)</p>`;
 
   if(state.group==='unmatched'){
@@ -902,7 +971,11 @@ function openItemModal(r){
 function openNutModal(nut){
   const d=DATA.nutrients[state.year][nut];if(!d)return;
   const top=(DATA.nutrient_top_foods[state.year]||{})[nut]||[];
-    const cov=d.coverage_pct!=null?` \u00b7 coverage ${d.coverage_pct}%`:'';
+    const covParts=[];
+    if(d.coverage_pct!=null) covParts.push(`energy coverage ${d.coverage_pct}%`);
+    if(d.row_coverage_pct!=null) covParts.push(`row coverage ${d.row_coverage_pct}% (${d.coverage_rows}/${d.coverage_total_rows})`);
+    if(d.food_coverage_pct!=null) covParts.push(`food coverage ${d.food_coverage_pct}% (${d.coverage_foods}/${d.coverage_total_foods})`);
+    const cov=covParts.length?` \u00b7 `+covParts.join(' \u00b7 '):'';
     const sub=`avg ${fmt(d.value)} ${d.unit} \u00b7 ${d.pct!=null?d.pct+'% of DRV':'no DRV'}`+cov+(d.drv?` (DRV ${fmt(d.drv,0)} ${d.unit})`:'');
   let body;
   if(!top.length){body='<p style="color:var(--muted);font-size:.82rem">No data.</p>';}
@@ -916,7 +989,9 @@ function openNutModal(nut){
         `<td style="text-align:right;color:var(--muted);font-size:.78rem">${fmt(f.amount)} ${d.unit}</td></tr>`;
     }).join('')+'</tbody></table>';
   }
-    if(lowCov(d)){
+    if(d.suspicious_low){
+        body='<p style="font-size:.78rem;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:4px;padding:6px 8px;margin-bottom:10px">Suspiciously low despite good coverage. This often indicates systematic mismatches or sparse branded rows; review top matched foods and the unmatched list.</p>'+body;
+    } else if(lowCov(d)){
         body='<p style="font-size:.78rem;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:4px;padding:6px 8px;margin-bottom:10px">Low pyfooda coverage: treat this value as incomplete, not as a reliable intake estimate.</p>'+body;
     }
   openModal('Top sources: '+nut,(state.year==='all'?'all years':state.year)+' \u00b7 up to 10 foods',body);

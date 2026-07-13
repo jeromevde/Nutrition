@@ -25,10 +25,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from pyfooda import api
-import openai
 
 from ..common import DELHAIZE_SCRAPER_DIR, OUTPUT_DIR
-from ..llm_client import make_client
+
+def _make_client_if_available(model: str):
+    """Import LLM client lazily so --auto works without openai installed."""
+    from ..llm_client import make_client  # local import: may require openai
+    return make_client(model)
 
 # ── Timestamped logging ──────────────────────────────────────────────────────────
 _t0 = time.monotonic()
@@ -55,6 +58,84 @@ LLM_MODEL     = "google/gemini-2.0-flash-001"   # cheap + smart; change freely
 LLM_BATCH     = 50                           # items per LLM call
 BM25_TOP_N    = 10                           # candidates shown to LLM
 MAX_RETRIES   = 3
+
+# ── Non-LLM auto matching (no openai dependency) ─────────────────────────────
+_GRAM_PAT = re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(KG|G|GR|L|CL|ML)\b", re.I)
+_MULT_PAT = re.compile(r"\b(\d+)\s*[xX]\s*(\d+(?:[.,]\d+)?)\s*(CL|ML|G|GR)\b", re.I)
+
+# Token-based matching helpers (French receipt → English ingredient names)
+_TOKEN_RE = re.compile(r"[A-Z]{3,}")
+_STOPWORDS = {
+    "BIO", "DLL", "DLH", "DLI", "DOL", "DELHAIZE", "GRAM", "GR", "G", "ML", "CL",
+    "THE", "AND", "WITH", "RAW", "FRESH", "ORGANIC", "NATURE", "NATUREL", "D365",
+}
+_TOKEN_ALIASES = {
+    # High-frequency staples
+    "AVOCAT": "AVOCADO",
+    "MANGUE": "MANGO",
+    "COURGETTE": "ZUCCHINI",
+    "COURGETTES": "ZUCCHINI",
+    "JAMBON": "HAM",
+    "POULET": "CHICKEN",
+    "DINDE": "TURKEY",
+    "BOEUF": "BEEF",
+    "BOUEF": "BEEF",
+    "PORC": "PORK",
+    "VEAU": "VEAL",
+    "PAIN": "BREAD",
+    "BROOD": "BREAD",
+    # Fruits/veg
+    "CAROTTE": "CARROT",
+    "CAROTTES": "CARROT",
+    "MANDARINES": "MANDARIN",
+    "CITRON": "LEMON",
+    "CITRONS": "LEMON",
+    "TOMATE": "TOMATO",
+    "TOMATES": "TOMATO",
+}
+
+
+def _tokens(text: str) -> set[str]:
+    result: set[str] = set()
+    for tok in _TOKEN_RE.findall(str(text).upper()):
+        if tok in _STOPWORDS:
+            continue
+        result.add(_TOKEN_ALIASES.get(tok, tok))
+    return result
+
+
+def extract_grams_from_name(name: str) -> float | None:
+    """Extract package grams/ml from a receipt label."""
+    text = str(name).upper()
+    # handle 6X25CL style
+    m = _MULT_PAT.search(text)
+    if m:
+        n = int(m.group(1))
+        qty = float(m.group(2).replace(",", "."))
+        unit = m.group(3).upper()
+        total = n * qty
+        if unit in {"G", "GR"}:
+            return total
+        if unit == "ML":
+            return total
+        if unit == "CL":
+            return total * 10.0
+    m = _GRAM_PAT.search(text)
+    if not m:
+        return None
+    qty = float(m.group(1).replace(",", "."))
+    unit = m.group(2).upper()
+    if unit in {"G", "GR"}:
+        return qty
+    if unit == "KG":
+        return qty * 1000.0
+    if unit == "ML":
+        return qty
+    if unit == "CL":
+        return qty * 10.0
+    if unit == "L":
+        return qty * 1000.0
+    return None
 
 # Regex patterns for rows that are definitely NOT food purchases
 _NON_FOOD_RE = re.compile(
@@ -173,8 +254,8 @@ def _ensure_index():
 
     _embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
-    fd = api.get_fooddata_df()
-    _food_names = fd['foodName'].dropna().unique().tolist()
+    ing = api.get_ingredients_df()
+    _food_names = ing['display_name'].dropna().astype(str).unique().tolist()
     tlog(f"  Encoding {len(_food_names):,} food names with sentence-transformers …")
     vecs = _embedder.encode(_food_names, show_progress_bar=True,
                             batch_size=512, normalize_embeddings=True)
@@ -200,13 +281,29 @@ def faiss_top_n(query: str, n: int = BM25_TOP_N) -> list[str]:
     _, idxs = _faiss_index.search(q_vec, n)
     return [_food_names[i] for i in idxs[0] if 0 <= i < len(_food_names)]
 
+def lexical_top_n(query: str, n: int = BM25_TOP_N) -> list[str]:
+    """Dependency-free candidate search over ingredient names."""
+    api.ensure_data_loaded()
+    names = api.get_ingredients_df()["display_name"].dropna().astype(str).tolist()
+    q_tokens = _tokens(query)
+    if not q_tokens:
+        return []
+    scored: list[tuple[int, int, str]] = []
+    for nm in names:
+        nm_tokens = _tokens(nm)
+        score = len(q_tokens & nm_tokens)
+        if score > 0:
+            scored.append((score, -len(nm), nm))
+    scored.sort(reverse=True)
+    return [nm for _, _, nm in scored[:n]]
+
 
 def pyfooda_exact(name: str) -> str | None:
     """Try case-insensitive exact lookup in pyfooda foodName column."""
-    fd = api.get_fooddata_df()
-    mask = fd['foodName'].str.upper() == name.upper()
+    fd = api.get_ingredients_df()
+    mask = fd['display_name'].astype(str).str.upper() == name.upper()
     if mask.any():
-        return fd.loc[mask, 'foodName'].iloc[0]
+        return str(fd.loc[mask, 'display_name'].iloc[0])
     return None
 
 
@@ -343,7 +440,7 @@ SYSTEM_PROMPT = textwrap.dedent("""\
 """)
 
 
-def call_llm_batch(items: list[dict], client: openai.OpenAI, model: str) -> list[dict]:
+def call_llm_batch(items: list[dict], client, model: str) -> list[dict]:
     """
     items = [{"id": int, "name": str, "candidates": [str, ...]}, ...]
     Returns list of {"id", "action", "pyfooda_name"?, "grams"?}
@@ -479,6 +576,16 @@ def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description="Build Delhaize → pyfooda mapping")
     parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="No-LLM mode: semantic top-1 match + grams parsing (no openai dependency)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Rebuild mapping for all names (ignore existing mapping cache)",
+    )
+    parser.add_argument(
         "--remap-nullgrams", action="store_true",
         help="Re-run LLM for matched entries that have no grams value (improves weight coverage)",
     )
@@ -488,7 +595,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    client, model = make_client(LLM_MODEL)
+    client = model = None
+    if not args.auto:
+        client, model = _make_client_if_available(LLM_MODEL)
 
     # ── 1. Load tickets ───────────────────────────────────────────────────────
     tlog("=" * 60)
@@ -503,7 +612,7 @@ def main() -> None:
           f"Unique names: {purchases['product_name'].nunique()}")
 
     # ── 2. Load existing mapping (incremental) ────────────────────────────────
-    if MAPPING_CSV.exists():
+    if MAPPING_CSV.exists() and not args.force:
         existing_df = pd.read_csv(MAPPING_CSV)
         existing_names = set(existing_df['delhaize_name'].str.upper())
         print(f"\nExisting mapping has {len(existing_df)} entries.")
@@ -540,11 +649,16 @@ def main() -> None:
 
     # ── 3. BM25 + LLM mapping ─────────────────────────────────────────────────
     tlog("\n" + "=" * 60)
-    tlog("Step 2 – Building FAISS semantic search index")
+    tlog("Step 2 – Building search index")
     tlog("=" * 60)
     api.ensure_data_loaded()
-    _ensure_index()
-    tlog(f"pyfooda: {len(_food_names):,} food names indexed.")
+    if not args.auto:
+        _ensure_index()
+        tlog(f"pyfooda: {len(_food_names):,} food names indexed.")
+    else:
+        # In --auto mode we can run fully dependency-free (no faiss/sentence-transformers)
+        ing = api.get_ingredients_df()
+        tlog(f"pyfooda: {int(len(ing)):,} ingredient names available.")
 
     unique_names = sorted(purchases['product_name'].unique())
     # Median price per product name — passed to LLM for pack-size inference
@@ -554,7 +668,29 @@ def main() -> None:
         .dropna()
         .to_dict()
     )
-    new_rows = build_mapping(unique_names, client, existing_names, model, name_to_price)
+    if args.auto:
+        # Auto mode: top-1 semantic match. Still respects existing mapping for incrementality.
+        if existing_names:
+            unique_names = [n for n in unique_names if n not in existing_names]
+        tlog(f"\nAuto-matching {len(unique_names)} names (semantic top-1)…")
+        new_rows = []
+        for name in unique_names:
+            # Prefer FAISS when installed; otherwise fall back to lexical matching.
+            try:
+                top = faiss_top_n(_norm(name), n=1)
+            except ModuleNotFoundError:
+                top = lexical_top_n(name, n=1)
+            choice = top[0] if top else ""
+            grams = extract_grams_from_name(name)
+            new_rows.append({
+                "delhaize_name": name,
+                "action": "match" if choice else "ignore",
+                "pyfooda_name": choice,
+                "llm_raw_name": "",
+                "grams": _sanitize_grams(name, grams),
+            })
+    else:
+        new_rows = build_mapping(unique_names, client, existing_names, model, name_to_price)
 
     if new_rows:
         new_df = pd.DataFrame(new_rows)

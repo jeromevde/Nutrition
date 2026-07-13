@@ -131,21 +131,9 @@ class NutritionEstimatorSkill:
             from pyfooda import api
 
             api.ensure_data_loaded()
-            fooddata = api.get_fooddata_df().copy()
-            priority = {
-                "foundation_food": 0,
-                "sr_legacy_food": 1,
-                "survey_fndds_food": 2,
-                "sub_sample_food": 3,
-                "agricultural_acquisition": 4,
-                "branded_food": 5,
-            }
-            fooddata["_prio"] = fooddata["data_type"].map(priority).fillna(99)
-            self._foods_df = (
-                fooddata.sort_values(["foodName", "_prio"])
-                .drop_duplicates("foodName", keep="first")
-                .set_index("foodName")
-            )
+            ingredients = api.get_ingredients_df().copy()
+            # pyfooda newer versions expose a canonical ingredient table already.
+            self._foods_df = ingredients.drop_duplicates("display_name", keep="first").set_index("display_name")
         return self._foods_df
 
     def load_items(self, *, limit: int | None = None) -> list[EstimateItem]:
