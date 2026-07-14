@@ -1,22 +1,26 @@
-"""Reusable LLM-assisted skills for the Nutrition pipeline.
+"""Nutrition pipeline skills.
 
-The modules in this package are intentionally importable from scripts as well as
-runnable from the command line with ``python -m skills.<module>``.
+Pipeline (agent-centric):
+  python -m skills.source_normalizer   # normalize raw CSVs
+  python -m skills.agent_remap --generate  # see what's unmatched
+  # agent fills data/agent_remap_responses.jsonl
+  python -m skills.agent_remap --apply     # apply matches
+  python -m skills.agent_remap --enrich    # re-enrich purchases (no new matches)
+  python -m skills.nutrition_report        # build report
+  python -m skills.delhaize / carrefour / colruyt  # scrapers
+  python -m skills.ocr / ocr_batch         # OCR
 """
 
 __all__ = [
-    "build_mapping",
-    "carrefour",
-    "colruyt",
+    "agent_remap",
     "common",
     "delhaize",
+    "carrefour",
+    "colruyt",
     "llm_client",
-    "local_remap",
-    "matcher",
     "nutrition_report",
     "observe",
     "ocr",
     "ocr_batch",
-    "report_verifier",
     "source_normalizer",
 ]
