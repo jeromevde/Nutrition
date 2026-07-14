@@ -47,8 +47,38 @@ _UNIT_WEIGHTS: dict[str, int] = {
     "EGG": 60, "OEUF": 60,
     "ONION": 150, "OIGNON": 150,
     "PEPPER": 150, "POIVRON": 150,
-    "KIWI": 80,
+    "KIWI": 120,   # kiwi gold ~120g each
     "LIME": 70,
+    "MANDARINE": 80, "CLEMENTINE": 80,
+    "NECTARINE": 150, "PEACH": 200, "PECHE": 200,
+    "MANGO": 400, "MANGUE": 400,
+}
+
+# Price per kg (EUR/kg) — used to infer grams from price when label has no weight.
+# These are typical Belgian supermarket retail prices.
+_PRICE_PER_KG: dict[str, float] = {
+    "KIWI": 8.0,
+    "APPLE": 3.0, "POMME": 3.0,
+    "PEAR": 3.5, "POIRE": 3.5,
+    "BANANA": 2.0, "BANANE": 2.0,
+    "ORANGE": 2.5,
+    "CLEMENTINE": 3.0, "MANDARINE": 3.0,
+    "NECTARINE": 4.0,
+    "MANGO": 5.0, "MANGUE": 5.0,
+    "STRAWBERRY": 6.0, "FRAISE": 6.0,
+    "RASPBERRY": 8.0, "FRAMBOISE": 8.0,
+    "BLUEBERRY": 12.0, "MYRTILLE": 12.0,
+    "CARROT": 1.5, "CAROTTES": 1.5,
+    "ONION": 1.5, "OIGNON": 1.5,
+    "POTATO": 1.5, "POMME DE TERRE": 1.5,
+    "BEEF": 20.0, "BOEUF": 20.0,
+    "VEAL": 22.0, "VEAU": 22.0,
+    "PORK": 14.0, "PORC": 14.0,
+    "LAMB": 25.0, "AGNEAU": 25.0,
+    "CHICKEN": 8.0, "POULET": 8.0,
+    "SALMON": 28.0, "SAUMON": 28.0,
+    "HAM": 18.0, "JAMBON": 18.0,
+    "BUTTER": 8.0, "BEURRE": 8.0,
 }
 
 _PIECE_RE = re.compile(r"\b(\d+)\s*[Xx]?\s*[Pp][Cc]?[Ss]?\b|\b(\d+)\s*[Xx]\s*\d|\b(\d+)\s*STUKS\b", re.I)
@@ -110,6 +140,26 @@ def infer_grams(product_name: str) -> float | None:
     return None
 
 
+def infer_grams_from_price(product_name: str, price_eur: float | None) -> float | None:
+    """Infer grams from price using typical Belgian price-per-kg table."""
+    if price_eur is None or price_eur <= 0:
+        return None
+    name = product_name.upper()
+    for food, ppkg in _PRICE_PER_KG.items():
+        if food in name:
+            grams = (price_eur / ppkg) * 1000
+            # Round to sensible retail package sizes
+            if grams < 150:
+                return 100.0
+            elif grams < 350:
+                return round(grams / 50) * 50
+            elif grams < 800:
+                return round(grams / 100) * 100
+            else:
+                return round(grams / 250) * 250
+    return None
+
+
 def generate_requests(
     purchases_csv: Path,
     out_path: Path,
@@ -143,10 +193,15 @@ def generate_requests(
     with out_path.open("w", encoding="utf-8") as fh:
         for _, row in grp.iterrows():
             hint = _extract_weight_hint(row["product_name"])
+            median_price = None if pd.isna(row["median_price"]) else round(float(row["median_price"]), 2)
+            if not hint:
+                price_grams = infer_grams_from_price(row["product_name"], median_price)
+                if price_grams:
+                    hint = f"~{int(price_grams)}g inferred from price €{median_price}"
             entry: dict = {
                 "product_name": row["product_name"],
                 "count": int(row["count"]),
-                "median_price_eur": None if pd.isna(row["median_price"]) else round(float(row["median_price"]), 2),
+                "median_price_eur": median_price,
             }
             if hint:
                 entry["weight_hint"] = hint
@@ -189,7 +244,12 @@ def enrich_purchases(mapping_csv: Path, purchases_csv: Path) -> int:
         if mapped_grams and str(mapped_grams).strip():
             return str(mapped_grams)
         inferred = infer_grams(row["product_name"])
-        return str(inferred) if inferred is not None else ""
+        if inferred is not None:
+            return str(inferred)
+        # Last resort: price-based inference
+        price = pd.to_numeric(row.get("price"), errors="coerce")
+        price_inferred = infer_grams_from_price(row["product_name"], float(price) if pd.notna(price) else None)
+        return str(price_inferred) if price_inferred is not None else ""
 
     purchases["grams_in_name"] = purchases.apply(_grams, axis=1)
 
