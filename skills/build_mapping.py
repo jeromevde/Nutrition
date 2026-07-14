@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .common import DELHAIZE_SCRAPER_DIR, DEFAULT_MAPPING, DEFAULT_PURCHASES
+from .common import DELHAIZE_SCRAPER_DIR, DEFAULT_MAPPING, DEFAULT_PURCHASES, get_pyfooda_foods_df
 from .matcher import MatcherSkill
 from .report_verifier import ReportVerifierSkill
 
@@ -45,6 +45,85 @@ _NON_FOOD_RE = re.compile(
     """,
     re.VERBOSE | re.IGNORECASE,
 )
+
+
+def _norm_tokens(text: str) -> list[str]:
+    cleaned = re.sub(r"[^a-z0-9]+", " ", str(text).lower()).strip()
+    return [tok for tok in cleaned.split() if len(tok) >= 3]
+
+
+def _canonicalize_stale_pyfooda_name(name: str, food_names: list[str], valid_foods: set[str]) -> str | None:
+    """Return a safe canonical replacement for a stale pyfooda key.
+
+    Safety-first strategy:
+    1) case-insensitive exact match
+    2) singular/plural morphology variants
+    3) unique token-complete candidate only
+    """
+    q = str(name or "").strip()
+    if not q:
+        return None
+
+    by_upper = {f.upper(): f for f in food_names}
+    up = q.upper()
+    if up in by_upper:
+        return by_upper[up]
+
+    for alt in (up + "S", up.rstrip("S"), up.rstrip("ES")):
+        if alt in by_upper:
+            return by_upper[alt]
+
+    q_tokens = _norm_tokens(q)
+    if not q_tokens:
+        return None
+
+    matches: list[str] = []
+    for food in food_names:
+        parts = set(_norm_tokens(food))
+        if all(tok in parts for tok in q_tokens):
+            matches.append(food)
+
+    if len(matches) == 1 and matches[0] in valid_foods:
+        return matches[0]
+    return None
+
+
+def _sanitize_mapping_against_pyfooda(mapping_df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure mapping rows marked match always target a valid pyfooda key.
+
+    Invalid match keys are canonicalized when safe, otherwise downgraded to ignore.
+    """
+    foods = get_pyfooda_foods_df()["display_name"].dropna().astype(str).drop_duplicates().tolist()
+    valid_foods = set(foods)
+
+    mapping_df = mapping_df.copy()
+    mapping_df["action"] = mapping_df["action"].fillna("")
+    mapping_df["pyfooda_name"] = mapping_df["pyfooda_name"].fillna("")
+
+    stale_mask = (mapping_df["action"].str.lower() == "match") & (~mapping_df["pyfooda_name"].isin(valid_foods))
+    if not stale_mask.any():
+        return mapping_df
+
+    for idx, row in mapping_df[stale_mask].iterrows():
+        canon = _canonicalize_stale_pyfooda_name(row["pyfooda_name"], foods, valid_foods)
+        if canon:
+            mapping_df.at[idx, "pyfooda_name"] = canon
+            mapping_df.at[idx, "llm_raw_name"] = canon
+        else:
+            mapping_df.at[idx, "action"] = "ignore"
+            mapping_df.at[idx, "pyfooda_name"] = ""
+            mapping_df.at[idx, "llm_raw_name"] = ""
+            mapping_df.at[idx, "grams"] = ""
+
+    # Final guard: no invalid match may survive.
+    stale_after = (mapping_df["action"].str.lower() == "match") & (~mapping_df["pyfooda_name"].isin(valid_foods))
+    if stale_after.any():
+        mapping_df.loc[stale_after, "action"] = "ignore"
+        mapping_df.loc[stale_after, "pyfooda_name"] = ""
+        mapping_df.loc[stale_after, "llm_raw_name"] = ""
+        mapping_df.loc[stale_after, "grams"] = ""
+
+    return mapping_df
 
 
 def _load_ticket_rows(ticket_dir: Path) -> pd.DataFrame:
@@ -107,14 +186,21 @@ def _merge_mapping(existing: pd.DataFrame, fresh: pd.DataFrame) -> pd.DataFrame:
 
 def _enrich_purchases(purchases: pd.DataFrame, mapping_df: pd.DataFrame) -> pd.DataFrame:
     lookup = mapping_df.set_index("delhaize_name")[["pyfooda_name", "grams", "action"]].to_dict("index")
+    valid_pyfooda = set(get_pyfooda_foods_df()["display_name"].dropna().astype(str))
 
     def enrich_row(row: pd.Series) -> pd.Series:
         info = lookup.get(str(row["product_name"]).upper(), {})
+        action = str(info.get("action", "unknown") or "unknown")
+        pyfooda_name = str(info.get("pyfooda_name", "") or "")
+        # Never propagate stale matches whose key does not exist in pyfooda.
+        if action.lower() == "match" and pyfooda_name not in valid_pyfooda:
+            action = "ignore"
+            pyfooda_name = ""
         return pd.Series(
             {
-                "pyfooda_name": info.get("pyfooda_name", ""),
+                "pyfooda_name": pyfooda_name,
                 "grams_in_name": info.get("grams"),
-                "llm_action": info.get("action", "unknown"),
+                "llm_action": action,
             }
         )
 
@@ -171,6 +257,7 @@ def run_pipeline(
     )
 
     mapping_df = _merge_mapping(existing, fresh)
+    mapping_df = _sanitize_mapping_against_pyfooda(mapping_df)
     mapping_df.to_csv(mapping_csv, index=False)
 
     enriched = _enrich_purchases(purchases, mapping_df)

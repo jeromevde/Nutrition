@@ -6,6 +6,7 @@ import base64
 import json
 import re
 import sys
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Sequence
@@ -117,10 +118,38 @@ def image_to_data_url(image_path: Path | str) -> str:
 _WEIGHT_RE = re.compile(r"\b\d+[\d,.]*\s*(?:G|GR|KG|ML|CL|L|PC|PCS)\b", re.I)
 _NON_WORD_RE = re.compile(r"[^A-Z0-9]+")
 
+# Light multilingual aliasing for FR/NL grocery OCR labels.
+# Keep this token-level and conservative: map obvious food words only.
+_TOKEN_ALIASES: dict[str, str] = {
+    "EPINARD": "spinach",
+    "EPINARDS": "spinach",
+    "AGNEAU": "lamb",
+    "BOEUF": "beef",
+    "BEEF": "beef",
+    "CARPACCIO": "carpaccio",
+    "ROSBIF": "roast beef",
+    "STOKBROOD": "baguette",
+    "BAGUETTE": "baguette",
+    "PENNE": "penne",
+    "HOUMOUS": "hummus",
+    "HUMMUS": "hummus",
+    "NOISETTES": "cut",
+    "JEUNES": "young",
+    "POUSSES": "shoots",
+}
+
+
+def _strip_accents(text: str) -> str:
+    normalized = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in normalized if not unicodedata.combining(ch))
+
 
 def normalize_food_query(name: str) -> str:
     """Normalize receipt text before semantic search."""
-    name = _WEIGHT_RE.sub(" ", str(name).upper())
+    name = _strip_accents(str(name)).upper()
+    name = _WEIGHT_RE.sub(" ", name)
+    for src, dst in _TOKEN_ALIASES.items():
+        name = re.sub(rf"\b{re.escape(src)}\b", f" {dst.upper()} ", name)
     name = _NON_WORD_RE.sub(" ", name)
     return " ".join(name.lower().split())
 

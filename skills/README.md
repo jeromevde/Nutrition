@@ -39,6 +39,22 @@ What it does:
 - asks the LLM to choose an exact pyfooda match and package grams;
 - writes mapping rows compatible with the existing nutrition report.
 
+## `local_remap.py`
+
+Deterministic remapper for the highest-count unmatched items.
+No external LLM provider required.
+
+```bash
+python -m skills.local_remap --top 200 --min-count 2
+python -m skills.local_remap --top 200 --min-count 2 --apply --min-confidence high
+```
+
+What it does:
+- loads current unmatched product names from `data/purchases_enriched.csv`;
+- ranks by occurrence count;
+- proposes pyfooda matches using multilingual normalization + lexical scoring;
+- optionally applies high-confidence matches to both mapping and purchases files.
+
 ## `report_verifier.py`
 
 Offline verifier for generated `nutrition_report.html`.

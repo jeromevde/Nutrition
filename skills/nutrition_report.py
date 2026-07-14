@@ -369,14 +369,22 @@ def build_report_data(
 
     def _nutrient_coverage(yk: str) -> dict[str, dict]:
         rows = _valid_matched(yk)
+        if yk == 'all':
+            scope_rows = purchases
+        else:
+            y = int(yk)
+            scope_rows = purchases[purchases['date'].dt.year == y]
+        if 'is_outlier' in trips_df.columns:
+            trip_sub = trips_df if yk == 'all' else trips_df[trips_df['year'] == int(yk)]
+            valid_sources = set(trip_sub.loc[~trip_sub['is_outlier'], 'source_file'])
+            scope_rows = scope_rows[scope_rows['source_file'].isin(valid_sources)]
+        count_total = int(len(scope_rows))
+
         totals = {
             nut: {
-                'rows_with': 0,
-                'rows_total': 0,
+                'count_with': 0,
                 'energy_with': 0.0,
                 'energy_total': 0.0,
-                'foods_with': set(),
-                'foods_total': set(),
             }
             for nut in KEY_NUTRIENTS
         }
@@ -394,33 +402,24 @@ def build_report_data(
             if not np.isfinite(energy) or energy <= 0:
                 continue
             for nut in KEY_NUTRIENTS:
-                totals[nut]['rows_total'] += 1
                 totals[nut]['energy_total'] += energy
-                totals[nut]['foods_total'].add(pname)
                 if _nutrient_available(food_row, nut):
-                    totals[nut]['rows_with'] += 1
+                    totals[nut]['count_with'] += 1
                     totals[nut]['energy_with'] += energy
-                    totals[nut]['foods_with'].add(pname)
 
         out: dict[str, dict] = {}
         for nut, info in totals.items():
             denom = info['energy_total']
             pct = round(info['energy_with'] / denom * 100, 1) if denom > 0 else None
-            row_pct = round(info['rows_with'] / max(info['rows_total'], 1) * 100, 1) if info['rows_total'] else None
-            foods_total = len(info['foods_total'])
-            foods_with = len(info['foods_with'])
-            food_pct = round(foods_with / max(foods_total, 1) * 100, 1) if foods_total else None
+            count_pct = round(info['count_with'] / max(count_total, 1) * 100, 1) if count_total else None
             out[nut] = {
                 # energy-weighted coverage (existing concept)
                 'coverage_pct': pct,
                 'coverage_low': bool(pct is not None and pct < MIN_COVERAGE_PCT),
-                # item coverage (what % of matched purchase rows have this nutrient)
-                'row_coverage_pct': row_pct,
-                'food_coverage_pct': food_pct,
-                'rows_with': int(info['rows_with']),
-                'rows_total': int(info['rows_total']),
-                'foods_with': int(foods_with),
-                'foods_total': int(foods_total),
+                # count coverage over the selected scope (matched+unmatched items)
+                'count_coverage_pct': count_pct,
+                'count_with': int(info['count_with']),
+                'count_total': count_total,
             }
         return out
 
@@ -476,12 +475,9 @@ def build_report_data(
                 'pct':   pct_drv,
                 'coverage_pct': cov_pct,
                 'coverage_low': cov.get('coverage_low', False),
-                'coverage_rows': cov.get('rows_with'),
-                'coverage_total_rows': cov.get('rows_total'),
-                'row_coverage_pct': cov.get('row_coverage_pct'),
-                'food_coverage_pct': cov.get('food_coverage_pct'),
-                'coverage_foods': cov.get('foods_with'),
-                'coverage_total_foods': cov.get('foods_total'),
+                'coverage_count_with': cov.get('count_with'),
+                'coverage_count_total': cov.get('count_total'),
+                'count_coverage_pct': cov.get('count_coverage_pct'),
                 'suspicious_low': bool(
                     pct_drv is not None
                     and pct_drv < SUSPICIOUS_LOW_PCT_DRV
@@ -491,19 +487,87 @@ def build_report_data(
             }
         return out
 
+    def _nutrient_top_mappings(yk: str) -> dict:
+        rows = _valid_matched(yk)
+        if rows.empty:
+            return {}
+
+        # Keep contributor amounts on the same 2500 kcal reference as yearly
+        # nutrient metrics. This avoids misleading raw yearly sums.
+        yr_t = trips_df if yk == 'all' else trips_df[trips_df['year'] == int(yk)]
+        if 'is_outlier' in yr_t.columns:
+            yr_t = yr_t[~yr_t['is_outlier']]
+        total_energy = float(yr_t['raw_energy'].sum()) if 'raw_energy' in yr_t.columns else 0.0
+        scale = FAMILY_KCAL / total_energy if total_energy > 0 else 0.0
+
+        agg: dict[str, dict[tuple[str, str], float]] = {
+            nut: {} for nut in KEY_NUTRIENTS
+        }
+
+        for _, row in rows.iterrows():
+            pname = str(row.get('pyfooda_name', ''))
+            if not pname or pname not in foods_df.index:
+                continue
+            grams = row['grams_in_name'] if pd.notna(row.get('grams_in_name')) else None
+            contrib = nutrient_contribution(
+                pname,
+                grams,
+                foods_df,
+                nutrient_cols,
+                drv=drv,
+            )
+            if not contrib:
+                continue
+
+            ocr_name = str(row.get('product_name', ''))
+            key = (ocr_name, pname)
+
+            for nut, val in contrib.items():
+                if nut not in agg or not pd.notna(val) or val <= 0:
+                    continue
+                agg[nut][key] = agg[nut].get(key, 0.0) + float(val)
+
+        out: dict[str, list[dict]] = {}
+        for nut in KEY_NUTRIENTS:
+            entries = agg.get(nut, {})
+            if not entries:
+                out[nut] = []
+                continue
+            scaled_entries = [
+                (key, float(amount) * scale)
+                for key, amount in entries.items()
+            ]
+            sorted_entries = sorted(scaled_entries, key=lambda kv: kv[1], reverse=True)
+            total = sum(v for _, v in sorted_entries)
+            out[nut] = [
+                {
+                    'ocr_name': ocr_name,
+                    'pyfooda_name': pyfooda_name,
+                    'amount': round(float(amount), 2),
+                    'pct_of_total': round(float(amount) / max(float(total), 1e-9) * 100, 1),
+                }
+                for (ocr_name, pyfooda_name), amount in sorted_entries[:10]
+            ]
+        return out
+
     def _nutrient_top_foods(yk: str) -> dict:
         if food_contribs.empty:
             return {}
         fc = food_contribs if yk == 'all' else food_contribs[food_contribs['year'] == int(yk)]
         if fc.empty:
             return {}
+        yr_t = trips_df if yk == 'all' else trips_df[trips_df['year'] == int(yk)]
+        if 'is_outlier' in yr_t.columns:
+            yr_t = yr_t[~yr_t['is_outlier']]
+        total_energy = float(yr_t['raw_energy'].sum()) if 'raw_energy' in yr_t.columns else 0.0
+        scale = FAMILY_KCAL / total_energy if total_energy > 0 else 0.0
         nut_here  = [c for c in KEY_NUTRIENTS if c in fc.columns]
         by_food   = fc.groupby('pyfooda_name')[nut_here].sum()
         out: dict = {}
         for nut in KEY_NUTRIENTS:
             if nut not in by_food.columns:
                 continue
-            col   = by_food[nut].sort_values(ascending=False)
+            col   = (by_food[nut] * scale).sort_values(ascending=False)
             total = col.sum()
             out[nut] = [
                 {
@@ -643,6 +707,7 @@ def build_report_data(
         'stats':              {k: _stats(k)              for k in year_keys},
         'nutrients':          {k: _nutrients(k)          for k in year_keys},
         'nutrient_top_foods': {k: _nutrient_top_foods(k) for k in year_keys},
+        'nutrient_top_mappings': {k: _nutrient_top_mappings(k) for k in year_keys},
         'top_foods':          {k: _top_foods(k)          for k in year_keys},
         'purchases':          {k: _purchases(k)          for k in year_keys},
     }
@@ -757,7 +822,6 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="ctrl-row" id="group-row">
       <button class="pill-btn sec active" data-group="date">By date</button>
       <button class="pill-btn sec" data-group="name">By name</button>
-      <button class="pill-btn sec" data-group="unmatched">Unmatched</button>
     </div>
     <div id="purchases-container"></div>
   </section>
@@ -791,8 +855,6 @@ function renderMeta(){
   document.getElementById('meta-bar').innerHTML=
     `<span>${s.trips} trips</span><span>${s.items.toLocaleString()} items</span>`+
     `<span>${s.matched_items.toLocaleString()} matched</span><span>${s.unmatched_items.toLocaleString()} unmatched</span>`+
-    `<span>${s.foods} unique foods</span><span>${s.match_pct}% matched</span>`+
-    `<span>${s.llm_match_pct}% LLM-matched</span>`+
     `<span>${DATA.family_kcal} kcal ref</span>`;
 }
 
@@ -825,14 +887,15 @@ function renderNutrients(){
     const p=d.pct,w=p==null?0:Math.min(p,100);
         const cov=d.coverage_pct;
         const covClass=lowCov(d)?'cov-badge cov-low':'cov-badge';
-        const covBadge=cov!=null?`<span class="${covClass}" title="Energy coverage: ${cov}%. Row coverage: ${d.row_coverage_pct??'—'}%. Food coverage: ${d.food_coverage_pct??'—'}%.">E ${cov}%</span>`:'';
-        const covText=
-          (d.coverage_pct==null && d.row_coverage_pct==null && d.food_coverage_pct==null)
-            ? '\u2014'
-            : `${covBadge} <span style="color:var(--muted);font-size:.72rem;white-space:nowrap" title="Row coverage = matched purchase rows with this nutrient. Food coverage = unique matched foods with this nutrient.">`+
-              `${d.row_coverage_pct!=null?('R '+d.row_coverage_pct+'%'):'R \u2014'} \u00b7 `+
-              `${d.food_coverage_pct!=null?('F '+d.food_coverage_pct+'%'):'F \u2014'}`+
-              `</span>`;
+                const energyText=d.coverage_pct!=null?`${d.coverage_pct}%`:'\u2014';
+                const countText=d.count_coverage_pct!=null
+                    ?`${d.count_coverage_pct}% (${d.coverage_count_with}/${d.coverage_count_total} items)`
+                    :'\u2014';
+                const covText=
+                    (d.coverage_pct==null && d.count_coverage_pct==null)
+                        ? '\u2014'
+                        : `<span class="${covClass}" title="Energy coverage = percentage of total basket energy coming from matched items that contain this nutrient.">Energy coverage: ${energyText}</span>`+
+                            `<div style="color:var(--muted);font-size:.72rem;white-space:nowrap" title="Count coverage = percentage of all purchase items in scope that are matched and have this nutrient value.">Count coverage: ${countText}</div>`;
     return `<tr data-nut="${n}"><td class="nut-name">${n}</td>`+
             `<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fg ${bc(p,d)}" style="width:${w.toFixed(0)}%"></div></div>`+
             `<span class="pct-badge ${pc(p,d)}">${p!=null?p+'%':'\u2014'}</span></div></td>`+
@@ -857,30 +920,8 @@ function renderPurchases(){
     Grams: <strong style="color:var(--text)">400 g</strong> from label &nbsp;·&nbsp;
     <em class="g-default">~100 g</em> 100 g default (hover for details)</p>`;
 
-  if(state.group==='unmatched'){
-    // show only unmatched rows
-    const um=allRows.filter(r=>!r.matched);
-    if(!um.length){c.innerHTML='<p style="color:var(--muted);padding:20px 0">All items matched!</p>';return;}
-    // group by product_name for de-dupe overview
-    const byName={};
-    um.forEach(r=>{
-      const k=r.product_name;
-      if(!byName[k])byName[k]={name:k,count:0,dates:[]};
-      byName[k].count++;byName[k].dates.push(r.date);
-    });
-    const entries=Object.values(byName).sort((a,b)=>b.count-a.count);
-    let h='<p style="color:var(--muted);font-size:.78rem;margin-bottom:8px">'+um.length+' unmatched rows ('+entries.length+' unique names)</p>';
-    h+='<table class="p-table"><thead><tr><th>Original name</th><th>Count</th><th>Last seen</th></tr></thead><tbody>';
-    entries.forEach(e=>{
-      const last=e.dates.sort().reverse()[0];
-      h+=`<tr style="background:#fef2f2"><td style="font-weight:500">${sh(e.name,55)}</td>`+
-        `<td style="font-weight:600;color:var(--red)">${e.count}</td>`+
-        `<td class="p-muted">${last}</td></tr>`;
-    });
-    h+='</tbody></table>';
-    c.innerHTML=h;
-  } else if(state.group==='date'){
-    const rows=allRows.filter(r=>r.matched);
+    if(state.group==='date'){
+        const rows=allRows;
     const byDate={};
     rows.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r);});
     const dates=Object.keys(byDate).sort().reverse();
@@ -888,14 +929,15 @@ function renderPurchases(){
     dates.forEach(d=>{
       // collect unique source files for this date and link each one
       const srcFiles=[...new Set(byDate[d].map(r=>r.source_file))].filter(Boolean);
-    const links=srcFiles.map(f=>{const img=f.replace(/\.csv$/i,'.jpg');return`<a class=\"ticket-link\" href=\"scrapers/delhaize/${img}\" target=\"_blank\">${img}</a>`;}).join(' ');
+    const links=srcFiles.map(f=>{const img=f.replace(/\.csv$/i,'.jpg');return`<a class=\"ticket-link\" href=\"delhaize/${img}\" target=\"_blank\">${img}</a>`;}).join(' ');
       h+=`<tr class="date-hdr"><td colspan="4">${d} (${byDate[d].length} items) ${links}</td></tr>`;
       byDate[d].forEach(r=>{
         const ri=allRows.indexOf(r);
+                const rowStyle=r.matched?'':' style="opacity:.55;background:#f8fafc"';
         const supBadge=r.suppressed_nutrients&&r.suppressed_nutrients.length
           ?`<span class="sup-badge" title="Nutrient contribution suppressed (density cap): ${r.suppressed_nutrients.join(', ')}">⚠ suppressed: ${r.suppressed_nutrients.join(', ')}</span>`
           :'';
-        h+=`<tr class="p-clickrow" onclick="openItemModal(DATA_ROWS[${ri}])"><td>${sh(r.product_name,50)}</td><td class="p-muted">${sh(r.pyfooda_name,40)}${supBadge}</td>`+
+                h+=`<tr class="p-clickrow"${rowStyle} onclick="openItemModal(DATA_ROWS[${ri}])"><td>${sh(r.product_name,50)}</td><td class="p-muted">${r.matched?sh(r.pyfooda_name,40):'<em>unmatched</em>'}${supBadge}</td>`+
           `<td>${fmtG(r)}</td>`+
           `<td class="p-muted">${r.price!=null?'\u20ac'+fmt(r.price,2):''}</td></tr>`;
       });
@@ -903,12 +945,13 @@ function renderPurchases(){
     h+='</tbody></table>';
     c.innerHTML=LEGEND+h;
   } else {
-    // group by name (matched only)
-    const rows=allRows.filter(r=>r.matched);
+        // group by name (matched and unmatched together)
+        const rows=allRows;
     const byName={};
     rows.forEach(r=>{
-      const k=r.pyfooda_name;
-      if(!byName[k])byName[k]={name:k,orig:[],count:0,totalG:0,nLabel:0};
+            const mapped=r.matched?r.pyfooda_name:'unmatched';
+            const k=r.matched?`m:${mapped}`:`u:${r.product_name}`;
+            if(!byName[k])byName[k]={name:mapped,orig:[],count:0,totalG:0,nLabel:0,matched:r.matched};
       const e=byName[k];e.count++;e.orig.push(r.product_name);
       e.totalG+=(r.grams||0);
       if(r.grams_src==='label')e.nLabel++;
@@ -918,14 +961,15 @@ function renderPurchases(){
     entries.forEach(e=>{
       const uniqOrig=[...new Set(e.orig)].slice(0,3).map(s=>sh(s,36)).join(', ');
       const extra=new Set(e.orig).size>3?' \u2026':'';
+            const rowStyle=e.matched?'':' style="opacity:.55;background:#f8fafc"';
       const allLabel=e.nLabel===e.count;
       const gStr=fmt(e.totalG,0)+'\u202fg';
       const gCell=allLabel
         ?`<span class="p-grams">${gStr}</span>`
         :`<span class="g-portion" title="${e.nLabel}/${e.count} items had explicit weight; rest inferred">~${gStr}</span>`;
-      h+=`<tr><td class="p-muted" style="font-size:.78rem">${uniqOrig}${extra}</td>`+
-        `<td style="font-weight:500">${sh(e.name,42)}</td>`+
-        `<td style="font-weight:600;color:var(--accent)">${e.count}</td>`+
+            h+=`<tr${rowStyle}><td class="p-muted" style="font-size:.78rem">${uniqOrig}${extra}</td>`+
+                `<td style="font-weight:500">${e.matched?sh(e.name,42):'<em>unmatched</em>'}</td>`+
+                `<td style="font-weight:600;color:${e.matched?'var(--accent)':'var(--muted)'}">${e.count}</td>`+
         `<td>${gCell}</td></tr>`;
     });
     h+='</tbody></table>';
@@ -970,20 +1014,20 @@ function openItemModal(r){
 
 function openNutModal(nut){
   const d=DATA.nutrients[state.year][nut];if(!d)return;
-  const top=(DATA.nutrient_top_foods[state.year]||{})[nut]||[];
+    const top=(DATA.nutrient_top_mappings[state.year]||{})[nut]||[];
     const covParts=[];
-    if(d.coverage_pct!=null) covParts.push(`energy coverage ${d.coverage_pct}%`);
-    if(d.row_coverage_pct!=null) covParts.push(`row coverage ${d.row_coverage_pct}% (${d.coverage_rows}/${d.coverage_total_rows})`);
-    if(d.food_coverage_pct!=null) covParts.push(`food coverage ${d.food_coverage_pct}% (${d.coverage_foods}/${d.coverage_total_foods})`);
+        if(d.coverage_pct!=null) covParts.push(`Energy coverage ${d.coverage_pct}%`);
+        if(d.row_coverage_pct!=null) covParts.push(`Row coverage ${d.row_coverage_pct}% (${d.coverage_rows}/${d.coverage_total_rows} matched rows)`);
     const cov=covParts.length?` \u00b7 `+covParts.join(' \u00b7 '):'';
     const sub=`avg ${fmt(d.value)} ${d.unit} \u00b7 ${d.pct!=null?d.pct+'% of DRV':'no DRV'}`+cov+(d.drv?` (DRV ${fmt(d.drv,0)} ${d.unit})`:'');
   let body;
   if(!top.length){body='<p style="color:var(--muted);font-size:.82rem">No data.</p>';}
   else{
     const mx=top[0].amount;
-    body='<table class="mtable"><tbody>'+top.map(f=>{
+        body='<table class="mtable"><tbody>'+top.map(f=>{
       const w=(f.amount/mx*100).toFixed(0);
-      return `<tr><td style="font-weight:500">${sh(f.food,40)}</td>`+
+            return `<tr><td style="font-weight:500">${sh(f.ocr_name,32)}</td>`+
+                `<td style="color:var(--muted)">${sh(f.pyfooda_name,32)}</td>`+
         `<td><div class="mbar-wrap"><div class="mbar-bg"><div class="mbar-fg" style="width:${w}%"></div></div>`+
         `<span class="mpct">${f.pct_of_total}%</span></div></td>`+
         `<td style="text-align:right;color:var(--muted);font-size:.78rem">${fmt(f.amount)} ${d.unit}</td></tr>`;
@@ -994,7 +1038,7 @@ function openNutModal(nut){
     } else if(lowCov(d)){
         body='<p style="font-size:.78rem;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:4px;padding:6px 8px;margin-bottom:10px">Low pyfooda coverage: treat this value as incomplete, not as a reliable intake estimate.</p>'+body;
     }
-  openModal('Top sources: '+nut,(state.year==='all'?'all years':state.year)+' \u00b7 up to 10 foods',body);
+    openModal('Top sources (with mapping): '+nut,(state.year==='all'?'all years':state.year)+' \u00b7 up to 10 source mappings',body);
 }
 
 function render(){
@@ -1079,6 +1123,24 @@ def main() -> None:
     purchases['date']  = pd.to_datetime(purchases['date'])
     purchases['price'] = pd.to_numeric(purchases['price'], errors='coerce')
     purchases['grams_in_name'] = pd.to_numeric(purchases['grams_in_name'], errors='coerce')
+
+    # Hard guard: never keep stale "match" rows that reference missing pyfooda keys.
+    # These rows are downgraded to ignore so report stats and nutrients cannot be
+    # inflated by outdated mapping entries.
+    valid_pyfooda = set(foods_df.index.astype(str))
+    stale_mask = (
+        purchases['llm_action'].astype(str).str.lower().eq('match')
+        & ~purchases['pyfooda_name'].fillna('').astype(str).isin(valid_pyfooda)
+    )
+    stale_count = int(stale_mask.sum())
+    if stale_count:
+        purchases.loc[stale_mask, 'llm_action'] = 'ignore'
+        purchases.loc[stale_mask, 'pyfooda_name'] = ''
+        purchases.loc[stale_mask, 'grams_in_name'] = np.nan
+        # Persist sanitized enrichment so downstream runs keep consistent semantics.
+        purchases.to_csv(PURCHASES_CSV, index=False)
+        tlog(f"  downgraded {stale_count:,} stale match rows to ignore (missing pyfooda key)")
+
     tlog(f"  {len(purchases):,} rows  ·  "
           f"{(purchases['llm_action'] == 'match').sum():,} matched")
 

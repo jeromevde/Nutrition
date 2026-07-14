@@ -11,6 +11,7 @@ __all__ = [
     "common",
     "delhaize",
     "llm_client",
+    "local_remap",
     "matcher",
     "nutrition_estimator",
     "nutrition_report",
