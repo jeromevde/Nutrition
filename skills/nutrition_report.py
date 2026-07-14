@@ -1210,6 +1210,10 @@ def main() -> None:
     REPORT_HTML.write_text(html, encoding="utf-8")
     tlog(f"  {REPORT_HTML}")
 
+    # Inject AI summary if available
+    from .ai_summary import inject as _inject_summary
+    _inject_summary(REPORT_HTML)
+
     # Quick console summary
     tlog("\n── Yearly snapshot (% DRV at 2500 kcal) ──")
     snap_nuts = ["Energy", "Protein", "Calcium", "Iron", "Vitamin C", "Vitamin D (D2 + D3)"]
