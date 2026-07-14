@@ -17,13 +17,30 @@ from pathlib import Path
 
 import pandas as pd
 
-from .common import DEFAULT_MAPPING, DEFAULT_PURCHASES, get_pyfooda_foods_df, normalize_food_query
+from .common import (
+    DEFAULT_MAPPING,
+    DEFAULT_PURCHASES,
+    build_food_search_index,
+    get_pyfooda_foods_df,
+    normalize_food_query,
+)
 
 
 _EXTRA_ALIASES = {
     "mozza": "mozzarella",
-    "mozza": "mozzarella",
     "mozz": "mozzarella",
+    "activia": "yogurt",
+    "yaourt": "yogurt",
+    "yoghourt": "yogurt",
+    "houmous": "hommus",
+    "hummous": "hummus",
+    "toast": "bread",
+    "wrap": "wraps",
+    "wraps": "wraps",
+    "cerise": "cherry",
+    "cerises": "cherry",
+    "tomate": "tomato",
+    "tomates": "tomato",
     "epinard": "spinach",
     "epinards": "spinach",
     "courgette": "zucchini",
@@ -37,10 +54,36 @@ _EXTRA_ALIASES = {
     "patate": "potato",
     "pain": "bread",
     "fraise": "strawberry",
+    "fraises": "strawberry",
     "myrtille": "blueberry",
     "myrtilles": "blueberries",
     "ciboulette": "chives",
 }
+
+_PHRASE_ALIASES = {
+    "de cecco": "pasta",
+    "pain de mie": "bread",
+    "stokbrood": "baguette",
+    "petit pain": "bread",
+}
+
+# High-precision multilingual concept anchors.
+# If a pattern is present, force a known-valid canonical key.
+_CONCEPT_TARGETS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\b(banane|bananes|banana|bananas)\b", re.I), "BANANA"),
+    (re.compile(r"\b(oeuf|oeufs|egg|eggs)\b", re.I), "EGGS"),
+    (re.compile(r"\bduchesse\b", re.I), "POTATOES"),
+    (re.compile(r"\b(lindt|excellence)\b", re.I), "LINDT EXCELLENCE, DARK CHOCOLATE, DARK"),
+    (re.compile(r"\b(epinard|epinards|spinach)\b", re.I), "SPINACH"),
+    (re.compile(r"\b(mozza|mozzarella)\b", re.I), "MOZZARELLA"),
+    (re.compile(r"\b(houmous|hummus|hommus)\b", re.I), "HOMMUS"),
+    (re.compile(r"\b(activia|yogurt|yoghurt|yaourt)\b", re.I), "YOGURT"),
+    (re.compile(r"\bwraps?\b", re.I), "WRAPS"),
+    (re.compile(r"\btoast\b", re.I), "BREAD"),
+    (re.compile(r"\b(cerise|cherry)\b.*\b(tomato|tomate|tom)\b|\b(tomato|tomate|tom)\b.*\b(cerise|cherry)\b", re.I), "CHERRY TOMATOES"),
+    (re.compile(r"\b(fraise|frais(es)?|strawberr(y|ies))\b", re.I), "STRAWBERRIES"),
+    (re.compile(r"\b(myrtille|myrtilles|blueberr(y|ies))\b", re.I), "BLUEBERRIES"),
+]
 
 _STOP_TOKENS = {
     "bio",
@@ -77,15 +120,27 @@ class MatchProposal:
 class LocalRemapSkill:
     """Deterministic remapper based on lexical overlap and string similarity."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, use_semantic: bool = True, semantic_top_n: int = 40) -> None:
         foods = get_pyfooda_foods_df()["display_name"].dropna().drop_duplicates().astype(str)
         self.food_names: list[str] = foods.tolist()
         self.food_norms: list[str] = [self._norm_food_name(name) for name in self.food_names]
         self.valid_foods: set[str] = set(self.food_names)
+        self.semantic_top_n = max(int(semantic_top_n), 0)
+        self.search_index = None
+        self.name_to_ids: dict[str, list[int]] = {}
+        self.norm_to_ids: dict[str, list[int]] = {}
         self.token_index: dict[str, set[int]] = {}
         for idx, norm_name in enumerate(self.food_norms):
+            self.name_to_ids.setdefault(self.food_names[idx], []).append(idx)
+            self.norm_to_ids.setdefault(norm_name, []).append(idx)
             for tok in set(self._tokens(norm_name)):
                 self.token_index.setdefault(tok, set()).add(idx)
+        self.vocab_tokens = sorted(self.token_index.keys())
+        if use_semantic and self.semantic_top_n > 0:
+            try:
+                self.search_index = build_food_search_index()
+            except ModuleNotFoundError:
+                self.search_index = None
 
     @staticmethod
     def _strip_accents(text: str) -> str:
@@ -97,6 +152,8 @@ class LocalRemapSkill:
 
     def _normalize_query(self, product_name: str) -> str:
         query = normalize_food_query(product_name)
+        for src, dst in _PHRASE_ALIASES.items():
+            query = re.sub(rf"\b{re.escape(src)}\b", dst, query)
         for src, dst in _EXTRA_ALIASES.items():
             query = re.sub(rf"\b{re.escape(src)}\b", dst, query)
         query = re.sub(r"\b\d+[a-z]*\b", " ", query)
@@ -107,11 +164,31 @@ class LocalRemapSkill:
         toks = [tok for tok in text.split() if len(tok) >= 3 and tok not in _STOP_TOKENS]
         return toks
 
-    def _candidate_ids(self, q_tokens: list[str]) -> set[int]:
-        postings = [self.token_index.get(tok, set()) for tok in q_tokens if tok in self.token_index]
+    def _candidate_ids(self, query: str, q_tokens: list[str]) -> tuple[set[int], dict[int, int]]:
+        postings: list[set[int]] = []
+        for tok in q_tokens:
+            post = self.token_index.get(tok)
+            if post:
+                postings.append(post)
+                continue
+            # Fuzzy rescue for OCR typos / multilingual near-forms.
+            near = difflib.get_close_matches(tok, self.vocab_tokens, n=2, cutoff=0.88)
+            for ntok in near:
+                npost = self.token_index.get(ntok)
+                if npost:
+                    postings.append(npost)
+        semantic_rank: dict[int, int] = {}
+        semantic_ids: set[int] = set()
+        if self.search_index is not None and query.strip():
+            for rank, name in enumerate(self.search_index.search(query, self.semantic_top_n)):
+                for idx in self.name_to_ids.get(name, []):
+                    semantic_ids.add(idx)
+                    prev = semantic_rank.get(idx)
+                    semantic_rank[idx] = rank if prev is None else min(prev, rank)
+
         postings = [p for p in postings if p]
         if not postings:
-            return set()
+            return semantic_ids, semantic_rank
         postings.sort(key=len)
         ids = set(postings[0])
         for post in postings[1:3]:
@@ -119,11 +196,19 @@ class LocalRemapSkill:
             if ids:
                 break
         if ids:
-            return ids
+            ids |= semantic_ids
+            return ids, semantic_rank
         ids = set()
         for post in postings[:3]:
             ids |= post
-        return ids
+        ids |= semantic_ids
+        return ids, semantic_rank
+
+    def _anchored_candidate(self, query: str) -> str | None:
+        for pattern, target in _CONCEPT_TARGETS:
+            if pattern.search(query) and target in self.valid_foods:
+                return target
+        return None
 
     def propose(self, product_name: str, count: int) -> MatchProposal:
         query = self._normalize_query(product_name)
@@ -134,12 +219,17 @@ class LocalRemapSkill:
         if not q_tokens:
             return MatchProposal(product_name, count, None, "none", 0.0, 0.0, query)
 
-        # Fast path: exact normalized match.
-        for idx, norm_name in enumerate(self.food_norms):
-            if norm_name == query:
-                return MatchProposal(product_name, count, self.food_names[idx], "high", 99.0, 99.0, query)
+        anchored = self._anchored_candidate(query)
+        if anchored:
+            return MatchProposal(product_name, count, anchored, "high", 98.0, 98.0, query)
 
-        cand_ids = self._candidate_ids(q_tokens)
+        # Fast path: exact normalized match.
+        exact_ids = self.norm_to_ids.get(query, [])
+        if exact_ids:
+            idx = exact_ids[0]
+            return MatchProposal(product_name, count, self.food_names[idx], "high", 99.0, 99.0, query)
+
+        cand_ids, semantic_rank = self._candidate_ids(query, q_tokens)
         if not cand_ids:
             return MatchProposal(product_name, count, None, "none", 0.0, 0.0, query)
 
@@ -149,11 +239,16 @@ class LocalRemapSkill:
             name_norm = self.food_norms[idx]
             n_tokens = set(self._tokens(name_norm))
             overlap = len(q_set & n_tokens)
-            if overlap == 0:
+            if overlap == 0 and idx not in semantic_rank:
                 continue
             coverage = overlap / max(len(q_set), 1)
             ratio = difflib.SequenceMatcher(None, query, name_norm).ratio()
-            score = overlap + (coverage * 3.0) + ratio
+            prefix = 1.0 if name_norm.startswith(query) or query.startswith(name_norm) else 0.0
+            sem_bonus = 0.0
+            rank = semantic_rank.get(idx)
+            if rank is not None and self.semantic_top_n > 0:
+                sem_bonus = ((self.semantic_top_n - rank) / self.semantic_top_n) * 1.5
+            score = overlap + (coverage * 3.0) + (ratio * 1.2) + prefix + sem_bonus
             scored.append((score, idx))
 
         if not scored:
@@ -168,10 +263,14 @@ class LocalRemapSkill:
         overlap = len(set(q_tokens) & set(self._tokens(best_norm)))
         coverage = overlap / max(len(set(q_tokens)), 1)
         ratio = difflib.SequenceMatcher(None, query, best_norm).ratio()
+        count_bonus = 0.03 * min(max(count - 1, 0), 10)
 
-        if coverage >= 1.0 and ratio >= 0.72 and gap >= 0.25:
+        top_rank = semantic_rank.get(best_idx)
+        semantic_high = top_rank is not None and top_rank <= 2 and ratio >= 0.72
+
+        if semantic_high or (coverage >= 1.0 and ratio >= 0.70 and (gap + count_bonus) >= 0.20):
             confidence = "high"
-        elif coverage >= 0.67 and ratio >= 0.65 and gap >= 0.20:
+        elif coverage >= 0.60 and ratio >= 0.62 and (gap + count_bonus) >= 0.12:
             confidence = "medium"
         else:
             confidence = "low"
@@ -258,6 +357,17 @@ def main() -> None:
     parser.add_argument("--top", type=int, default=200, help="How many unmatched product names to inspect")
     parser.add_argument("--min-count", type=int, default=2, help="Minimum occurrence count for unmatched names")
     parser.add_argument(
+        "--no-semantic",
+        action="store_true",
+        help="Disable embedding-based retrieval and use lexical matching only",
+    )
+    parser.add_argument(
+        "--semantic-top-n",
+        type=int,
+        default=40,
+        help="Number of semantic candidates to retrieve when embeddings are enabled",
+    )
+    parser.add_argument(
         "--apply",
         action="store_true",
         help="Apply selected mappings directly to mapping + purchases files",
@@ -277,7 +387,10 @@ def main() -> None:
     args = parser.parse_args()
 
     counts = load_unmatched_counts(args.purchases, min_count=args.min_count, top_n=args.top)
-    skill = LocalRemapSkill()
+    skill = LocalRemapSkill(
+        use_semantic=not args.no_semantic,
+        semantic_top_n=args.semantic_top_n,
+    )
 
     proposals = [skill.propose(str(row["product_name"]), int(row["count"])) for _, row in counts.iterrows()]
     out_df = pd.DataFrame(

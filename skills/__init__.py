@@ -13,7 +13,6 @@ __all__ = [
     "llm_client",
     "local_remap",
     "matcher",
-    "nutrition_estimator",
     "nutrition_report",
     "observe",
     "ocr",

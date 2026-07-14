@@ -79,6 +79,7 @@ class MatcherSkill:
         self._client: Any | None = None
         self._resolved_model: str | None = None
         self._search_index = None
+        self._local_remap = None
 
     @property
     def search_index(self):
@@ -95,9 +96,35 @@ class MatcherSkill:
     def candidates_for(self, product_name: str) -> list[str]:
         query = normalize_food_query(product_name)
         try:
-            return self.search_index.search(query, self.top_n)
+            candidates = self.search_index.search(query, self.top_n)
         except ModuleNotFoundError:
-            return self._lexical_candidates(query, self.top_n)
+            candidates = self._lexical_candidates(query, self.top_n)
+        return self._prioritize_with_local_candidate(product_name, candidates)
+
+    def _prioritize_with_local_candidate(self, product_name: str, candidates: list[str]) -> list[str]:
+        """Reuse local remap multilingual heuristics as a shared candidate prior.
+
+        Keeps matcher/local_remap behavior aligned without requiring an external LLM.
+        """
+        if not candidates:
+            return candidates
+        try:
+            if self._local_remap is None:
+                from .local_remap import LocalRemapSkill
+                # Matcher already has semantic retrieval; use local remap heuristics
+                # (aliases/concept anchors/lexical scoring) without semantic index.
+                self._local_remap = LocalRemapSkill(use_semantic=False, semantic_top_n=0)
+            proposal = self._local_remap.propose(product_name, 1)
+        except Exception:
+            return candidates
+
+        suggestion = proposal.candidate
+        if not suggestion:
+            return candidates
+        if suggestion in candidates:
+            ordered = [suggestion] + [c for c in candidates if c != suggestion]
+            return ordered[: self.top_n]
+        return ([suggestion] + candidates)[: self.top_n]
 
     @staticmethod
     def _lexical_candidates(query: str, top_n: int) -> list[str]:

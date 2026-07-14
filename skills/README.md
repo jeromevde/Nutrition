@@ -1,139 +1,291 @@
 # Skills
 
-Reusable LLM-assisted building blocks for the full nutrition pipeline. All Python
-implementation code lives under this package; parsed data and generated reports
-are under `data/`. Source-specific raw and parsed scraper artifacts live together
-under `data/<source>/`.
+All pipeline logic lives under this package. This file is the consolidated map:
+one section per skill, how to run it, where it fits, and whether we should keep
+or deprecate it.
 
-## Full Pipeline
+## Pipeline Summary
+
+```text
+Source ingest -> normalize -> initial mapping -> local remap loop -> report -> verify
+```
+
+Typical execution:
 
 ```bash
 python -m skills.delhaize
-python -m skills.ocr_batch
+python -m skills.source_normalizer data/delhaize --source delhaize --output data/purchases_normalized.csv
 python -m skills.build_mapping
-python -m skills.nutrition_estimator --backend agent --limit 25
+python -m skills.local_remap --top 900 --min-count 1 --apply --min-confidence high
 python -m skills.nutrition_report
 python -m skills.report_verifier
 ```
 
-Carrefour and Colruyt source scrapers:
+## common.py
+
+Purpose:
+- shared paths, batching/helpers, pyfooda compatibility accessors,
+- JSON parsing helpers,
+- semantic food index builder (`build_food_search_index`).
+
+How used:
+- imported by almost every skill.
+
+Pipeline fit:
+- foundation utilities.
+
+Recommendation:
+- Keep (core).
+
+## source_normalizer.py
+
+Purpose:
+- normalize raw source CSVs into canonical schema:
+	`product_name`, `price`, `barcode`, `date`, `source_file`, `source`.
+
+How to run:
 
 ```bash
-python -m skills.carrefour
-python -m skills.colruyt
+python -m skills.source_normalizer data/delhaize --source delhaize --output data/purchases_normalized.csv
 ```
 
-## `matcher.py`
+Pipeline fit:
+- canonicalization step before matching.
 
-Semantic-search + LLM matcher for OCR or scraper product names.
+Recommendation:
+- Keep.
+
+## matcher.py
+
+Purpose:
+- semantic retrieval + external LLM decision for initial mapping.
+
+How to run:
 
 ```bash
 python -m skills.matcher data/delhaize --dry-run --output /tmp/matcher_candidates.csv --limit 25
 python -m skills.matcher data/delhaize --output data/delhaize_mapping.csv
 ```
 
-What it does:
-- reads product CSVs or folders of CSVs;
-- builds a FAISS index over pyfooda food names;
-- retrieves top candidates per product name;
-- asks the LLM to choose an exact pyfooda match and package grams;
-- writes mapping rows compatible with the existing nutrition report.
+Pipeline fit:
+- first-pass mapping bootstrap.
 
-## `local_remap.py`
+Recommendation:
+- Keep, but optional when external LLM providers are unavailable.
 
-Deterministic remapper for the highest-count unmatched items.
-No external LLM provider required.
+## build_mapping.py
+
+Purpose:
+- orchestrate mapping build over tickets,
+- merge prior mapping,
+- enrich purchases,
+- sanitize stale pyfooda keys.
+
+How to run:
 
 ```bash
-python -m skills.local_remap --top 200 --min-count 2
-python -m skills.local_remap --top 200 --min-count 2 --apply --min-confidence high
+python -m skills.build_mapping
+python -m skills.build_mapping --remap-from-verifier
 ```
 
-What it does:
-- loads current unmatched product names from `data/purchases_enriched.csv`;
-- ranks by occurrence count;
-- proposes pyfooda matches using multilingual normalization + lexical scoring;
-- optionally applies high-confidence matches to both mapping and purchases files.
+Pipeline fit:
+- main mapping orchestration.
 
-## `report_verifier.py`
+Recommendation:
+- Keep (core).
 
-Offline verifier for generated `nutrition_report.html`.
+## local_remap.py
+
+Purpose:
+- local, provider-free iterative remap for highest-count unmatched names,
+- multilingual normalization + concept anchors,
+- embeddings-first retrieval (FAISS + sentence-transformers) with lexical fallback.
+
+How to run:
+
+```bash
+python -m skills.local_remap --top 900 --min-count 1 --output data/local_remap_proposals.csv
+python -m skills.local_remap --top 900 --min-count 1 --apply --min-confidence high
+python -m skills.local_remap --top 900 --min-count 1 --no-semantic
+```
+
+Pipeline fit:
+- fast iterative quality-improvement loop after initial mapping.
+
+Recommendation:
+- Keep (core). This is the default remap path when we want speed + no external LLM.
+
+## nutrition_report.py
+
+Purpose:
+- compute per-trip and yearly metrics,
+- scale nutrients to 2500 kcal reference,
+- generate interactive HTML report.
+
+How to run:
+
+```bash
+python -m skills.nutrition_report
+```
+
+Outputs:
+- `data/nutrition_pertrip.csv`
+- `data/nutrition_yearly.csv`
+- `data/nutrition_report.html`
+
+Pipeline fit:
+- reporting/analytics output.
+
+Recommendation:
+- Keep (core).
+
+## report_verifier.py
+
+Purpose:
+- offline report consistency/sanity checks,
+- suspect contributor and mismatch detection.
+
+How to run:
 
 ```bash
 python -m skills.report_verifier
 python -m skills.report_verifier --json
 ```
 
-Checks:
-- nutrients far outside reference ranges;
-- high-impact top contributors with suspicious product/name overlap;
-- matched foods with empty nutrient payloads;
-- outlier trips excluded from yearly averages.
+Pipeline fit:
+- QA gate after report generation.
 
-## `ocr.py`
+Recommendation:
+- Keep.
 
-Vision-LLM receipt OCR wrapper.
+## ocr.py
+
+Purpose:
+- OCR a single receipt image into canonical rows.
+
+How to run:
 
 ```bash
 python -m skills.ocr data/delhaize/2025_01_20.jpg --output-dir data/delhaize
 ```
 
-It returns canonical OCR rows: `product_name`, `price`, `barcode`.
+Pipeline fit:
+- source ingest for image receipts.
 
-## `nutrition_estimator.py`
+Recommendation:
+- Keep if image OCR remains in scope.
 
-LLM-estimates complete per-100g nutrition profiles for receipt items when pyfooda
-is sparse or suspicious. The prompt explicitly requests every nutrient used by
-the report and every output carries confidence, source, and min/max range.
+## ocr_batch.py
 
-Agent backend, for using this coding agent/manual Copilot flow:
+Purpose:
+- batch OCR over multiple receipt images.
 
-```bash
-python -m skills.nutrition_estimator --backend agent --limit 25
-```
-
-This writes:
-
-- `data/nutrition_estimator_agent_requests.jsonl`
-- `data/nutrition_estimator_agent_prompt.md`
-
-After an agent or human writes response JSON/JSONL, import it:
+How to run:
 
 ```bash
-python -m skills.nutrition_estimator --backend agent --agent-response data/nutrition_estimator_agent_responses.jsonl --output data/nutrition_estimates.csv
+python -m skills.ocr_batch
 ```
 
-OpenRouter backend:
+Pipeline fit:
+- bulk source ingest.
+
+Recommendation:
+- Keep if OCR is used; otherwise optional.
+
+## delhaize.py
+
+Purpose:
+- source-specific Delhaize scraper/collector wrapper.
+
+How to run:
 
 ```bash
-export OPENROUTER_API_KEY="..."
-python -m skills.nutrition_estimator --backend openrouter --model google/gemini-2.0-flash-001 --limit 25
+python -m skills.delhaize
 ```
 
-Hugging Face Inference Providers backend:
+Pipeline fit:
+- source ingest adapter.
+
+Recommendation:
+- Keep.
+
+## carrefour.py
+
+Purpose:
+- source-specific Carrefour scraper/collector wrapper.
+
+How to run:
 
 ```bash
-export HF_TOKEN="..."
-python -m skills.nutrition_estimator --backend huggingface --model Qwen/Qwen2.5-72B-Instruct --limit 25
+python -m skills.carrefour
 ```
 
-Default output: `data/nutrition_estimates.csv`.
+Pipeline fit:
+- source ingest adapter.
 
-## `source_normalizer.py`
+Recommendation:
+- Keep if Carrefour data still used; otherwise optional.
 
-Canonicalizes supermarket exports into a common schema before matching.
+## colruyt.py
+
+Purpose:
+- source-specific Colruyt scraper/collector wrapper.
+
+How to run:
 
 ```bash
-python -m skills.source_normalizer data/delhaize --source delhaize --output data/purchases_normalized.csv
+python -m skills.colruyt
 ```
 
-Canonical columns:
-`product_name`, `price`, `barcode`, `date`, `source_file`, `source`.
+Pipeline fit:
+- source ingest adapter.
 
-## Suggested Pipeline
+Recommendation:
+- Keep if Colruyt data still used; otherwise optional.
 
-```text
-scraper/OCR -> source_normalizer -> matcher -> nutrition_report -> report_verifier -> targeted remap/fix
+## observe.py
+
+Purpose:
+- lightweight observation/debug helper around source or pipeline runs.
+
+How to run:
+
+```bash
+python -m skills.observe
 ```
 
-Use `python -m skills.<module>` for all executable Python entry points.
+Pipeline fit:
+- developer diagnostics, not a required data step.
+
+Recommendation:
+- Keep but treat as utility.
+
+## llm_client.py
+
+Purpose:
+- provider client factory for LLM-backed skills.
+
+How used:
+- imported by `matcher.py` and OCR skills.
+
+Pipeline fit:
+- infrastructure utility.
+
+Recommendation:
+- Keep (infrastructure).
+
+## Consolidation Decision (Current)
+
+Core set we definitely need:
+- `common.py`, `source_normalizer.py`, `build_mapping.py`, `local_remap.py`, `nutrition_report.py`, `report_verifier.py`
+
+Source adapters / ingest tools:
+- `delhaize.py`, `carrefour.py`, `colruyt.py`, `ocr.py`, `ocr_batch.py`
+
+Optional advanced branches:
+- `matcher.py` (external LLM bootstrap)
+
+Utility/infrastructure:
+- `observe.py`, `llm_client.py`
+
+No immediate deletions recommended yet; convert to optional usage rather than remove.
