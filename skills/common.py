@@ -22,6 +22,32 @@ DEFAULT_MATCHER_MODEL = "google/gemini-2.0-flash-001"
 DEFAULT_OCR_MODEL = "qwen/qwen-2-vl-7b-instruct"
 
 
+def get_pyfooda_foods_df():
+    """Return a normalized pyfooda foods DataFrame across API variants.
+
+    Ensures the returned frame has a ``display_name`` column.
+    """
+    from pyfooda import api
+
+    api.ensure_data_loaded()
+
+    if hasattr(api, "get_ingredients_df"):
+        foods = api.get_ingredients_df().copy()
+    elif hasattr(api, "get_fooddata_df"):
+        foods = api.get_fooddata_df().copy()
+    elif hasattr(api, "foods_df"):
+        foods = api.foods_df.copy()
+    else:
+        raise AttributeError("pyfooda.api has no supported foods dataframe accessor")
+
+    if "display_name" not in foods.columns:
+        if "foodName" in foods.columns:
+            foods = foods.rename(columns={"foodName": "display_name"})
+        else:
+            raise KeyError("Expected one of display_name or foodName in pyfooda foods dataframe")
+    return foods
+
+
 def ensure_repo_root_on_path() -> None:
     """Allow skills to import root-level helpers when run as modules."""
     root = str(ROOT_DIR)
@@ -116,11 +142,9 @@ def build_food_search_index(model_name: str = "all-MiniLM-L6-v2") -> FoodSearchI
     """Build a FAISS semantic index over pyfooda ingredient display names."""
     import faiss
     import numpy as np
-    from pyfooda import api
     from sentence_transformers import SentenceTransformer
 
-    api.ensure_data_loaded()
-    ingredients = api.get_ingredients_df()
+    ingredients = get_pyfooda_foods_df()
     food_names = ingredients["display_name"].dropna().drop_duplicates().astype(str).tolist()
     embedder = SentenceTransformer(model_name)
     vectors = embedder.encode(

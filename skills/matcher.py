@@ -20,6 +20,7 @@ from .common import (
     DEFAULT_MATCHER_MODEL,
     batched,
     build_food_search_index,
+    get_pyfooda_foods_df,
     llm_json,
     normalize_food_query,
 )
@@ -101,10 +102,8 @@ class MatcherSkill:
     @staticmethod
     def _lexical_candidates(query: str, top_n: int) -> list[str]:
         """Cheap fallback when FAISS/sentence-transformers are unavailable."""
-        from pyfooda import api
-
-        api.ensure_data_loaded()
-        food_names = api.get_ingredients_df()["display_name"].dropna().drop_duplicates().astype(str)
+        foods_df = get_pyfooda_foods_df()
+        food_names = foods_df["display_name"].dropna().drop_duplicates().astype(str)
         terms = [term for term in query.upper().split() if len(term) >= 3]
         if not terms:
             return []

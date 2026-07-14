@@ -1,6 +1,6 @@
 delhaize_name,action,pyfooda_name,llm_raw_name,grams
 1 PATRON BUTTERNUT,match,Butternut Squash,,
-"1,005 KG X 3,79/ KG",ignore,,,1004.9999999999999
+"1,005 KG X 3,79/ KG",ignore,,,1005.0
 "1,125 KG X 1,95/ KG",ignore,,,1125.0
 "1,125 KG X 3,15/ KG",ignore,,,1125.0
 "1,240 KG X 2,99/ KG",ignore,,,1240.0
@@ -9,7 +9,7 @@ delhaize_name,action,pyfooda_name,llm_raw_name,grams
 1.25MARTYD,ignore,,,
 1.5KG SINASAPPEL PA,ignore,,,1500.0
 1.5L COCA REG PET,ignore,,,1500.0
-1.5L GINI LEMON,match,Lemon,,1500.0
+1.5L GINI LEMON,match,"LEMON-LIME SODA, LEMON-LIME","LEMON-LIME SODA, LEMON-LIME",1500.0
 1.5L SCHWEPP MOJIT,ignore,,,1500.0
 1.5L SCHWEPPES TON,ignore,,,1500.0
 1.5L VICHY CELEST,ignore,,,1500.0
@@ -22,7 +22,7 @@ delhaize_name,action,pyfooda_name,llm_raw_name,grams
 100GR JEUNES POUSS,ignore,,,100.0
 100ML MERC 70%ALC,ignore,,,100.0
 10X18.5G YOERRY,ignore,,,185.0
-120G BLINI LEG BIO,match,Frog Leg,,120.0
+120G BLINI LEG BIO,match,MINI BLINIS,MINI BLINIS,120.0
 125G BOULES PAPRIK,ignore,,,125.0
 125G BUGLES PAPRIK,ignore,,,125.0
 125G CHIPS SEL,ignore,,,125.0
@@ -49,7 +49,7 @@ delhaize_name,action,pyfooda_name,llm_raw_name,grams
 175GR JEUNES POUSS,ignore,,,175.0
 175GR JEUNES POUSSE,ignore,,,175.0
 185G LAYS NATUREL,ignore,,,185.0
-185G LAYS PAPRIKA,match,Paprika,,185.0
+185G LAYS PAPRIKA,ignore,,,
 185G LAYS S&BL.DEP,ignore,,,185.0
 185G LAYS S&BL.PEP,ignore,,,185.0
 185G LAYS S&L.PEP,ignore,,,185.0
@@ -57,7 +57,7 @@ delhaize_name,action,pyfooda_name,llm_raw_name,grams
 185G LAYS SABL.PEP,ignore,,,185.0
 185G POIS CA,ignore,,,185.0
 185G SM NACHO TORTILLA,match,Tortilla,,185.0
-185G TORTIL CHILI,match,Chili Oil,,185.0
+185G TORTIL CHILI,ignore,,,
 190G THIN ROMARIN,ignore,,,190.0
 1KG FARINE FERMENT,ignore,,,1000.0
 1KG TRESOR MILK,match,Milk,,1000.0
@@ -149,9 +149,9 @@ delhaize_name,action,pyfooda_name,llm_raw_name,grams
 325G PAT CAC CREME,match,Creme Fraiche,,325.0
 "325G PAT CAC CREME 4,19",match,Creme Fraiche,,325.0
 32CL MOGU MOGU FR,ignore,,,320.0
-33C CANADA DRY CAN,match,Dry Pot Sauce,,
+33C CANADA DRY CAN,match,"CANADA DRY, TONIC WATER","CANADA DRY, TONIC WATER",330.0
 33CL LA CHOUFFE,ignore,,,330.0
-33CL SCH GINGER AL,match,Ginger,,330.0
+33CL SCH GINGER AL,ignore,,,
 33CL SCHW MOJITO Z,ignore,,,330.0
 33CL SCHWEPPES TON,ignore,,,330.0
 340G PAIN TOM KET,match,Bread,,340.0
@@ -253,9 +253,9 @@ delhaize_name,action,pyfooda_name,llm_raw_name,grams
 6X25CL JUPILER 0.6E,ignore,,,1500.0
 6X25CL JUPILER BAS,ignore,,,1500.0
 6X33 SCHWEPPES LEM,ignore,,,
-6X33C CANADA DRY,match,Dry Pot Sauce,,
+6X33C CANADA DRY,match,"CANADA DRY, TONIC WATER","CANADA DRY, TONIC WATER",1980.0
 6X33CL 7UP,ignore,,,1980.0
-6X33CL CANADA DRY,match,Dry Pot Sauce,,1980.0
+6X33CL CANADA DRY,match,"CANADA DRY, TONIC WATER","CANADA DRY, TONIC WATER",1980.0
 6X33CL HOEG 0.0 CA,ignore,,,1980.0
 6X33CL LEFFE 0.0 C,ignore,,,1980.0
 6X33CL SCH GINGER,match,Ginger,,1980.0
@@ -686,10 +686,10 @@ LINGOT EXCELLENCE,ignore,,,
 LINTF EXCEL CACAO,match,Cacao,,
 LITCHIS,ignore,,,
 MAGUE,ignore,,,
-MANDARINES,match,Mandarin Fish,,
-MANDARINES A FEUIL,match,Mandarin Fish,,
-"MANDARINES A FEUIL 4,46",match,Mandarin Fish,,
-MANDARINES FEUILLE,match,Mandarin Fish,,
+MANDARINES,match,MANDARINS,MANDARINS,
+MANDARINES A FEUIL,match,MANDARINS,MANDARINS,
+"MANDARINES A FEUIL 4,46",match,MANDARINS,MANDARINS,
+MANDARINES FEUILLE,match,MANDARINS,MANDARINS,
 MANGUE,match,Mango,,
 MARCHEOUS BLOC TRA,ignore,,,
 MAREDSOUS TRADITIO,ignore,,,

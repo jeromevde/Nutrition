@@ -30,12 +30,12 @@ jobs:
 
       - name: Rename report as index
         run: |
-          cp nutrient_analysis/output/nutrition_report.html nutrient_analysis/output/index.html
+          cp data/nutrition_report.html data/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: nutrient_analysis/output
+          path: data
 
       - name: Deploy to GitHub Pages
         id: deployment

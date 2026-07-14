@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 from pyfooda import api
 
-from ..common import OUTPUT_DIR
+from ..common import OUTPUT_DIR, get_pyfooda_foods_df
 
 # ── Timestamped logging ──────────────────────────────────────────────────────────
 _t0 = time.monotonic()
@@ -76,7 +76,7 @@ KEY_NUTRIENTS = [
 
 def load_pyfooda() -> tuple[pd.DataFrame, dict[str, float], dict[str, str]]:
     api.ensure_data_loaded()
-    foods_df = api.get_ingredients_df().copy()
+    foods_df = get_pyfooda_foods_df().copy()
     # Newer pyfooda exposes an ingredient-level canonical table.
     foods_df = foods_df.drop_duplicates('display_name', keep='first').set_index('display_name')
 
