@@ -29,7 +29,8 @@ DEFAULT_OCR_MODEL = "qwen/qwen-2-vl-7b-instruct"
 def get_pyfooda_foods_df():
     """Return a normalized pyfooda foods DataFrame across API variants.
 
-    Ensures the returned frame has a ``display_name`` column.
+    Ensures the returned frame has a ``display_name`` column normalized to
+    uppercase so mapping lookups are case-insensitive across pyfooda versions.
     """
     from pyfooda import api
 
@@ -49,6 +50,10 @@ def get_pyfooda_foods_df():
             foods = foods.rename(columns={"foodName": "display_name"})
         else:
             raise KeyError("Expected one of display_name or foodName in pyfooda foods dataframe")
+
+    # Normalize display_name to uppercase so that mapping entries (always stored
+    # uppercase) match regardless of which pyfooda version is installed.
+    foods["display_name"] = foods["display_name"].astype(str).str.upper()
     return foods
 
 
