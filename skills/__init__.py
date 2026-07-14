@@ -5,14 +5,18 @@ runnable from the command line with ``python -m skills.<module>``.
 """
 
 __all__ = [
+    "build_mapping",
+    "carrefour",
+    "colruyt",
     "common",
+    "delhaize",
     "llm_client",
     "matcher",
     "nutrition_estimator",
+    "nutrition_report",
+    "observe",
     "ocr",
     "ocr_batch",
-    "pipeline",
     "report_verifier",
-    "scrapers",
     "source_normalizer",
 ]

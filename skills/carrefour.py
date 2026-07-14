@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-skills.scrapers.colruyt — Colruyt favourites scraper
-=====================================================
-Opens the Colruyt "My Products / Favourites" page, waits for login, scrapes
-all product cards. Automatically switches to OBSERVE MODE if 0 items are found
+skills.carrefour — Carrefour frequently-purchased items scraper
+========================================================================
+Opens the Carrefour "Frequently Purchased" page, waits for login, scrapes
+all product names. Automatically switches to OBSERVE MODE if 0 items are found
 (selector likely changed).
 
 Usage:
-    python -m skills.scrapers.colruyt
+    python -m skills.carrefour
 
-Output: data/scrapers/colruyt/colruyt_favorites.csv
+Output: data/carrefour/carrefour_favorites.csv
 """
 
 from __future__ import annotations
@@ -17,9 +17,9 @@ import csv
 import sys
 import time
 
-from ..common import ROOT_DIR, SCRAPER_DATA_DIR
+from .common import CARREFOUR_DATA_DIR, ROOT_DIR
 
-DATA_DIR    = SCRAPER_DATA_DIR / "colruyt"
+DATA_DIR    = CARREFOUR_DATA_DIR
 PROFILE_DIR = ROOT_DIR / ".browser_profile"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)
@@ -38,28 +38,25 @@ def _launch_browser(pw):
     )
 
 
-def scrape_colruyt(pw) -> None:
+def scrape_carrefour(pw) -> None:
     from .observe import observe_mode
 
-    print("═══ Colruyt ═══")
+    print("═══ Carrefour ═══")
     ctx = _launch_browser(pw)
     page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
     page.goto(
-        "https://www.colruyt.be/nl/mijn-boodschappen/favorieten",
+        "https://www.carrefour.be/nl/frequentlypurchased",
         wait_until="domcontentloaded",
     )
     print("  → Browser opened. Please log in if needed.")
-    _log("waiting for product cards (up to 5 min) …")
+    _log("waiting for .product-tile (up to 5 min) …")
 
     try:
-        page.wait_for_selector(
-            "a.card.card--article, .product-card, .favorite-item",
-            timeout=300_000,
-        )
+        page.wait_for_selector(".product-tile", timeout=300_000)
     except Exception:
         _log("✗ Timed out — switching to observe mode")
-        observe_mode(page, ctx, "no product cards appeared after login")
+        observe_mode(page, ctx, "no .product-tile appeared after login")
         return
 
     _log("scrolling to load all products …")
@@ -67,35 +64,30 @@ def scrape_colruyt(pw) -> None:
     for _ in range(50):
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         page.wait_for_timeout(800)
-        cards = page.query_selector_all(
-            "a.card.card--article, .product-card, .favorite-item"
-        )
-        if len(cards) == prev_count:
+        tiles = page.query_selector_all(".product-tile")
+        if len(tiles) == prev_count:
             break
-        prev_count = len(cards)
+        prev_count = len(tiles)
 
-    cards = page.query_selector_all(
-        "a.card.card--article, .product-card, .favorite-item"
-    )
-    _log(f"found {len(cards)} product cards")
+    tiles = page.query_selector_all(".product-tile")
+    _log(f"found {len(tiles)} product tiles")
 
     items: list[dict] = []
-    for card in cards:
-        name_el   = card.query_selector(".card__text, .product-name")
-        weight_el = card.query_selector(".card__quantity, .product-weight")
-        name   = name_el.text_content().strip()   if name_el   else ""
-        weight = weight_el.text_content().strip() if weight_el else ""
-        full = f"{name} - {weight}" if weight else name
-        if full.strip():
-            items.append({"product_name": full})
+    for tile in tiles:
+        name_el  = tile.query_selector("span.d-lg-none.mobile-name")
+        brand_el = tile.query_selector(".brand-wrapper a")
+        name  = name_el.text_content().strip()  if name_el  else ""
+        brand = brand_el.text_content().strip() if brand_el else ""
+        if name:
+            items.append({"product_name": f"{brand} - {name}" if brand else name})
 
     if not items:
-        reason = "0 product names extracted — card selectors likely changed"
+        reason = "0 product names extracted — name/brand selectors likely changed"
         _log(f"✗ STUCK: {reason}")
         observe_mode(page, ctx, reason)
         return
 
-    out_path = DATA_DIR / "colruyt_favorites.csv"
+    out_path = DATA_DIR / "carrefour_favorites.csv"
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["product_name"])
         w.writeheader()
@@ -113,10 +105,10 @@ def main() -> int:
         return 1
 
     with sync_playwright() as pw:
-        scrape_colruyt(pw)
+        scrape_carrefour(pw)
 
     print("\nNext: build the nutrition mapping:")
-    print("  python -m skills.pipeline.build_mapping")
+    print("  python -m skills.build_mapping")
     return 0
 
 

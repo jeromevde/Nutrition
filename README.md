@@ -13,15 +13,17 @@ HTML report with nutrient intake vs. DRVs.
 data/
   *.csv                        ← generated analysis CSVs
   nutrition_report.html        ← generated interactive report
-  scrapers/
-    delhaize/                  ← raw Delhaize receipt images + parsed OCR CSVs
-    carrefour/                 ← parsed Carrefour source CSVs
-    colruyt/                   ← parsed Colruyt source CSVs
-    sessions/                  ← observe-mode recordings for scraper fixing
+  delhaize/                    ← raw Delhaize receipt images + parsed OCR CSVs
+  carrefour/                   ← parsed Carrefour source CSVs
+  colruyt/                     ← parsed Colruyt source CSVs
+  sessions/                    ← observe-mode recordings for scraper fixing
 
 skills/
-  scrapers/                    ← Delhaize, Carrefour, Colruyt browser scrapers
-  pipeline/                    ← build mapping + nutrition report generation
+  delhaize.py                  ← Delhaize browser scraper
+  carrefour.py                 ← Carrefour browser scraper
+  colruyt.py                   ← Colruyt browser scraper
+  build_mapping.py             ← product → pyfooda mapping pipeline
+  nutrition_report.py          ← nutrient report generation
   ocr_batch.py                 ← batch receipt OCR entry point
   matcher.py                   ← reusable semantic-search + LLM food matcher
   nutrition_estimator.py       ← LLM-estimated full nutrient profiles with confidence
@@ -42,9 +44,9 @@ pip install playwright && playwright install chromium
 ```
 
 ```bash
-python -m skills.scrapers.delhaize    # → data/scrapers/delhaize/*.jpg
-python -m skills.scrapers.carrefour   # → data/scrapers/carrefour/carrefour_favorites.csv
-python -m skills.scrapers.colruyt     # → data/scrapers/colruyt/colruyt_favorites.csv
+python -m skills.delhaize    # → data/delhaize/*.jpg
+python -m skills.carrefour   # → data/carrefour/carrefour_favorites.csv
+python -m skills.colruyt     # → data/colruyt/colruyt_favorites.csv
 ```
 
 Each script waits up to 5 minutes for login, then scrapes automatically.
@@ -65,7 +67,7 @@ If a scraper detects it is stuck — 3+ receipts in a row with no image found
 ```
 
 Every click and navigation is logged to the terminal and saved to
-`data/scrapers/sessions/observe_<timestamp>.json`.
+`data/sessions/observe_<timestamp>.json`.
 Paste that file to an LLM to get a fixed scraper.
 
 ---
@@ -83,7 +85,7 @@ python -m skills.ocr_batch --batch     # multi-image batching
 python -m skills.ocr_batch --batch --batch-size 6
 ```
 
-Scans `data/scrapers/delhaize/` — skips images that already have a sibling parsed CSV.
+Scans `data/delhaize/` — skips images that already have a sibling parsed CSV.
 Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 
 > Carrefour and Colruyt produce CSVs directly — no OCR step needed.
@@ -96,8 +98,8 @@ Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 pip install pandas numpy pyfooda sentence-transformers faiss-cpu openai
 export OPENROUTER_API_KEY="your-key-here"
 
-python -m skills.pipeline.build_mapping       # map products → USDA foods
-python -m skills.pipeline.nutrition_report    # generate HTML report
+python -m skills.build_mapping       # map products → USDA foods
+python -m skills.nutrition_report    # generate HTML report
 ```
 
 Report: `data/nutrition_report.html`, auto-deployed to
@@ -111,10 +113,10 @@ The `skills/` package contains reusable modules for making the pipeline more
 LLM-driven and easier to extend to new grocery sources.
 
 ```bash
-python -m skills.source_normalizer data/scrapers/delhaize --source delhaize --output data/purchases_normalized.csv
-python -m skills.matcher data/scrapers/delhaize --dry-run --output /tmp/matcher_candidates.csv --limit 25
+python -m skills.source_normalizer data/delhaize --source delhaize --output data/purchases_normalized.csv
+python -m skills.matcher data/delhaize --dry-run --output /tmp/matcher_candidates.csv --limit 25
 python -m skills.nutrition_estimator --backend agent --limit 25
-python -m skills.pipeline.nutrition_report
+python -m skills.nutrition_report
 python -m skills.report_verifier
 ```
 

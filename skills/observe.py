@@ -14,9 +14,9 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from ..common import SCRAPER_DATA_DIR
+from .common import SESSIONS_DATA_DIR
 
-SESSION_DIR = SCRAPER_DATA_DIR / "sessions"
+SESSION_DIR = SESSIONS_DATA_DIR
 SESSION_DIR.mkdir(exist_ok=True)
 
 # Minimal JS injected to capture clicks + generate the best CSS selector

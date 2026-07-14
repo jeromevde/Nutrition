@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-skills.scrapers.delhaize — Delhaize receipt image scraper
+skills.delhaize — Delhaize receipt image scraper
 ==========================================================
 Opens the Delhaize "My Receipts" page in a real browser, waits for login,
 then iterates every receipt and saves the ticket image as a .jpg.
@@ -11,9 +11,9 @@ the browser and saves a session JSON you can feed to an LLM to fix it.
 
 Usage:
     pip install playwright && playwright install chromium
-    python -m skills.scrapers.delhaize
+    python -m skills.delhaize
 
-Output: data/scrapers/delhaize/<yyyy>_<mm>_<dd>.jpg
+Output: data/delhaize/<yyyy>_<mm>_<dd>.jpg
 """
 
 from __future__ import annotations
@@ -21,9 +21,9 @@ import base64
 import sys
 import time
 
-from ..common import ROOT_DIR, SCRAPER_DATA_DIR
+from .common import DELHAIZE_DATA_DIR, ROOT_DIR
 
-DATA_DIR     = SCRAPER_DATA_DIR / "delhaize"
+DATA_DIR     = DELHAIZE_DATA_DIR
 PROFILE_DIR  = ROOT_DIR / ".browser_profile"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROFILE_DIR.mkdir(exist_ok=True)

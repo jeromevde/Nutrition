@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from ..common import DELHAIZE_SCRAPER_DIR, DEFAULT_MAPPING, DEFAULT_PURCHASES
-from ..matcher import MatcherSkill
-from ..report_verifier import ReportVerifierSkill
+from .common import DELHAIZE_SCRAPER_DIR, DEFAULT_MAPPING, DEFAULT_PURCHASES
+from .matcher import MatcherSkill
+from .report_verifier import ReportVerifierSkill
 
 _NON_FOOD_RE = re.compile(
     r"""

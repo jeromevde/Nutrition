@@ -12,8 +12,11 @@ from typing import Any, Iterable, Sequence
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
-SCRAPER_DATA_DIR = DATA_DIR / "scrapers"
-DELHAIZE_SCRAPER_DIR = SCRAPER_DATA_DIR / "delhaize"
+CARREFOUR_DATA_DIR = DATA_DIR / "carrefour"
+COLRUYT_DATA_DIR = DATA_DIR / "colruyt"
+DELHAIZE_DATA_DIR = DATA_DIR / "delhaize"
+SESSIONS_DATA_DIR = DATA_DIR / "sessions"
+DELHAIZE_SCRAPER_DIR = DELHAIZE_DATA_DIR
 OUTPUT_DIR = DATA_DIR
 DEFAULT_REPORT = OUTPUT_DIR / "nutrition_report.html"
 DEFAULT_MAPPING = OUTPUT_DIR / "delhaize_mapping.csv"

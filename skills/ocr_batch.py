@@ -35,8 +35,8 @@ Tweak these constants at the top of this file:
     MODEL = "qwen/qwen-2-vl-7b-instruct"
 
 After OCR, run the nutrient analysis pipeline:
-    python -m skills.pipeline.build_mapping
-    python -m skills.pipeline.nutrition_report
+    python -m skills.build_mapping
+    python -m skills.nutrition_report
 """
 
 import os
@@ -330,7 +330,7 @@ def main():
     # Resolve LLM backend (OpenRouter or Copilot Proxy)
     client, model = make_client(MODEL)
 
-    # Find all raw Delhaize receipt images in data/scrapers/delhaize/.
+    # Find all raw Delhaize receipt images in data/delhaize/.
     tlog("🔍 Scanning for receipt images...")
     receipts = find_all_receipts(DELHAIZE_SCRAPER_DIR)
 

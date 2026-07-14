@@ -1,5 +1,5 @@
 """
-skills.pipeline.nutrition_report
+skills.nutrition_report
 =========================================
 Reads purchases_enriched.csv + delhaize_mapping.csv, computes per-trip nutrient
 contributions from pyfooda (per-100g values × grams purchased), scales each
@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 from pyfooda import api
 
-from ..common import OUTPUT_DIR, get_pyfooda_foods_df
+from .common import OUTPUT_DIR, get_pyfooda_foods_df
 
 # ── Timestamped logging ──────────────────────────────────────────────────────────
 _t0 = time.monotonic()
