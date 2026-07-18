@@ -1,6 +1,7 @@
 # Runtime outputs
 scraper.log
 .browser_profile/
+.chrome_debug_profile/
 
 # Python
 __pycache__/
