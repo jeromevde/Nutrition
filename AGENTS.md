@@ -10,3 +10,10 @@ BUILD AROUND ACCURACY, SPEED AND EASE OF USE
 
 MULTILANGUAGE AS WELL
 
+## Scrapers (agent)
+
+- Delhaize: run `python -m skills.delhaize` — **Chrome login is the default**.
+  Read the AGENT INSTRUCTIONS at the top of `skills/delhaize.py` before changing flags.
+- Do not use `--no-chrome` unless the user asks (forces a fresh login).
+- After new ticket images: `python -m skills.ocr_batch`
+

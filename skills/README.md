@@ -5,8 +5,9 @@ Agent-centric nutrition pipeline. Matching is done by the coding agent (Copilot 
 ## Pipeline
 
 ```bash
-# 1. Ingest receipts
-python -m skills.delhaize          # scrape Delhaize
+# 1. Ingest receipts (Delhaize uses your Google Chrome login by default)
+pip install playwright && playwright install chromium   # once
+python -m skills.delhaize          # may quit/reopen Chrome briefly to sync cookies
 python -m skills.ocr_batch         # OCR image receipts into CSVs
 
 # 2. Find what needs matching
@@ -37,7 +38,7 @@ python -m skills.agent_remap --enrich
 | `nutrition_report.py` | Compute per-trip/yearly nutrients, generate HTML report. |
 | `source_normalizer.py` | Normalize raw scraper/OCR CSVs into canonical schema. |
 | `common.py` | Shared utilities: pyfooda access, search index, paths, JSON helpers. |
-| `delhaize.py` | Delhaize web scraper. |
+| `delhaize.py` | Delhaize receipt scraper. **Agent-first:** run `python -m skills.delhaize` (Chrome cookies by default). See module docstring. |
 | `carrefour.py` | Carrefour web scraper. |
 | `colruyt.py` | Colruyt web scraper. |
 | `ocr.py` | OCR a single receipt image. |

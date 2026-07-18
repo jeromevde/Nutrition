@@ -35,20 +35,23 @@ skills/
 
 ## Step 1 — Scrape groceries (Playwright)
 
-Login sessions are remembered between runs (`.browser_profile/`).
-
 **Install once:**
 ```bash
 pip install playwright && playwright install chromium
 ```
 
 ```bash
-python -m skills.delhaize    # → data/delhaize/*.jpg
+python -m skills.delhaize    # → data/delhaize/*.jpg  (uses your Google Chrome login)
 python -m skills.carrefour   # → data/carrefour/carrefour_favorites.csv
 python -m skills.colruyt     # → data/colruyt/colruyt_favorites.csv
 ```
 
-Each script waits up to 5 minutes for login, then scrapes automatically.
+**Delhaize + Chrome:** by default the scraper syncs cookies from your Chrome
+profile into `.chrome_debug_profile/` (Chrome 136+ blocks debugging on the real
+profile), may quit/reopen Chrome briefly, then downloads every receipt image.
+Log into Delhaize in the opened window if prompted (up to 5 minutes).
+Use `--no-chrome` only if you want a blank isolated profile.
+Prefer `skills/README.md` for the current agent-centric pipeline.
 
 ### Automatic observe mode (self-recovery)
 
