@@ -80,6 +80,13 @@ def load_pyfooda() -> tuple[pd.DataFrame, dict[str, float], dict[str, str]]:
     # Newer pyfooda exposes an ingredient-level canonical table.
     foods_df = foods_df.drop_duplicates('display_name', keep='first').set_index('display_name')
 
+    # pyfooda mostly fills "Total Sugars"; our report key is still "Sugars, Total".
+    # Prefer Sugars, Total when present, otherwise fall back to Total Sugars.
+    if 'Sugars, Total' in foods_df.columns and 'Total Sugars' in foods_df.columns:
+        foods_df['Sugars, Total'] = foods_df['Sugars, Total'].combine_first(foods_df['Total Sugars'])
+    elif 'Total Sugars' in foods_df.columns and 'Sugars, Total' not in foods_df.columns:
+        foods_df['Sugars, Total'] = foods_df['Total Sugars']
+
     # DRV
     drv_df = api.get_drv_df()
     drv: dict[str, float] = {}
