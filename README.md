@@ -20,8 +20,7 @@ data/
 
 skills/
   delhaize.py                  ← Delhaize browser scraper
-  carrefour.py                 ← Carrefour browser scraper
-  colruyt.py                   ← Colruyt browser scraper
+  mobile_receipts.py           ← Carrefour/Xtra Android ticket capture
   build_mapping.py             ← product → pyfooda mapping pipeline
   nutrition_report.py          ← nutrient report generation
   ocr_batch.py                 ← batch receipt OCR entry point
@@ -42,9 +41,11 @@ pip install playwright && playwright install chromium
 
 ```bash
 python -m skills.delhaize    # → data/delhaize/*.jpg  (uses your Google Chrome login)
-python -m skills.carrefour   # → data/carrefour/carrefour_favorites.csv
-python -m skills.colruyt     # → data/colruyt/colruyt_favorites.csv
 ```
+
+Carrefour and Colruyt tickets are available only in their Android apps. Set up
+the persistent Google-Play emulator and capture their receipt screens using the
+commands in `skills/README.md`.
 
 **Delhaize + Chrome:** by default the scraper syncs cookies from your Chrome
 profile into `.chrome_debug_profile/` (Chrome 136+ blocks debugging on the real
@@ -55,9 +56,8 @@ Prefer `skills/README.md` for the current agent-centric pipeline.
 
 ### Automatic observe mode (self-recovery)
 
-If a scraper detects it is stuck — 3+ receipts in a row with no image found
-(Delhaize), or 0 items extracted after loading (Carrefour/Colruyt) — it
-**automatically switches to observe mode**:
+If the Delhaize scraper detects it is stuck — 3+ receipts in a row with no
+image found — it **automatically switches to observe mode**:
 
 ```
   ⚠  SCRAPER STUCK — 3 consecutive receipts had no extractable image
@@ -90,7 +90,7 @@ python -m skills.ocr_batch --batch --batch-size 6
 Scans `data/delhaize/` — skips images that already have a sibling parsed CSV.
 Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 
-> Carrefour and Colruyt produce CSVs directly — no OCR step needed.
+> Carrefour and Colruyt ticket screens are OCRed with `python -m skills.ocr`.
 
 ---
 

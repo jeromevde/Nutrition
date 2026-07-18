@@ -30,6 +30,37 @@ To re-enrich purchases from the existing mapping (no new matches needed):
 python -m skills.agent_remap --enrich
 ```
 
+## Carrefour and Colruyt mobile tickets
+
+Carrefour and Colruyt keep receipts in their apps, so this repository uses one
+persistent Android emulator. It has Google Play and retains the Play Store and
+retailer sessions across restarts. Credentials never leave the emulator.
+
+```bash
+# One time: Android SDK packages and a Google-Play-enabled Pixel emulator
+python -m skills.mobile_receipts setup
+
+# Each session
+python -m skills.mobile_receipts start
+python -m skills.mobile_receipts install carrefour  # install Carrefour België once
+python -m skills.mobile_receipts install colruyt    # install Xtra once
+python -m skills.mobile_receipts login carrefour
+python -m skills.mobile_receipts login colruyt
+```
+
+Authenticate in the emulator window. For Xtra, enable `Profiel → Kastickets →
+Digitale kastickets en garanties → Enkel digitale kastickets` so future
+receipts arrive there automatically.
+
+To extract a receipt, open it in its app, count the visible screens while
+scrolling, then capture it. The command saves raw receipt screens; it does not
+try to automate an app UI that can change without notice.
+
+```bash
+python -m skills.mobile_receipts capture carrefour 2026-07-18 --pages 3
+python -m skills.ocr data/carrefour/2026_07_18_01.png data/carrefour/2026_07_18_02.png data/carrefour/2026_07_18_03.png --output-dir data/carrefour
+```
+
 ## Skills
 
 | Skill | Purpose |
@@ -39,8 +70,7 @@ python -m skills.agent_remap --enrich
 | `source_normalizer.py` | Normalize raw scraper/OCR CSVs into canonical schema. |
 | `common.py` | Shared utilities: pyfooda access, search index, paths, JSON helpers. |
 | `delhaize.py` | Delhaize receipt scraper. **Agent-first:** run `python -m skills.delhaize` (Chrome cookies by default). See module docstring. |
-| `carrefour.py` | Carrefour web scraper. |
-| `colruyt.py` | Colruyt web scraper. |
+| `mobile_receipts.py` | Google-Play Android emulator and receipt-screen capture for Carrefour and Xtra. |
 | `ocr.py` | OCR a single receipt image. |
 | `ocr_batch.py` | Batch OCR over multiple receipts. |
 | `observe.py` | Browser observe-mode fallback for scrapers. |
