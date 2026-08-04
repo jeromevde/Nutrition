@@ -1,0 +1,17 @@
+{
+ "name": "Paniere — Delhaize basket",
+ "short_name": "Paniere",
+ "start_url": "./index.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#ec3013",
+ "theme_color": "#ec3013",
+ "icons": [
+  {
+   "src": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3Cpattern id='h' width='32' height='32' patternTransform='rotate(135)' patternUnits='userSpaceOnUse'%3E%3Crect width='11' height='32' fill='%23f3f2f2' opacity='.85'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='512' height='512' fill='%23ec3013'/%3E%3Crect x='64' y='168' width='384' height='70' fill='%23f3f2f2'/%3E%3Crect x='64' y='238' width='384' height='234' fill='url(%23h)'/%3E%3C/svg%3E",
+   "sizes": "any",
+   "type": "image/svg+xml",
+   "purpose": "any"
+  }
+ ]
+}

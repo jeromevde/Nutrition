@@ -1,0 +1,1171 @@
+{
+ "S": {
+  "nav.ov": [
+   "Overview",
+   "Aperçu",
+   "Panoramica"
+  ],
+  "nav.nu": [
+   "Nutrients",
+   "Nutriments",
+   "Nutrienti"
+  ],
+  "nav.dq": [
+   "Quality",
+   "Qualité",
+   "Qualità"
+  ],
+  "nav.pu": [
+   "Purchases",
+   "Achats",
+   "Acquisti"
+  ],
+  "nav.sc": [
+   "Scan",
+   "Scanner",
+   "Scansiona"
+  ],
+  "trust.draft": [
+   "Draft",
+   "Brouillon",
+   "Bozza"
+  ],
+  "trust.beta": [
+   "Beta",
+   "Bêta",
+   "Beta"
+  ],
+  "trust.validated": [
+   "Validated",
+   "Validé",
+   "Validato"
+  ],
+  "trust.draft.d": [
+   "Normal state. Everything here works — none of it is verified yet.",
+   "État normal. Tout fonctionne — rien n’est encore vérifié.",
+   "Stato normale. Tutto funziona — nulla è ancora verificato."
+  ],
+  "trust.beta.d": [
+   "Coverage and mappings partly checked against an official database.",
+   "Couverture et correspondances partiellement vérifiées en base officielle.",
+   "Copertura e abbinamenti verificati in parte su banca dati ufficiale."
+  ],
+  "trust.validated.d": [
+   "Coverage thresholds met and every mapping checked against CIQUAL.",
+   "Seuils de couverture atteints et correspondances vérifiées sur CIQUAL.",
+   "Soglie di copertura raggiunte e abbinamenti verificati su CIQUAL."
+  ],
+  "ov.measures": [
+   "What this measures",
+   "Ce que ceci mesure",
+   "Che cosa misura"
+  ],
+  "ov.usableHead": [
+   "of purchase lines are fully usable",
+   "des lignes d’achat sont pleinement exploitables",
+   "delle righe d’acquisto è pienamente utilizzabile"
+  ],
+  "ov.notAScore": [
+   "A figure about the data, not a score for the household. Nothing here is a target to hit.",
+   "Un chiffre sur les données, pas une note pour le ménage. Rien ici n’est un objectif à atteindre.",
+   "Un dato sui dati, non un voto per la famiglia. Nulla qui è un obiettivo da raggiungere."
+  ],
+  "ov.chain": [
+   "Coverage chain",
+   "Chaîne de couverture",
+   "Catena di copertura"
+  ],
+  "ov.c1": [
+   "Product lines matched to a food",
+   "Lignes associées à un aliment",
+   "Righe abbinate a un alimento"
+  ],
+  "ov.c2": [
+   "Quantity readable on the label",
+   "Quantité lisible sur l’étiquette",
+   "Quantità leggibile sull’etichetta"
+  ],
+  "ov.c3": [
+   "Lines usable in the calculation",
+   "Lignes exploitables dans le calcul",
+   "Righe utilizzabili nel calcolo"
+  ],
+  "ov.c4": [
+   "Spend represented",
+   "Dépense représentée",
+   "Spesa rappresentata"
+  ],
+  "ov.receipts": [
+   "Receipt inventory",
+   "Inventaire des tickets",
+   "Inventario scontrini"
+  ],
+  "ov.t1": [
+   "Receipts analysed",
+   "Tickets analysés",
+   "Scontrini analizzati"
+  ],
+  "ov.t2": [
+   "Unique images",
+   "Images uniques",
+   "Immagini uniche"
+  ],
+  "ov.t3": [
+   "Never read",
+   "Jamais lus",
+   "Mai letti"
+  ],
+  "ov.t4": [
+   "Duplicate pairs",
+   "Paires en double",
+   "Coppie duplicate"
+  ],
+  "ov.t1d": [
+   "in the current calculation",
+   "dans le calcul actuel",
+   "nel calcolo attuale"
+  ],
+  "ov.t2d": [
+   "of 131 image files",
+   "sur 131 fichiers image",
+   "su 131 file immagine"
+  ],
+  "ov.t3d": [
+   "listed, OCR never run",
+   "répertoriés, OCR jamais lancé",
+   "elencati, OCR mai eseguito"
+  ],
+  "ov.t4d": [
+   "byte-identical, removed",
+   "identiques, retirées",
+   "identiche, rimosse"
+  ],
+  "ov.period": [
+   "Covered period",
+   "Période couverte",
+   "Periodo coperto"
+  ],
+  "ov.why": [
+   "Why this report is not validated",
+   "Pourquoi ce rapport n’est pas validé",
+   "Perché questo report non è validato"
+  ],
+  "ov.draftFoot": [
+   "Draft is where this report is expected to sit for a long time. It is not a warning and there is nothing to wait for.",
+   "Brouillon est l’état attendu pour longtemps. Ce n’est pas un avertissement, il n’y a rien à attendre.",
+   "Bozza è lo stato previsto per molto tempo. Non è un avviso e non c’è nulla da attendere."
+  ],
+  "nu.title": [
+   "Nutrients bought",
+   "Nutriments achetés",
+   "Nutrienti acquistati"
+  ],
+  "nu.per": [
+   "Per 2 500 kcal of food bought · EU Reg. 1169/2011 Annex XIII rescaled",
+   "Pour 2 500 kcal d’aliments achetés · Règl. UE 1169/2011 annexe XIII remis à l’échelle",
+   "Per 2 500 kcal di alimenti acquistati · Reg. UE 1169/2011 all. XIII riscalato"
+  ],
+  "nu.all": [
+   "All years",
+   "Toutes",
+   "Tutti"
+  ],
+  "nu.obs": [
+   "figure",
+   "valeur",
+   "valore"
+  ],
+  "nu.thin": [
+   "thin coverage",
+   "couverture faible",
+   "copertura scarsa"
+  ],
+  "nu.bracket": [
+   "estimate bracket",
+   "fourchette estimée",
+   "forbice stimata"
+  ],
+  "nu.refMark": [
+   "EU reference",
+   "référence UE",
+   "riferimento UE"
+  ],
+  "nu.cov": [
+   "coverage",
+   "couverture",
+   "copertura"
+  ],
+  "nu.thinChip": [
+   "Coverage under 80%",
+   "Couverture sous 80 %",
+   "Copertura sotto l’80%"
+  ],
+  "nu.top": [
+   "largest single line",
+   "plus grande ligne",
+   "riga più grande"
+  ],
+  "nu.fragile": [
+   "One product ≥25%",
+   "Un produit ≥25 %",
+   "Un prodotto ≥25%"
+  ],
+  "nu.noRef": [
+   "No EU reference exists for this nutrient, so there is nothing to compare it to.",
+   "Aucune référence UE n’existe pour ce nutriment : rien à comparer.",
+   "Non esiste un riferimento UE per questo nutriente: non c’è nulla da confrontare."
+  ],
+  "nu.bracketText": [
+   "Re-including estimated quantities would put this at",
+   "En réintégrant les quantités estimées, on obtiendrait",
+   "Reintegrando le quantità stimate si otterrebbe"
+  ],
+  "nu.axisNote": [
+   "Bars run from zero to twice the EU reference; the centre rule is the reference itself. The reference describes a labelling scale, not a personal requirement.",
+   "Les barres vont de zéro au double de la référence UE ; le trait central est la référence. Celle-ci décrit une échelle d’étiquetage, pas un besoin personnel.",
+   "Le barre vanno da zero al doppio del riferimento UE; il tratto centrale è il riferimento, che descrive una scala di etichettatura, non un bisogno personale."
+  ],
+  "nu.noYearTitle": [
+   "No per-year breakdown",
+   "Pas de détail annuel",
+   "Nessun dettaglio annuale"
+  ],
+  "nu.noYearBody": [
+   "This report file carries a per-year breakdown for 2025 only. The other years are in the coverage figures but not split out here.",
+   "Ce fichier ne contient un détail annuel que pour 2025. Les autres années sont dans les chiffres de couverture mais pas ventilées ici.",
+   "Questo file contiene il dettaglio annuale solo per il 2025. Gli altri anni rientrano nella copertura ma non sono scorporati qui."
+  ],
+  "nu.showAll": [
+   "Show all years",
+   "Afficher toutes les années",
+   "Mostra tutti gli anni"
+  ],
+  "nu.contrib": [
+   "Top contributors",
+   "Principaux contributeurs",
+   "Principali contributori"
+  ],
+  "nu.evidence": [
+   "Boxed monospace is the product name exactly as printed on the receipt — it is evidence, never translated. The arrow shows what it was matched to.",
+   "Le texte encadré est le nom du produit tel qu’imprimé sur le ticket — c’est une preuve, jamais traduite. La flèche indique la correspondance retenue.",
+   "Il testo nel riquadro è il nome del prodotto come stampato sullo scontrino — è una prova, mai tradotta. La freccia mostra l’abbinamento."
+  ],
+  "nu.refLine": [
+   "EU reference",
+   "Référence UE",
+   "Riferimento UE"
+  ],
+  "sys.loading": [
+   "Reading the report",
+   "Lecture du rapport",
+   "Lettura del report"
+  ],
+  "sys.errTitle": [
+   "Report could not be read",
+   "Rapport illisible",
+   "Report non leggibile"
+  ],
+  "sys.errBody": [
+   "The report file is missing or malformed. Nothing has been shown rather than showing numbers we cannot stand behind.",
+   "Le fichier du rapport est absent ou corrompu. Rien n’est affiché plutôt que des chiffres non fiables.",
+   "Il file del report è assente o corrotto. Non mostriamo nulla anziché numeri di cui non possiamo rispondere."
+  ],
+  "sys.retry": [
+   "Try again",
+   "Réessayer",
+   "Riprova"
+  ],
+  "sys.offTitle": [
+   "Offline",
+   "Hors ligne",
+   "Offline"
+  ],
+  "sys.offBody": [
+   "You are seeing the last report cached on this device. It is complete and unchanged — only new receipts have to wait.",
+   "Vous voyez le dernier rapport mis en cache. Il est complet et inchangé — seuls les nouveaux tickets attendent.",
+   "Stai vedendo l’ultimo report in cache. È completo e inalterato — solo i nuovi scontrini devono attendere."
+  ],
+  "sys.cached": [
+   "Cached report",
+   "Rapport en cache",
+   "Report in cache"
+  ],
+  "sys.receipts": [
+   "receipts",
+   "tickets",
+   "scontrini"
+  ],
+  "sys.usable": [
+   "usable",
+   "exploitable",
+   "utilizzabile"
+  ],
+  "sys.queued1": [
+   "1 receipt photographed and queued. It uploads by itself when you are back online.",
+   "1 ticket photographié et en file. Il s’enverra seul au retour du réseau.",
+   "1 scontrino fotografato e in coda. Si invierà da solo al ritorno della rete."
+  ],
+  "st.usable": [
+   "Counted",
+   "Comptée",
+   "Conteggiata"
+  ],
+  "st.quantity_unknown": [
+   "Quantity not on the label",
+   "Quantité absente de l’étiquette",
+   "Quantità non sull’etichetta"
+  ],
+  "st.volume_no_density": [
+   "Volume, no official density",
+   "Volume, densité non officielle",
+   "Volume, densità non ufficiale"
+  ],
+  "st.not_food_or_unmatched": [
+   "Not food, or unmatched",
+   "Non alimentaire ou non associé",
+   "Non alimentare o non abbinato"
+  ],
+  "st.quarantined": [
+   "Mapping quarantined",
+   "Correspondance en quarantaine",
+   "Abbinamento in quarantena"
+  ],
+  "st.no_food_record": [
+   "No food record",
+   "Aucune fiche aliment",
+   "Nessun record alimento"
+  ],
+  "st.receipt_metadata": [
+   "Receipt line, not a product",
+   "Ligne de ticket, pas un produit",
+   "Riga scontrino, non un prodotto"
+  ],
+  "st.all": [
+   "All lines",
+   "Toutes",
+   "Tutte"
+  ],
+  "qm.label_single": [
+   "Read from the label",
+   "Lue sur l’étiquette",
+   "Letta dall’etichetta"
+  ],
+  "qm.label_multipack": [
+   "Label, multipack total",
+   "Étiquette, total multipack",
+   "Etichetta, totale multipack"
+  ],
+  "qm.not_on_label": [
+   "Not printed on the label",
+   "Absente de l’étiquette",
+   "Non stampata sull’etichetta"
+  ],
+  "qm.estimate": [
+   "Estimated, not observed",
+   "Estimée, non observée",
+   "Stimata, non osservata"
+  ],
+  "is.quantity_not_on_label": [
+   "The receipt prints no weight or volume for this line.",
+   "Le ticket n’imprime ni poids ni volume pour cette ligne.",
+   "Lo scontrino non stampa peso né volume per questa riga."
+  ],
+  "is.quantity_estimated_not_observed": [
+   "A weight was estimated by the old pipeline. Nothing on the receipt confirms it, so it is not counted.",
+   "Un poids a été estimé par l’ancien traitement. Rien sur le ticket ne le confirme, il n’est donc pas compté.",
+   "Un peso è stato stimato dalla vecchia pipeline. Nulla sullo scontrino lo conferma, quindi non è conteggiato."
+  ],
+  "is.volume_without_official_density": [
+   "Sold by volume, and no official density exists to turn millilitres into grams.",
+   "Vendu au volume, et aucune densité officielle ne permet de convertir en grammes.",
+   "Venduto a volume, e non esiste una densità ufficiale per convertirlo in grammi."
+  ],
+  "is.bad_mapping": [
+   "The food this was matched to is verified wrong, so the line is held out of every figure.",
+   "L’aliment associé est vérifié comme erroné : la ligne est exclue de tous les chiffres.",
+   "L’alimento abbinato è verificato come errato: la riga è esclusa da ogni cifra."
+  ],
+  "dq.title": [
+   "Data quality",
+   "Qualité des données",
+   "Qualità dei dati"
+  ],
+  "dq.sub": [
+   "Everything the report knows about its own gaps, in one place.",
+   "Tout ce que le rapport sait de ses propres lacunes, au même endroit.",
+   "Tutto ciò che il report sa delle proprie lacune, in un unico posto."
+  ],
+  "dq.ladder": [
+   "Receipt inventory",
+   "Inventaire des tickets",
+   "Inventario scontrini"
+  ],
+  "dq.l1": [
+   "Image files",
+   "Fichiers image",
+   "File immagine"
+  ],
+  "dq.l2": [
+   "Duplicate pairs removed",
+   "Paires en double retirées",
+   "Coppie duplicate rimosse"
+  ],
+  "dq.l3": [
+   "Unique images",
+   "Images uniques",
+   "Immagini uniche"
+  ],
+  "dq.l4": [
+   "OCR output files",
+   "Fichiers issus de l’OCR",
+   "File prodotti dall’OCR"
+  ],
+  "dq.l5": [
+   "of those, empty",
+   "dont vides",
+   "di cui vuoti"
+  ],
+  "dq.l6": [
+   "Receipts in the analysis",
+   "Tickets dans l’analyse",
+   "Scontrini nell’analisi"
+  ],
+  "dq.l7": [
+   "Not in the analysis",
+   "Hors analyse",
+   "Fuori analisi"
+  ],
+  "dq.l8": [
+   "listed as never read",
+   "répertoriés jamais lus",
+   "elencati come mai letti"
+  ],
+  "dq.l9": [
+   "empty OCR output",
+   "sortie OCR vide",
+   "output OCR vuoto"
+  ],
+  "dq.l10": [
+   "unaccounted for",
+   "non expliqués",
+   "non spiegati"
+  ],
+  "dq.l10n": [
+   "The report does not say what happened to these. They are shown rather than absorbed into another figure.",
+   "Le rapport ne dit pas ce qu’il leur est arrivé. Ils sont montrés plutôt que fondus dans un autre chiffre.",
+   "Il report non dice cosa sia accaduto a questi. Sono mostrati invece di essere assorbiti in un’altra cifra."
+  ],
+  "dq.sens": [
+   "If estimated quantities were re-included",
+   "Si les quantités estimées étaient réintégrées",
+   "Se le quantità stimate fossero reintegrate"
+  ],
+  "dq.sensNote": [
+   "Today only quantities printed on a label are counted. This is what each figure would become if the old pipeline’s estimated weights were allowed back in — the width of the honest doubt.",
+   "Aujourd’hui seules les quantités imprimées comptent. Voici ce que deviendrait chaque valeur si les poids estimés étaient réadmis — la largeur du doute.",
+   "Oggi contano solo le quantità stampate. Ecco cosa diventerebbe ogni valore se i pesi stimati fossero riammessi — l’ampiezza del dubbio."
+  ],
+  "dq.obs": [
+   "printed quantities only",
+   "quantités imprimées",
+   "solo quantità stampate"
+  ],
+  "dq.est": [
+   "with estimates re-included",
+   "avec estimations",
+   "con stime reintegrate"
+  ],
+  "dq.quar": [
+   "Quarantined mappings",
+   "Correspondances en quarantaine",
+   "Abbinamenti in quarantena"
+  ],
+  "dq.quarNote": [
+   "Checked by hand and found wrong. Held out of every figure in the app, and kept visible so the mistake is not lost.",
+   "Vérifiées à la main et fausses. Exclues de tous les chiffres, mais gardées visibles pour ne pas perdre l’erreur.",
+   "Verificati a mano e sbagliati. Esclusi da ogni cifra, ma tenuti visibili perché l’errore non vada perso."
+  ],
+  "dq.fix": [
+   "Fix mapping",
+   "Corriger",
+   "Correggi"
+  ],
+  "dq.keepOut": [
+   "Keep held out",
+   "Maintenir exclu",
+   "Mantieni escluso"
+  ],
+  "dq.review": [
+   "Review queue",
+   "File de révision",
+   "Coda di revisione"
+  ],
+  "dq.reviewNote": [
+   "Composite products matched to a single ingredient. Probably wrong, not yet verified — still counted, and listed here.",
+   "Produits composés associés à un seul ingrédient. Probablement faux, pas encore vérifiés — encore comptés, et listés ici.",
+   "Prodotti composti abbinati a un solo ingrediente. Probabilmente errati, non ancora verificati — ancora conteggiati, ed elencati qui."
+  ],
+  "dq.open": [
+   "Open",
+   "Ouvrir",
+   "Apri"
+  ],
+  "dq.unres": [
+   "Largest unresolved products",
+   "Plus gros produits non résolus",
+   "Prodotti irrisolti più grandi"
+  ],
+  "dq.unresNote": [
+   "Bought often, never counted. Ranked by spend, because that is the size of the hole.",
+   "Achetés souvent, jamais comptés. Classés par dépense, car c’est la taille du trou.",
+   "Acquistati spesso, mai conteggiati. Ordinati per spesa, perché è la dimensione del buco."
+  ],
+  "dq.rowsWord": [
+   "lines",
+   "lignes",
+   "righe"
+  ],
+  "pu.title": [
+   "Purchase lines",
+   "Lignes d’achat",
+   "Righe d’acquisto"
+  ],
+  "pu.searchPh": [
+   "Search the printed text",
+   "Chercher le texte imprimé",
+   "Cerca il testo stampato"
+  ],
+  "pu.sampleNote": [
+   "Counts on the filters are for all 2 275 product lines. This report file carries 41 example lines, so the list below is shorter than the counts.",
+   "Les compteurs portent sur les 2 275 lignes. Ce fichier ne contient que 41 lignes d’exemple : la liste est donc plus courte.",
+   "I contatori si riferiscono a tutte le 2 275 righe. Questo file contiene 41 righe d’esempio, quindi l’elenco è più corto."
+  ],
+  "pu.unknown": [
+   "quantity unknown",
+   "quantité inconnue",
+   "quantità sconosciuta"
+  ],
+  "pu.estimated": [
+   "estimated",
+   "estimée",
+   "stimata"
+  ],
+  "pu.noFood": [
+   "no food matched",
+   "aucun aliment associé",
+   "nessun alimento abbinato"
+  ],
+  "pu.noResults": [
+   "Nothing matches",
+   "Aucun résultat",
+   "Nessun risultato"
+  ],
+  "pu.noResultsBody": [
+   "No line in this sample matches that text and filter. The filter counts above still describe the full dataset.",
+   "Aucune ligne de cet échantillon ne correspond. Les compteurs ci-dessus décrivent toujours l’ensemble complet.",
+   "Nessuna riga di questo campione corrisponde. I contatori sopra descrivono comunque l’insieme completo."
+  ],
+  "pu.clear": [
+   "Clear search and filter",
+   "Réinitialiser",
+   "Azzera ricerca e filtro"
+  ],
+  "pd.asPrinted": [
+   "As printed on the receipt",
+   "Tel qu’imprimé sur le ticket",
+   "Come stampato sullo scontrino"
+  ],
+  "th.printed": [
+   "Printed on the receipt",
+   "Imprimé sur le ticket",
+   "Stampato sullo scontrino"
+  ],
+  "th.food": [
+   "Matched to",
+   "Associé à",
+   "Abbinato a"
+  ],
+  "th.qty": [
+   "Quantity",
+   "Quantité",
+   "Quantità"
+  ],
+  "th.price": [
+   "Price",
+   "Prix",
+   "Prezzo"
+  ],
+  "th.state": [
+   "State",
+   "État",
+   "Stato"
+  ],
+  "th.why": [
+   "Why it is counted, or is not",
+   "Pourquoi elle compte, ou non",
+   "Perché conta, o non conta"
+  ],
+  "pd.food": [
+   "Matched food",
+   "Aliment associé",
+   "Alimento abbinato"
+  ],
+  "pd.qty": [
+   "Quantity",
+   "Quantité",
+   "Quantità"
+  ],
+  "pd.method": [
+   "How the quantity was derived",
+   "Origine de la quantité",
+   "Origine della quantità"
+  ],
+  "pd.declared": [
+   "Weight assumed by the old pipeline",
+   "Poids supposé par l’ancien traitement",
+   "Peso supposto dalla vecchia pipeline"
+  ],
+  "pd.price": [
+   "Price",
+   "Prix",
+   "Prezzo"
+  ],
+  "pd.date": [
+   "Receipt date",
+   "Date du ticket",
+   "Data scontrino"
+  ],
+  "pd.energy": [
+   "Energy contributed",
+   "Énergie apportée",
+   "Energia apportata"
+  ],
+  "pd.record": [
+   "Food record source",
+   "Source de la fiche",
+   "Fonte del record"
+  ],
+  "pd.recordVal": [
+   "pyfooda legacy snapshot",
+   "instantané pyfooda",
+   "snapshot pyfooda legacy"
+  ],
+  "pd.whyCounted": [
+   "Why it is counted, or is not",
+   "Pourquoi elle compte, ou non",
+   "Perché conta, o non conta"
+  ],
+  "pd.whyUsable": [
+   "Matched to a food and the quantity is printed on the label, so this line is in every figure.",
+   "Associée à un aliment et quantité imprimée : cette ligne entre dans tous les chiffres.",
+   "Abbinata a un alimento e quantità stampata: questa riga entra in tutti i valori."
+  ],
+  "pd.whyNot": [
+   "This line is held out of every nutrient figure. Its price still counts towards total spend.",
+   "Cette ligne est exclue de tous les nutriments. Son prix compte encore dans la dépense totale.",
+   "Questa riga è esclusa da ogni valore nutrizionale. Il suo prezzo conta ancora nella spesa totale."
+  ],
+  "pd.confidence": [
+   "Match confidence",
+   "Confiance de l’association",
+   "Confidenza dell’abbinamento"
+  ],
+  "pd.confidenceBody": [
+   "The report file records no confidence score for this match — only the state and the issues above. Rather than invent a number, the app shows what it actually has.",
+   "Le fichier n’enregistre aucun score de confiance — seulement l’état et les problèmes ci-dessus. Plutôt qu’inventer un chiffre, l’app montre ce qu’elle a.",
+   "Il file non registra alcun punteggio di confidenza — solo lo stato e i problemi sopra. Anziché inventare un numero, l’app mostra ciò che ha."
+  ],
+  "pd.remap": [
+   "Match to another food",
+   "Associer un autre aliment",
+   "Abbina un altro alimento"
+  ],
+  "pd.setQty": [
+   "Enter the quantity",
+   "Saisir la quantité",
+   "Inserisci la quantità"
+  ],
+  "pd.record2": [
+   "Product record",
+   "Fiche produit",
+   "Scheda prodotto"
+  ],
+  "sc.camera": [
+   "Camera",
+   "Appareil",
+   "Fotocamera"
+  ],
+  "sc.preview": [
+   "Preview",
+   "Aperçu",
+   "Anteprima"
+  ],
+  "sc.processing": [
+   "Processing",
+   "Traitement",
+   "Elaborazione"
+  ],
+  "sc.review": [
+   "Correct",
+   "Corriger",
+   "Correggi"
+  ],
+  "sc.result": [
+   "Result",
+   "Résultat",
+   "Risultato"
+  ],
+  "sc.offline": [
+   "Queued",
+   "En file",
+   "In coda"
+  ],
+  "sc.blurry": [
+   "Too blurry",
+   "Trop flou",
+   "Troppo sfocato"
+  ],
+  "sc.duplicate": [
+   "Duplicate",
+   "Doublon",
+   "Duplicato"
+  ],
+  "sc.mismatch": [
+   "Total mismatch",
+   "Total incohérent",
+   "Totale incoerente"
+  ],
+  "sc.guide": [
+   "Align the strip",
+   "Aligner la bande",
+   "Allinea la striscia"
+  ],
+  "sc.camHint": [
+   "Keep the whole strip inside the brackets. Flatten folds with a thumb; tilt away from the light to kill glare. Long receipts: shoot the top, then tap + for the rest.",
+   "Gardez toute la bande dans les repères. Aplatissez les plis ; inclinez pour éviter les reflets. Tickets longs : le haut d’abord, puis + pour la suite.",
+   "Tieni tutta la striscia dentro gli angoli. Appiattisci le pieghe; inclina per evitare i riflessi. Scontrini lunghi: prima l’alto, poi + per il resto."
+  ],
+  "sc.torch": [
+   "Torch",
+   "Torche",
+   "Torcia"
+  ],
+  "sc.frames": [
+   "frame",
+   "image",
+   "scatto"
+  ],
+  "sc.previewTitle": [
+   "Two frames captured",
+   "Deux images capturées",
+   "Due scatti acquisiti"
+  ],
+  "sc.previewBody": [
+   "The strip was too long for one frame. The overlap is stitched automatically — check that no line is cut in half.",
+   "La bande était trop longue pour une image. Le recouvrement est assemblé automatiquement — vérifiez qu’aucune ligne n’est coupée.",
+   "La striscia era troppo lunga per un solo scatto. La sovrapposizione è unita automaticamente — controlla che nessuna riga sia tagliata."
+  ],
+  "sc.frame1": [
+   "Frame 1 · top",
+   "Image 1 · haut",
+   "Scatto 1 · alto"
+  ],
+  "sc.frame2": [
+   "Frame 2 · bottom",
+   "Image 2 · bas",
+   "Scatto 2 · basso"
+  ],
+  "sc.addFrame": [
+   "Add another frame",
+   "Ajouter une image",
+   "Aggiungi scatto"
+  ],
+  "sc.retake": [
+   "Retake",
+   "Reprendre",
+   "Riprendi"
+  ],
+  "sc.accept": [
+   "Use these frames",
+   "Utiliser ces images",
+   "Usa questi scatti"
+  ],
+  "sc.accept2": [
+   "Use it anyway",
+   "Utiliser quand même",
+   "Usa comunque"
+  ],
+  "sc.procTitle": [
+   "Reading the receipt",
+   "Lecture du ticket",
+   "Lettura dello scontrino"
+  ],
+  "sc.procEta": [
+   "about 40 s left",
+   "environ 40 s",
+   "circa 40 s"
+  ],
+  "sc.p1": [
+   "Frames uploaded",
+   "Images envoyées",
+   "Scatti inviati"
+  ],
+  "sc.p2": [
+   "Text read from the paper",
+   "Texte lu sur le papier",
+   "Testo letto dalla carta"
+  ],
+  "sc.p3": [
+   "Matching lines to foods",
+   "Association aux aliments",
+   "Abbinamento agli alimenti"
+  ],
+  "sc.p4": [
+   "Recomputing coverage",
+   "Recalcul de la couverture",
+   "Ricalcolo della copertura"
+  ],
+  "sc.procNote": [
+   "Reading a thermal receipt is slow and it can fail outright. You can leave this screen — it keeps going, and you will find the receipt in the queue.",
+   "La lecture d’un ticket thermique est lente et peut échouer. Vous pouvez quitter cet écran — le traitement continue et le ticket reste dans la file.",
+   "Leggere uno scontrino termico è lento e può fallire. Puoi lasciare questa schermata — il lavoro continua e lo scontrino resta in coda."
+  ],
+  "sc.skip": [
+   "Show what it has so far",
+   "Voir l’état actuel",
+   "Mostra quanto letto"
+  ],
+  "sc.cancel": [
+   "Cancel",
+   "Annuler",
+   "Annulla"
+  ],
+  "sc.reviewTitle": [
+   "Check every line",
+   "Vérifier chaque ligne",
+   "Controlla ogni riga"
+  ],
+  "sc.qty": [
+   "Quantity",
+   "Quantité",
+   "Quantità"
+  ],
+  "sc.unknownPh": [
+   "unknown — leave empty",
+   "inconnue — laisser vide",
+   "sconosciuta — lascia vuoto"
+  ],
+  "sc.price": [
+   "Price",
+   "Prix",
+   "Prezzo"
+  ],
+  "sc.confHigh": [
+   "Read cleanly",
+   "Lecture nette",
+   "Letta bene"
+  ],
+  "sc.confMid": [
+   "Partly unsure",
+   "Partiellement incertain",
+   "In parte incerta"
+  ],
+  "sc.confLow": [
+   "Probably misread",
+   "Probablement mal lu",
+   "Probabilmente mal letta"
+  ],
+  "sc.flaggedNote": [
+   "Flagged for later. It is saved as it stands and shows up in the review queue.",
+   "Marquée pour plus tard. Enregistrée telle quelle, elle apparaît dans la file de révision.",
+   "Segnata per dopo. Salvata così com’è, comparirà nella coda di revisione."
+  ],
+  "sc.save": [
+   "Save 7 lines to the report",
+   "Enregistrer 7 lignes",
+   "Salva 7 righe nel report"
+  ],
+  "sc.reviewFoot": [
+   "Leaving a quantity empty is a real answer. An empty quantity keeps the line out of the nutrient figures instead of guessing a weight.",
+   "Laisser une quantité vide est une vraie réponse : la ligne reste hors des nutriments au lieu d’un poids deviné.",
+   "Lasciare vuota la quantità è una risposta valida: la riga resta fuori dai nutrienti invece di indovinare un peso."
+  ],
+  "sc.summary": [
+   "7 lines read · 3 need a look · printed total €41,54",
+   "7 lignes lues · 3 à vérifier · total imprimé 41,54 €",
+   "7 righe lette · 3 da controllare · totale stampato 41,54 €"
+  ],
+  "sc.mismatchTitle": [
+   "Lines do not sum to the printed total",
+   "Les lignes ne font pas le total imprimé",
+   "Le righe non fanno il totale stampato"
+  ],
+  "sc.mismatchBody": [
+   "Something was missed or misread. The receipt is saved either way — the gap is recorded with it so the figures stay honest.",
+   "Une ligne manque ou est mal lue. Le ticket est enregistré quand même — l’écart est conservé avec lui.",
+   "Manca una riga o è mal letta. Lo scontrino è salvato comunque — la differenza resta registrata con esso."
+  ],
+  "sc.parsed": [
+   "Lines read",
+   "Lignes lues",
+   "Righe lette"
+  ],
+  "sc.printed": [
+   "Printed total",
+   "Total imprimé",
+   "Totale stampato"
+  ],
+  "sc.difference": [
+   "Difference",
+   "Écart",
+   "Differenza"
+  ],
+  "sc.resultTitle": [
+   "Receipt added",
+   "Ticket ajouté",
+   "Scontrino aggiunto"
+  ],
+  "sc.linesAdded": [
+   "lines added",
+   "lignes ajoutées",
+   "righe aggiunte"
+  ],
+  "sc.needReview": [
+   "need a look",
+   "à vérifier",
+   "da controllare"
+  ],
+  "sc.countedTile": [
+   "countable now",
+   "comptables",
+   "conteggiabili"
+  ],
+  "sc.flaggedTile": [
+   "flagged by you",
+   "marquées par vous",
+   "segnate da te"
+  ],
+  "sc.covEffect": [
+   "Effect on coverage",
+   "Effet sur la couverture",
+   "Effetto sulla copertura"
+  ],
+  "sc.covDelta": [
+   "+0,1 point",
+   "+0,1 point",
+   "+0,1 punto"
+  ],
+  "sc.covNote": [
+   "Two of the seven lines carry a printed weight, so they enter the nutrient figures. The other five raise total spend and nothing else — and the report says so.",
+   "Deux des sept lignes portent un poids imprimé et entrent dans les nutriments. Les cinq autres n’augmentent que la dépense — et le rapport le dit.",
+   "Due delle sette righe hanno un peso stampato ed entrano nei nutrienti. Le altre cinque aumentano solo la spesa — e il report lo dice."
+  ],
+  "sc.scanAnother": [
+   "Scan another",
+   "Scanner un autre",
+   "Scansiona un altro"
+  ],
+  "sc.backToReport": [
+   "Back to the report",
+   "Retour au rapport",
+   "Torna al report"
+  ],
+  "sc.queueTitle": [
+   "Queued for later",
+   "En file d’attente",
+   "In coda"
+  ],
+  "sc.queueBody": [
+   "No network. Photographs are kept on the phone at full quality and sent when you are back online. Nothing is lost and nothing is guessed in the meantime.",
+   "Pas de réseau. Les photos restent sur le téléphone en pleine qualité et partent au retour du réseau. Rien n’est perdu, rien n’est deviné.",
+   "Nessuna rete. Le foto restano sul telefono a piena qualità e partono al ritorno della rete. Nulla è perso e nulla è indovinato."
+  ],
+  "sc.queueFoot": [
+   "Queued receipts change no figure until they are read. The coverage chain on the overview is unaffected.",
+   "Les tickets en file ne changent aucun chiffre avant lecture. La chaîne de couverture reste inchangée.",
+   "Gli scontrini in coda non cambiano alcuna cifra fino alla lettura. La catena di copertura resta invariata."
+  ],
+  "sc.q1": [
+   "waiting for network",
+   "en attente de réseau",
+   "in attesa di rete"
+  ],
+  "sc.q2": [
+   "reading",
+   "lecture",
+   "in lettura"
+  ],
+  "sc.q3": [
+   "failed — will retry",
+   "échec — nouvel essai",
+   "errore — riprova"
+  ],
+  "sc.q1d": [
+   "2 frames · 1,8 MB",
+   "2 images · 1,8 Mo",
+   "2 scatti · 1,8 MB"
+  ],
+  "sc.q2d": [
+   "1 frame · 0,9 MB",
+   "1 image · 0,9 Mo",
+   "1 scatto · 0,9 MB"
+  ],
+  "sc.q3d": [
+   "3 frames · 2,6 MB",
+   "3 images · 2,6 Mo",
+   "3 scatti · 2,6 MB"
+  ],
+  "sc.blurTitle": [
+   "Too blurry to read",
+   "Trop flou pour être lu",
+   "Troppo sfocato per la lettura"
+  ],
+  "sc.blurBody": [
+   "This frame was rejected before any text was extracted. Guessing at a blurred receipt is how wrong lines get in.",
+   "Cette image a été rejetée avant toute extraction. Deviner sur un ticket flou, c’est ainsi qu’arrivent les fausses lignes.",
+   "Questo scatto è stato rifiutato prima di estrarre testo. Indovinare su uno scontrino sfocato è così che entrano righe sbagliate."
+  ],
+  "sc.b1": [
+   "Sharpness",
+   "Netteté",
+   "Nitidezza"
+  ],
+  "sc.b2": [
+   "Glare",
+   "Reflets",
+   "Riflessi"
+  ],
+  "sc.b3": [
+   "Whole strip in frame",
+   "Bande entière cadrée",
+   "Striscia intera inquadrata"
+  ],
+  "sc.blurFoot": [
+   "Using it anyway is allowed. Every line it produces is marked low confidence and lands in the review queue.",
+   "L’utiliser reste possible : chaque ligne produite sera marquée peu fiable et ira en révision.",
+   "Usarlo è comunque possibile: ogni riga prodotta sarà segnata come poco affidabile e finirà in revisione."
+  ],
+  "sc.dupTitle": [
+   "You already added this one",
+   "Vous l’avez déjà ajouté",
+   "L’hai già aggiunto"
+  ],
+  "sc.dupBody": [
+   "This looks like a receipt already in the report — same date, same lines, same total.",
+   "Ceci ressemble à un ticket déjà présent — même date, mêmes lignes, même total.",
+   "Sembra uno scontrino già presente — stessa data, stesse righe, stesso totale."
+  ],
+  "sc.alreadyStored": [
+   "Already in the report",
+   "Déjà dans le rapport",
+   "Già nel report"
+  ],
+  "sc.justShot": [
+   "Just photographed",
+   "Vient d’être pris",
+   "Appena fotografato"
+  ],
+  "sc.linesWord": [
+   "lines",
+   "lignes",
+   "righe"
+  ],
+  "sc.dupNote": [
+   "Four duplicate pairs are already known in this report. Adding this again would double-count €41,54 of spend.",
+   "Quatre paires en double sont déjà connues. L’ajouter compterait 41,54 € deux fois.",
+   "Quattro coppie duplicate sono già note. Aggiungerlo conterebbe due volte 41,54 €."
+  ],
+  "sc.discard": [
+   "Discard the new one",
+   "Supprimer le nouveau",
+   "Scarta il nuovo"
+  ],
+  "sc.addAnyway": [
+   "It is different — add it",
+   "Il est différent — ajouter",
+   "È diverso — aggiungilo"
+  ]
+ },
+ "NAME": {
+  "Protein": [
+   "Protein",
+   "Protéines"
+  ],
+  "Carbohydrate": [
+   "Carbohydrate",
+   "Glucides"
+  ],
+  "Fiber": [
+   "Fibre",
+   "Fibres"
+  ],
+  "Sugars, Total": [
+   "Total sugars",
+   "Sucres totaux"
+  ],
+  "Total fat": [
+   "Total fat",
+   "Matières grasses"
+  ],
+  "Fatty acids, total saturated": [
+   "Saturated fat",
+   "Acides gras saturés"
+  ],
+  "Cholesterol": [
+   "Cholesterol",
+   "Cholestérol"
+  ],
+  "Calcium": [
+   "Calcium",
+   "Calcium"
+  ],
+  "Iron": [
+   "Iron",
+   "Fer"
+  ],
+  "Magnesium": [
+   "Magnesium",
+   "Magnésium"
+  ],
+  "Potassium": [
+   "Potassium",
+   "Potassium"
+  ],
+  "Sodium": [
+   "Sodium",
+   "Sodium"
+  ],
+  "Zinc": [
+   "Zinc",
+   "Zinc"
+  ],
+  "Vitamin A, RAE": [
+   "Vitamin A",
+   "Vitamine A"
+  ],
+  "Vitamin C": [
+   "Vitamin C",
+   "Vitamine C"
+  ],
+  "Vitamin D (D2 + D3)": [
+   "Vitamin D",
+   "Vitamine D"
+  ],
+  "Vitamin B-12": [
+   "Vitamin B12",
+   "Vitamine B12"
+  ],
+  "Folate, total": [
+   "Folate",
+   "Folates"
+  ],
+  "Thiamin": [
+   "Thiamin (B1)",
+   "Thiamine (B1)"
+  ],
+  "Riboflavin": [
+   "Riboflavin (B2)",
+   "Riboflavine (B2)"
+  ]
+ }
+}

@@ -1,0 +1,2947 @@
+{
+ "generated_from": "data/purchases_enriched.csv (legacy OCR snapshot)",
+ "kcal_normalisation": 2500,
+ "status": "Draft",
+ "status_reasons": [
+  "Solo il 15.6% delle righe prodotto è utilizzabile (abbinata a un alimento E con una quantità leggibile sull’etichetta).",
+  "1 nutriente sotto l’80% di copertura energetica: Vitamina D.",
+  "Nessun abbinamento è ancora stato verificato contro una banca dati ufficiale (CIQUAL / FoodData Central): i valori nutrizionali provengono ancora dallo snapshot pyfooda legacy.",
+  "I 33 scontrini mai passati all’OCR e i 6 CSV vuoti non sono stati recuperati in questa demo (richiedono una chiave API per il modello di lettura)."
+ ],
+ "disclaimer": "Questo report descrive la composizione nutrizionale della SPESA ACQUISTATA da Delhaize, normalizzata a 2.500 kcal. Non misura ciò che qualcuno ha mangiato: scarti, scorte in dispensa, pasti fuori casa e i due negozi non ancora inclusi (Carrefour, Colruyt) non sono considerati.",
+ "receipts": {
+  "images_total": 131,
+  "images_unique": 127,
+  "duplicate_pairs": 4,
+  "ocr_csv_files": 98,
+  "ocr_empty": [
+   "2024_01_24.csv",
+   "2024_06_11.csv",
+   "2024_07_18.csv",
+   "2024_10_29.csv",
+   "2025_03_08.csv",
+   "2025_06_15.csv"
+  ],
+  "images_without_ocr": [
+   "2025_08_14",
+   "2025_08_19",
+   "2025_08_20",
+   "2025_08_29",
+   "2025_10_15",
+   "2025_10_26",
+   "2025_10_28",
+   "2025_11_02"
+  ],
+  "receipts_in_analysis": 88,
+  "date_first": "2023-01-10",
+  "date_last": "2025-07-22"
+ },
+ "coverage": {
+  "rows_total_raw": 2422,
+  "rows_dropped_as_duplicate": 130,
+  "rows_receipt_metadata": 17,
+  "rows_product_lines": 2275,
+  "rows_food_matched": 1590,
+  "rows_usable": 356,
+  "rows_usable_with_estimates": 1196,
+  "pct_matched": 69.9,
+  "pct_quantity_of_matched": 22.4,
+  "pct_usable_of_all": 15.6,
+  "pct_usable_of_all_with_estimates": 52.6,
+  "spend_total_eur": 9098.67,
+  "spend_usable_eur": 1145.73,
+  "pct_spend_covered": 12.6,
+  "pct_spend_covered_with_estimates": 52.7,
+  "by_state": {
+   "not_food_or_unmatched": 685,
+   "quantity_unknown": 1172,
+   "quarantined": 51,
+   "usable": 356,
+   "receipt_metadata": 17,
+   "volume_no_density": 11
+  }
+ },
+ "years": [
+  "2023",
+  "2024",
+  "2025"
+ ],
+ "nutrient_order": [
+  "Protein",
+  "Carbohydrate",
+  "Fiber",
+  "Sugars, Total",
+  "Total fat",
+  "Fatty acids, total saturated",
+  "Cholesterol",
+  "Calcium",
+  "Iron",
+  "Magnesium",
+  "Potassium",
+  "Sodium",
+  "Zinc",
+  "Vitamin A, RAE",
+  "Vitamin C",
+  "Vitamin D (D2 + D3)",
+  "Vitamin B-12",
+  "Folate, total",
+  "Thiamin",
+  "Riboflavin"
+ ],
+ "nutrient_labels": {
+  "Protein": "Proteine",
+  "Carbohydrate": "Carboidrati",
+  "Fiber": "Fibre",
+  "Sugars, Total": "Zuccheri totali",
+  "Total fat": "Grassi totali",
+  "Fatty acids, total saturated": "Grassi saturi",
+  "Cholesterol": "Colesterolo",
+  "Calcium": "Calcio",
+  "Iron": "Ferro",
+  "Magnesium": "Magnesio",
+  "Potassium": "Potassio",
+  "Sodium": "Sodio",
+  "Zinc": "Zinco",
+  "Vitamin A, RAE": "Vitamina A",
+  "Vitamin C": "Vitamina C",
+  "Vitamin D (D2 + D3)": "Vitamina D",
+  "Vitamin B-12": "Vitamina B12",
+  "Folate, total": "Folati",
+  "Thiamin": "Tiamina (B1)",
+  "Riboflavin": "Riboflavina (B2)",
+  "Energy": "Energia"
+ },
+ "units": {
+  "Energy": "KCAL",
+  "Protein": "G",
+  "Carbohydrate": "G",
+  "Fiber": "G",
+  "Sugars, Total": "G",
+  "Total fat": "G",
+  "Fatty acids, total saturated": "G",
+  "Cholesterol": "MG",
+  "Calcium": "MG",
+  "Iron": "MG",
+  "Magnesium": "MG",
+  "Potassium": "MG",
+  "Sodium": "MG",
+  "Zinc": "MG",
+  "Vitamin A, RAE": "UG",
+  "Vitamin C": "MG",
+  "Vitamin D (D2 + D3)": "UG",
+  "Vitamin B-12": "UG",
+  "Folate, total": "UG",
+  "Thiamin": "MG",
+  "Riboflavin": "MG"
+ },
+ "no_reference": [
+  "Cholesterol"
+ ],
+ "nutrients": {
+  "Protein": {
+   "value": 62.27,
+   "coverage_pct": 100.0,
+   "reference": 62.5,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 99.6,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "3X200G THON NATURE",
+     "food": "TUNA",
+     "date": "2024-03-25",
+     "amount": 141.19,
+     "share_pct": 2.2
+    },
+    {
+     "product_name": "400G SAUMON FUM NOR",
+     "food": "SALMON",
+     "date": "2023-12-17",
+     "amount": 82.61,
+     "share_pct": 1.3
+    },
+    {
+     "product_name": "300G DLL CARE PATE",
+     "food": "PORK",
+     "date": "2024-05-08",
+     "amount": 72.67,
+     "share_pct": 1.1
+    },
+    {
+     "product_name": "300G DLL CARE PATE",
+     "food": "PORK",
+     "date": "2024-05-08",
+     "amount": 72.67,
+     "share_pct": 1.1
+    },
+    {
+     "product_name": "500G DLL BIO SPAGH",
+     "food": "PASTA",
+     "date": "2024-12-28",
+     "amount": 65.2,
+     "share_pct": 1.0
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.2
+  },
+  "Carbohydrate": {
+   "value": 309.27,
+   "coverage_pct": 100.0,
+   "reference": 325.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 95.2,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "500GR L RIS GRAI",
+     "food": "RICE",
+     "date": "2024-09-28",
+     "amount": 386.93,
+     "share_pct": 1.2
+    },
+    {
+     "product_name": "500GR L RIS GRAI",
+     "food": "RICE",
+     "date": "2024-09-28",
+     "amount": 386.93,
+     "share_pct": 1.2
+    },
+    {
+     "product_name": "RAISIN MLK 500G",
+     "food": "RAISIN",
+     "date": "2023-11-01",
+     "amount": 377.25,
+     "share_pct": 1.2
+    },
+    {
+     "product_name": "RAISIN MIX 500G",
+     "food": "RAISIN",
+     "date": "2024-07-21",
+     "amount": 377.25,
+     "share_pct": 1.2
+    },
+    {
+     "product_name": "RAISIN MIX 500G",
+     "food": "RAISIN",
+     "date": "2024-09-28",
+     "amount": 377.25,
+     "share_pct": 1.2
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 1.2
+  },
+  "Fiber": {
+   "value": 28.47,
+   "coverage_pct": 99.8,
+   "reference": 31.25,
+   "reference_kind": "EFSA AI (not an EU NRV)",
+   "pct_of_reference": 91.1,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "185G LAYS PAPRIKA",
+     "food": "PAPRIKA",
+     "date": "2025-02-15",
+     "amount": 64.56,
+     "share_pct": 2.2
+    },
+    {
+     "product_name": "500G ROMB DESSERT",
+     "food": "CHOCOLATE",
+     "date": "2024-10-29",
+     "amount": 37.3,
+     "share_pct": 1.3
+    },
+    {
+     "product_name": "500G ROMB DESSERT",
+     "food": "CHOCOLATE",
+     "date": "2024-10-29",
+     "amount": 37.3,
+     "share_pct": 1.3
+    },
+    {
+     "product_name": "OIGNONS JAUNES:2KG",
+     "food": "ONION",
+     "date": "2025-02-15",
+     "amount": 34.8,
+     "share_pct": 1.2
+    },
+    {
+     "product_name": "750G PUREE BELGE",
+     "food": "FRUIT",
+     "date": "2024-10-13",
+     "amount": 32.7,
+     "share_pct": 1.1
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.2
+  },
+  "Sugars, Total": {
+   "value": 134.48,
+   "coverage_pct": 96.8,
+   "reference": 112.5,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 119.5,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "RAISIN MLK 500G",
+     "food": "RAISIN",
+     "date": "2023-11-01",
+     "amount": 324.98,
+     "share_pct": 2.5
+    },
+    {
+     "product_name": "RAISIN MIX 500G",
+     "food": "RAISIN",
+     "date": "2024-07-21",
+     "amount": 324.98,
+     "share_pct": 2.5
+    },
+    {
+     "product_name": "RAISIN MIX 500G",
+     "food": "RAISIN",
+     "date": "2024-09-28",
+     "amount": 324.98,
+     "share_pct": 2.5
+    },
+    {
+     "product_name": "RAISIN MIX 500G",
+     "food": "RAISIN",
+     "date": "2024-12-01",
+     "amount": 324.98,
+     "share_pct": 2.5
+    },
+    {
+     "product_name": "RAISIN MIX 500G",
+     "food": "RAISIN",
+     "date": "2025-06-22",
+     "amount": 324.98,
+     "share_pct": 2.5
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.5
+  },
+  "Total fat": {
+   "value": 115.66,
+   "coverage_pct": 100.0,
+   "reference": 87.5,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 132.2,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 399.2,
+     "share_pct": 3.4
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 399.2,
+     "share_pct": 3.4
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-03-25",
+     "amount": 399.2,
+     "share_pct": 3.4
+    },
+    {
+     "product_name": "AUBER BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-12-01",
+     "amount": 399.2,
+     "share_pct": 3.4
+    },
+    {
+     "product_name": "BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-12-06",
+     "amount": 399.2,
+     "share_pct": 3.4
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 3.4
+  },
+  "Fatty acids, total saturated": {
+   "value": 59.93,
+   "coverage_pct": 98.5,
+   "reference": 25.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 239.7,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 251.22,
+     "share_pct": 4.2
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 251.22,
+     "share_pct": 4.2
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-03-25",
+     "amount": 251.22,
+     "share_pct": 4.2
+    },
+    {
+     "product_name": "AUBER BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-12-01",
+     "amount": 251.22,
+     "share_pct": 4.2
+    },
+    {
+     "product_name": "BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-12-06",
+     "amount": 251.22,
+     "share_pct": 4.2
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 4.2
+  },
+  "Cholesterol": {
+   "value": 212.47,
+   "coverage_pct": 97.9,
+   "reference": null,
+   "reference_kind": null,
+   "pct_of_reference": null,
+   "scored": false,
+   "top_contributors": [
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 1072.5,
+     "share_pct": 5.1
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 1072.5,
+     "share_pct": 5.1
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-03-25",
+     "amount": 1072.5,
+     "share_pct": 5.1
+    },
+    {
+     "product_name": "AUBER BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-12-01",
+     "amount": 1072.5,
+     "share_pct": 5.1
+    },
+    {
+     "product_name": "BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-12-06",
+     "amount": 1072.5,
+     "share_pct": 5.1
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 5.1
+  },
+  "Calcium": {
+   "value": 801.95,
+   "coverage_pct": 100.0,
+   "reference": 1000.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 80.2,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "600G GAUFFRE POT",
+     "food": "WAFFLE",
+     "date": "2025-02-02",
+     "amount": 1610.0,
+     "share_pct": 2.0
+    },
+    {
+     "product_name": "600G GAUFFRE POT",
+     "food": "WAFFLE",
+     "date": "2025-02-02",
+     "amount": 1610.0,
+     "share_pct": 2.0
+    },
+    {
+     "product_name": "1KG TRESOR MILK",
+     "food": "MILK",
+     "date": "2025-06-12",
+     "amount": 1380.0,
+     "share_pct": 1.7
+    },
+    {
+     "product_name": "1KG TRESOR MILK",
+     "food": "MILK",
+     "date": "2025-06-12",
+     "amount": 1380.0,
+     "share_pct": 1.7
+    },
+    {
+     "product_name": "300G LECHE",
+     "food": "DULCE DE LECHE",
+     "date": "2025-01-22",
+     "amount": 1125.0,
+     "share_pct": 1.4
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.0
+  },
+  "Iron": {
+   "value": 18.75,
+   "coverage_pct": 99.5,
+   "reference": 17.5,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 107.1,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "400G HONEY LOOPS",
+     "food": "CEREAL",
+     "date": "2025-02-22",
+     "amount": 91.91,
+     "share_pct": 4.8
+    },
+    {
+     "product_name": "400G HONEY LOOPS",
+     "food": "CEREAL",
+     "date": "2025-02-22",
+     "amount": 91.91,
+     "share_pct": 4.8
+    },
+    {
+     "product_name": "400G HONEY LOOPS",
+     "food": "CEREAL",
+     "date": "2025-02-22",
+     "amount": 91.91,
+     "share_pct": 4.8
+    },
+    {
+     "product_name": "400G HONEY LOOPS",
+     "food": "CEREAL",
+     "date": "2025-02-22",
+     "amount": 91.91,
+     "share_pct": 4.8
+    },
+    {
+     "product_name": "185G LAYS PAPRIKA",
+     "food": "PAPRIKA",
+     "date": "2025-02-15",
+     "amount": 39.11,
+     "share_pct": 2.1
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 4.8
+  },
+  "Magnesium": {
+   "value": 430.68,
+   "coverage_pct": 86.0,
+   "reference": 468.75,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 91.9,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "250G L28 BRAZIL",
+     "food": "BRAZIL NUT",
+     "date": "2024-07-25",
+     "amount": 878.25,
+     "share_pct": 2.3
+    },
+    {
+     "product_name": "250G L28 BRAZIL",
+     "food": "BRAZIL NUT",
+     "date": "2024-07-25",
+     "amount": 878.25,
+     "share_pct": 2.3
+    },
+    {
+     "product_name": "500G ROMB DESSERT",
+     "food": "CHOCOLATE",
+     "date": "2024-10-29",
+     "amount": 778.0,
+     "share_pct": 2.1
+    },
+    {
+     "product_name": "500G ROMB DESSERT",
+     "food": "CHOCOLATE",
+     "date": "2024-10-29",
+     "amount": 778.0,
+     "share_pct": 2.1
+    },
+    {
+     "product_name": "350G CACAH/CACAO",
+     "food": "CACAO",
+     "date": "2025-02-07",
+     "amount": 667.8,
+     "share_pct": 1.8
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.3
+  },
+  "Potassium": {
+   "value": 2976.47,
+   "coverage_pct": 86.0,
+   "reference": 2500.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 119.1,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "POTIRON BUTTERNUT 1,550 KG X",
+     "food": "BUTTERNUT SQUASH",
+     "date": "2025-06-05",
+     "amount": 5101.05,
+     "share_pct": 2.0
+    },
+    {
+     "product_name": "185G LAYS PAPRIKA",
+     "food": "PAPRIKA",
+     "date": "2025-02-15",
+     "amount": 4218.0,
+     "share_pct": 1.6
+    },
+    {
+     "product_name": "COURGETTES 1,525 KG X",
+     "food": "ZUCCHINI",
+     "date": "2025-06-05",
+     "amount": 3980.25,
+     "share_pct": 1.5
+    },
+    {
+     "product_name": "RAISIN MLK 500G",
+     "food": "RAISIN",
+     "date": "2023-11-01",
+     "amount": 3927.5,
+     "share_pct": 1.5
+    },
+    {
+     "product_name": "RAISIN MIX 500G",
+     "food": "RAISIN",
+     "date": "2024-07-21",
+     "amount": 3927.5,
+     "share_pct": 1.5
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.0
+  },
+  "Sodium": {
+   "value": 1571.87,
+   "coverage_pct": 100.0,
+   "reference": 3000.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 52.4,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "600G GAUFFRE POT",
+     "food": "WAFFLE",
+     "date": "2025-02-02",
+     "amount": 3492.0,
+     "share_pct": 2.2
+    },
+    {
+     "product_name": "600G GAUFFRE POT",
+     "food": "WAFFLE",
+     "date": "2025-02-02",
+     "amount": 3492.0,
+     "share_pct": 2.2
+    },
+    {
+     "product_name": "HARICOT PAIN 500GR",
+     "food": "BREAD",
+     "date": "2024-02-08",
+     "amount": 2564.0,
+     "share_pct": 1.6
+    },
+    {
+     "product_name": "400G PATE NOI CRU",
+     "food": "PIE CRUST",
+     "date": "2024-03-25",
+     "amount": 2178.67,
+     "share_pct": 1.4
+    },
+    {
+     "product_name": "400G PATE NOI CRU",
+     "food": "PIE CRUST",
+     "date": "2024-03-25",
+     "amount": 2178.67,
+     "share_pct": 1.4
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.2
+  },
+  "Zinc": {
+   "value": 9.43,
+   "coverage_pct": 86.0,
+   "reference": 12.5,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 75.5,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "500GR L RIS GRAI",
+     "food": "RICE",
+     "date": "2024-09-28",
+     "amount": 12.56,
+     "share_pct": 1.5
+    },
+    {
+     "product_name": "500GR L RIS GRAI",
+     "food": "RICE",
+     "date": "2024-09-28",
+     "amount": 12.56,
+     "share_pct": 1.5
+    },
+    {
+     "product_name": "500G ROMB DESSERT",
+     "food": "CHOCOLATE",
+     "date": "2024-10-29",
+     "amount": 11.09,
+     "share_pct": 1.3
+    },
+    {
+     "product_name": "500G ROMB DESSERT",
+     "food": "CHOCOLATE",
+     "date": "2024-10-29",
+     "amount": 11.09,
+     "share_pct": 1.3
+    },
+    {
+     "product_name": "350G CACAH/CACAO",
+     "food": "CACAO",
+     "date": "2025-02-07",
+     "amount": 9.75,
+     "share_pct": 1.2
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 1.5
+  },
+  "Vitamin A, RAE": {
+   "value": 955.24,
+   "coverage_pct": 83.8,
+   "reference": 1000.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 95.5,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "185G LAYS PAPRIKA",
+     "food": "PAPRIKA",
+     "date": "2025-02-15",
+     "amount": 4556.55,
+     "share_pct": 5.6
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 3420.0,
+     "share_pct": 4.2
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-01-03",
+     "amount": 3420.0,
+     "share_pct": 4.2
+    },
+    {
+     "product_name": "AUBEL BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-03-25",
+     "amount": 3420.0,
+     "share_pct": 4.2
+    },
+    {
+     "product_name": "AUBER BEURRE 500G",
+     "food": "BUTTER",
+     "date": "2024-12-01",
+     "amount": 3420.0,
+     "share_pct": 4.2
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 5.6
+  },
+  "Vitamin C": {
+   "value": 104.86,
+   "coverage_pct": 85.5,
+   "reference": 100.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 104.9,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "KIWI JAUNE 500G",
+     "food": "KIWI",
+     "date": "2024-03-05",
+     "amount": 333.7,
+     "share_pct": 3.7
+    },
+    {
+     "product_name": "COURGETTES 1,525 KG X",
+     "food": "ZUCCHINI",
+     "date": "2025-06-05",
+     "amount": 272.97,
+     "share_pct": 3.0
+    },
+    {
+     "product_name": "CITRON VERT 500G",
+     "food": "LEMON",
+     "date": "2024-08-31",
+     "amount": 241.16,
+     "share_pct": 2.6
+    },
+    {
+     "product_name": "CITRON 500G",
+     "food": "LEMON",
+     "date": "2025-02-07",
+     "amount": 241.16,
+     "share_pct": 2.6
+    },
+    {
+     "product_name": "CITRON VERT 500G",
+     "food": "LEMON",
+     "date": "2025-06-05",
+     "amount": 241.16,
+     "share_pct": 2.6
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 3.7
+  },
+  "Vitamin D (D2 + D3)": {
+   "value": 2.76,
+   "coverage_pct": 78.2,
+   "reference": 6.25,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 44.2,
+   "scored": false,
+   "top_contributors": [
+    {
+     "product_name": "400G SAUMON FUM NOR",
+     "food": "SALMON",
+     "date": "2023-12-17",
+     "amount": 48.0,
+     "share_pct": 21.9
+    },
+    {
+     "product_name": "3X200G THON NATURE",
+     "food": "TUNA",
+     "date": "2024-03-25",
+     "amount": 18.2,
+     "share_pct": 8.3
+    },
+    {
+     "product_name": "125G D365 MAQ TOUR",
+     "food": "MACKEREL",
+     "date": "2024-03-25",
+     "amount": 14.62,
+     "share_pct": 6.7
+    },
+    {
+     "product_name": "125G D365 MAQ TOUR",
+     "food": "MACKEREL",
+     "date": "2024-03-25",
+     "amount": 14.62,
+     "share_pct": 6.7
+    },
+    {
+     "product_name": "1KG TRESOR MILK",
+     "food": "MILK",
+     "date": "2025-06-12",
+     "amount": 10.5,
+     "share_pct": 4.8
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 21.9
+  },
+  "Vitamin B-12": {
+   "value": 2.63,
+   "coverage_pct": 83.1,
+   "reference": 3.12,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 84.3,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "3X200G THON NATURE",
+     "food": "TUNA",
+     "date": "2024-03-25",
+     "amount": 23.24,
+     "share_pct": 10.5
+    },
+    {
+     "product_name": "400G SAUMON FUM NOR",
+     "food": "SALMON",
+     "date": "2023-12-17",
+     "amount": 13.28,
+     "share_pct": 6.0
+    },
+    {
+     "product_name": "125G D365 MAQ TOUR",
+     "food": "MACKEREL",
+     "date": "2024-03-25",
+     "amount": 11.13,
+     "share_pct": 5.0
+    },
+    {
+     "product_name": "125G D365 MAQ TOUR",
+     "food": "MACKEREL",
+     "date": "2024-03-25",
+     "amount": 11.13,
+     "share_pct": 5.0
+    },
+    {
+     "product_name": "600G GAUFFRE POT",
+     "food": "WAFFLE",
+     "date": "2025-02-02",
+     "amount": 7.26,
+     "share_pct": 3.3
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 10.5
+  },
+  "Folate, total": {
+   "value": 585.07,
+   "coverage_pct": 83.0,
+   "reference": 250.0,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 234.0,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "500G DLL BIO SPAGH",
+     "food": "PASTA",
+     "date": "2024-12-28",
+     "amount": 1185.0,
+     "share_pct": 2.4
+    },
+    {
+     "product_name": "500G DLL BIO SPAGH",
+     "food": "PASTA",
+     "date": "2024-12-28",
+     "amount": 1185.0,
+     "share_pct": 2.4
+    },
+    {
+     "product_name": "PENNE RIGATE 500G",
+     "food": "PASTA",
+     "date": "2025-06-27",
+     "amount": 1185.0,
+     "share_pct": 2.4
+    },
+    {
+     "product_name": "500G DE CECCO RADI",
+     "food": "PASTA",
+     "date": "2025-06-27",
+     "amount": 1185.0,
+     "share_pct": 2.4
+    },
+    {
+     "product_name": "PENNE RIGATE 500G",
+     "food": "PASTA",
+     "date": "2025-06-27",
+     "amount": 1185.0,
+     "share_pct": 2.4
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.4
+  },
+  "Thiamin": {
+   "value": 2.0,
+   "coverage_pct": 84.2,
+   "reference": 1.38,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 145.4,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "500G DLL BIO SPAGH",
+     "food": "PASTA",
+     "date": "2024-12-28",
+     "amount": 4.46,
+     "share_pct": 2.6
+    },
+    {
+     "product_name": "500G DLL BIO SPAGH",
+     "food": "PASTA",
+     "date": "2024-12-28",
+     "amount": 4.46,
+     "share_pct": 2.6
+    },
+    {
+     "product_name": "PENNE RIGATE 500G",
+     "food": "PASTA",
+     "date": "2025-06-27",
+     "amount": 4.46,
+     "share_pct": 2.6
+    },
+    {
+     "product_name": "500G DE CECCO RADI",
+     "food": "PASTA",
+     "date": "2025-06-27",
+     "amount": 4.46,
+     "share_pct": 2.6
+    },
+    {
+     "product_name": "PENNE RIGATE 500G",
+     "food": "PASTA",
+     "date": "2025-06-27",
+     "amount": 4.46,
+     "share_pct": 2.6
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 2.6
+  },
+  "Riboflavin": {
+   "value": 1.88,
+   "coverage_pct": 83.8,
+   "reference": 1.75,
+   "reference_kind": "EU NRV/RI",
+   "pct_of_reference": 107.4,
+   "scored": true,
+   "top_contributors": [
+    {
+     "product_name": "600G GAUFFRE POT",
+     "food": "WAFFLE",
+     "date": "2025-02-02",
+     "amount": 2.54,
+     "share_pct": 1.6
+    },
+    {
+     "product_name": "600G GAUFFRE POT",
+     "food": "WAFFLE",
+     "date": "2025-02-02",
+     "amount": 2.54,
+     "share_pct": 1.6
+    },
+    {
+     "product_name": "185G LAYS PAPRIKA",
+     "food": "PAPRIKA",
+     "date": "2025-02-15",
+     "amount": 2.28,
+     "share_pct": 1.4
+    },
+    {
+     "product_name": "1KG TRESOR MILK",
+     "food": "MILK",
+     "date": "2025-06-12",
+     "amount": 2.16,
+     "share_pct": 1.3
+    },
+    {
+     "product_name": "1KG TRESOR MILK",
+     "food": "MILK",
+     "date": "2025-06-12",
+     "amount": 2.16,
+     "share_pct": 1.3
+    }
+   ],
+   "dominated_by_single_item": false,
+   "top_item_share_pct": 1.6
+  },
+  "_energy_pool_rows": 356
+ },
+ "nutrients_by_year": {
+  "2025": {
+   "Protein": {
+    "value": 75.85,
+    "coverage_pct": 100.0,
+    "reference": 62.5,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 121.4,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 65.2,
+      "share_pct": 2.4
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 65.2,
+      "share_pct": 2.4
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 65.2,
+      "share_pct": 2.4
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 65.2,
+      "share_pct": 2.4
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 65.2,
+      "share_pct": 2.4
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 2.4
+   },
+   "Carbohydrate": {
+    "value": 366.74,
+    "coverage_pct": 100.0,
+    "reference": 325.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 112.8,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "RAISIN MIX 500G",
+      "food": "RAISIN",
+      "date": "2025-06-22",
+      "amount": 377.25,
+      "share_pct": 2.9
+     },
+     {
+      "product_name": "RAISIN MIX 500G",
+      "food": "RAISIN",
+      "date": "2025-07-22",
+      "amount": 377.25,
+      "share_pct": 2.9
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 373.35,
+      "share_pct": 2.9
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 373.35,
+      "share_pct": 2.9
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 373.35,
+      "share_pct": 2.9
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 2.9
+   },
+   "Fiber": {
+    "value": 33.19,
+    "coverage_pct": 100.0,
+    "reference": 31.25,
+    "reference_kind": "EFSA AI (not an EU NRV)",
+    "pct_of_reference": 106.2,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "185G LAYS PAPRIKA",
+      "food": "PAPRIKA",
+      "date": "2025-02-15",
+      "amount": 64.56,
+      "share_pct": 5.5
+     },
+     {
+      "product_name": "OIGNONS JAUNES:2KG",
+      "food": "ONION",
+      "date": "2025-02-15",
+      "amount": 34.8,
+      "share_pct": 3.0
+     },
+     {
+      "product_name": "350G CACAH/CACAO",
+      "food": "CACAO",
+      "date": "2025-02-07",
+      "amount": 31.36,
+      "share_pct": 2.7
+     },
+     {
+      "product_name": "POTIRON BUTTERNUT 1,550 KG X",
+      "food": "BUTTERNUT SQUASH",
+      "date": "2025-06-05",
+      "amount": 30.36,
+      "share_pct": 2.6
+     },
+     {
+      "product_name": "RAISIN MIX 500G",
+      "food": "RAISIN",
+      "date": "2025-06-22",
+      "amount": 22.84,
+      "share_pct": 1.9
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 5.5
+   },
+   "Sugars, Total": {
+    "value": 117.3,
+    "coverage_pct": 99.2,
+    "reference": 112.5,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 104.3,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "RAISIN MIX 500G",
+      "food": "RAISIN",
+      "date": "2025-06-22",
+      "amount": 324.98,
+      "share_pct": 7.9
+     },
+     {
+      "product_name": "RAISIN MIX 500G",
+      "food": "RAISIN",
+      "date": "2025-07-22",
+      "amount": 324.98,
+      "share_pct": 7.9
+     },
+     {
+      "product_name": "375G CHOCO LAIT",
+      "food": "MILK CHOCOLATE",
+      "date": "2025-02-05",
+      "amount": 237.79,
+      "share_pct": 5.8
+     },
+     {
+      "product_name": "375G CHOCO LAIT",
+      "food": "MILK CHOCOLATE",
+      "date": "2025-02-22",
+      "amount": 237.79,
+      "share_pct": 5.8
+     },
+     {
+      "product_name": "400G NUTELLA",
+      "food": "CHOCOLATE HAZELNUT SPREAD",
+      "date": "2025-01-22",
+      "amount": 221.62,
+      "share_pct": 5.4
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 7.9
+   },
+   "Total fat": {
+    "value": 80.94,
+    "coverage_pct": 100.0,
+    "reference": 87.5,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 92.5,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "AUBEL BEURRE 500G",
+      "food": "BUTTER",
+      "date": "2025-03-21",
+      "amount": 399.2,
+      "share_pct": 14.0
+     },
+     {
+      "product_name": "350G CACAH/CACAO",
+      "food": "CACAO",
+      "date": "2025-02-07",
+      "amount": 135.21,
+      "share_pct": 4.7
+     },
+     {
+      "product_name": "400G NUTELLA",
+      "food": "CHOCOLATE HAZELNUT SPREAD",
+      "date": "2025-01-22",
+      "amount": 124.32,
+      "share_pct": 4.3
+     },
+     {
+      "product_name": "400G NUTELLA",
+      "food": "CHOCOLATE HAZELNUT SPREAD",
+      "date": "2025-01-22",
+      "amount": 124.32,
+      "share_pct": 4.3
+     },
+     {
+      "product_name": "400G NUTELLA",
+      "food": "CHOCOLATE HAZELNUT SPREAD",
+      "date": "2025-02-05",
+      "amount": 124.32,
+      "share_pct": 4.3
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 14.0
+   },
+   "Fatty acids, total saturated": {
+    "value": 39.75,
+    "coverage_pct": 98.8,
+    "reference": 25.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 159.0,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "AUBEL BEURRE 500G",
+      "food": "BUTTER",
+      "date": "2025-03-21",
+      "amount": 251.22,
+      "share_pct": 18.1
+     },
+     {
+      "product_name": "350G CACAH/CACAO",
+      "food": "CACAO",
+      "date": "2025-02-07",
+      "amount": 78.09,
+      "share_pct": 5.6
+     },
+     {
+      "product_name": "400G NUTELLA",
+      "food": "CHOCOLATE HAZELNUT SPREAD",
+      "date": "2025-01-22",
+      "amount": 73.07,
+      "share_pct": 5.3
+     },
+     {
+      "product_name": "400G NUTELLA",
+      "food": "CHOCOLATE HAZELNUT SPREAD",
+      "date": "2025-01-22",
+      "amount": 73.07,
+      "share_pct": 5.3
+     },
+     {
+      "product_name": "400G NUTELLA",
+      "food": "CHOCOLATE HAZELNUT SPREAD",
+      "date": "2025-02-05",
+      "amount": 73.07,
+      "share_pct": 5.3
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 18.1
+   },
+   "Cholesterol": {
+    "value": 165.46,
+    "coverage_pct": 98.4,
+    "reference": null,
+    "reference_kind": null,
+    "pct_of_reference": null,
+    "scored": false,
+    "top_contributors": [
+     {
+      "product_name": "AUBEL BEURRE 500G",
+      "food": "BUTTER",
+      "date": "2025-03-21",
+      "amount": 1072.5,
+      "share_pct": 18.6
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 322.0,
+      "share_pct": 5.6
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 322.0,
+      "share_pct": 5.6
+     },
+     {
+      "product_name": "500G DE CECCO GNOC",
+      "food": "GNOCCHI",
+      "date": "2025-01-20",
+      "amount": 160.0,
+      "share_pct": 2.8
+     },
+     {
+      "product_name": "500G DE CECCO GNOC",
+      "food": "GNOCCHI",
+      "date": "2025-01-20",
+      "amount": 160.0,
+      "share_pct": 2.8
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 18.6
+   },
+   "Calcium": {
+    "value": 828.1,
+    "coverage_pct": 100.0,
+    "reference": 1000.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 82.8,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 1610.0,
+      "share_pct": 5.5
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 1610.0,
+      "share_pct": 5.5
+     },
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 1380.0,
+      "share_pct": 4.7
+     },
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 1380.0,
+      "share_pct": 4.7
+     },
+     {
+      "product_name": "300G LECHE",
+      "food": "DULCE DE LECHE",
+      "date": "2025-01-22",
+      "amount": 1125.0,
+      "share_pct": 3.8
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 5.5
+   },
+   "Iron": {
+    "value": 27.94,
+    "coverage_pct": 98.6,
+    "reference": 17.5,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 159.7,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 91.91,
+      "share_pct": 9.4
+     },
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 91.91,
+      "share_pct": 9.4
+     },
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 91.91,
+      "share_pct": 9.4
+     },
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 91.91,
+      "share_pct": 9.4
+     },
+     {
+      "product_name": "185G LAYS PAPRIKA",
+      "food": "PAPRIKA",
+      "date": "2025-02-15",
+      "amount": 39.11,
+      "share_pct": 4.0
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 9.4
+   },
+   "Magnesium": {
+    "value": 464.22,
+    "coverage_pct": 87.7,
+    "reference": 468.75,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 99.0,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "350G CACAH/CACAO",
+      "food": "CACAO",
+      "date": "2025-02-07",
+      "amount": 667.8,
+      "share_pct": 4.6
+     },
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 473.6,
+      "share_pct": 3.3
+     },
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 473.6,
+      "share_pct": 3.3
+     },
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 473.6,
+      "share_pct": 3.3
+     },
+     {
+      "product_name": "400G HONEY LOOPS",
+      "food": "CEREAL",
+      "date": "2025-02-22",
+      "amount": 473.6,
+      "share_pct": 3.3
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 4.6
+   },
+   "Potassium": {
+    "value": 3532.97,
+    "coverage_pct": 87.7,
+    "reference": 2500.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 141.3,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "POTIRON BUTTERNUT 1,550 KG X",
+      "food": "BUTTERNUT SQUASH",
+      "date": "2025-06-05",
+      "amount": 5101.05,
+      "share_pct": 4.7
+     },
+     {
+      "product_name": "185G LAYS PAPRIKA",
+      "food": "PAPRIKA",
+      "date": "2025-02-15",
+      "amount": 4218.0,
+      "share_pct": 3.9
+     },
+     {
+      "product_name": "COURGETTES 1,525 KG X",
+      "food": "ZUCCHINI",
+      "date": "2025-06-05",
+      "amount": 3980.25,
+      "share_pct": 3.6
+     },
+     {
+      "product_name": "RAISIN MIX 500G",
+      "food": "RAISIN",
+      "date": "2025-06-22",
+      "amount": 3927.5,
+      "share_pct": 3.6
+     },
+     {
+      "product_name": "RAISIN MIX 500G",
+      "food": "RAISIN",
+      "date": "2025-07-22",
+      "amount": 3927.5,
+      "share_pct": 3.6
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 4.7
+   },
+   "Sodium": {
+    "value": 1446.5,
+    "coverage_pct": 100.0,
+    "reference": 3000.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 48.2,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 3492.0,
+      "share_pct": 6.8
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 3492.0,
+      "share_pct": 6.8
+     },
+     {
+      "product_name": "140G ROCK SALT",
+      "food": "SALT",
+      "date": "2025-02-05",
+      "amount": 1641.36,
+      "share_pct": 3.2
+     },
+     {
+      "product_name": "AUBEL BEURRE 500G",
+      "food": "BUTTER",
+      "date": "2025-03-21",
+      "amount": 1635.0,
+      "share_pct": 3.2
+     },
+     {
+      "product_name": "500G DE CECCO GNOC",
+      "food": "GNOCCHI",
+      "date": "2025-01-20",
+      "amount": 1595.0,
+      "share_pct": 3.1
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 6.8
+   },
+   "Zinc": {
+    "value": 10.66,
+    "coverage_pct": 87.7,
+    "reference": 12.5,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 85.3,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "350G CACAH/CACAO",
+      "food": "CACAO",
+      "date": "2025-02-07",
+      "amount": 9.75,
+      "share_pct": 3.0
+     },
+     {
+      "product_name": "185G LAYS PAPRIKA",
+      "food": "PAPRIKA",
+      "date": "2025-02-15",
+      "amount": 8.01,
+      "share_pct": 2.4
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 7.05,
+      "share_pct": 2.1
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 7.05,
+      "share_pct": 2.1
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 7.05,
+      "share_pct": 2.1
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 3.0
+   },
+   "Vitamin A, RAE": {
+    "value": 773.85,
+    "coverage_pct": 86.5,
+    "reference": 1000.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 77.4,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "185G LAYS PAPRIKA",
+      "food": "PAPRIKA",
+      "date": "2025-02-15",
+      "amount": 4556.55,
+      "share_pct": 19.3
+     },
+     {
+      "product_name": "AUBEL BEURRE 500G",
+      "food": "BUTTER",
+      "date": "2025-03-21",
+      "amount": 3420.0,
+      "share_pct": 14.5
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 1072.0,
+      "share_pct": 4.5
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 1072.0,
+      "share_pct": 4.5
+     },
+     {
+      "product_name": "200GR EPINARD JEU",
+      "food": "SPINACH",
+      "date": "2025-01-13",
+      "amount": 938.0,
+      "share_pct": 4.0
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 19.3
+   },
+   "Vitamin C": {
+    "value": 106.09,
+    "coverage_pct": 90.7,
+    "reference": 100.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 106.1,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "COURGETTES 1,525 KG X",
+      "food": "ZUCCHINI",
+      "date": "2025-06-05",
+      "amount": 272.97,
+      "share_pct": 8.0
+     },
+     {
+      "product_name": "CITRON 500G",
+      "food": "LEMON",
+      "date": "2025-02-07",
+      "amount": 241.16,
+      "share_pct": 7.1
+     },
+     {
+      "product_name": "CITRON VERT 500G",
+      "food": "LEMON",
+      "date": "2025-06-05",
+      "amount": 241.16,
+      "share_pct": 7.1
+     },
+     {
+      "product_name": "CITRONS 500G",
+      "food": "LEMON",
+      "date": "2025-06-27",
+      "amount": 241.16,
+      "share_pct": 7.1
+     },
+     {
+      "product_name": "450G DLL POIS BIOL",
+      "food": "PEA",
+      "date": "2025-07-05",
+      "amount": 210.0,
+      "share_pct": 6.2
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 8.0
+   },
+   "Vitamin D (D2 + D3)": {
+    "value": 2.56,
+    "coverage_pct": 83.9,
+    "reference": 6.25,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 41.0,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 10.5,
+      "share_pct": 13.8
+     },
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 10.5,
+      "share_pct": 13.8
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 6.6,
+      "share_pct": 8.7
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 6.6,
+      "share_pct": 8.7
+     },
+     {
+      "product_name": "224G GAUF VANI CHO",
+      "food": "WAFFLE",
+      "date": "2025-02-05",
+      "amount": 2.46,
+      "share_pct": 3.2
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 13.8
+   },
+   "Vitamin B-12": {
+    "value": 3.11,
+    "coverage_pct": 86.2,
+    "reference": 3.12,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 99.7,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 7.26,
+      "share_pct": 7.7
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 7.26,
+      "share_pct": 7.7
+     },
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 5.5,
+      "share_pct": 5.8
+     },
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 5.5,
+      "share_pct": 5.8
+     },
+     {
+      "product_name": "200G MEDAILLON DE VEAU",
+      "food": "VEAL",
+      "date": "2025-03-21",
+      "amount": 4.48,
+      "share_pct": 4.7
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 7.7
+   },
+   "Folate, total": {
+    "value": 858.76,
+    "coverage_pct": 84.2,
+    "reference": 250.0,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 343.5,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 1185.0,
+      "share_pct": 4.6
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 1185.0,
+      "share_pct": 4.6
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 1185.0,
+      "share_pct": 4.6
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 1185.0,
+      "share_pct": 4.6
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 1185.0,
+      "share_pct": 4.6
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 4.6
+   },
+   "Thiamin": {
+    "value": 2.75,
+    "coverage_pct": 86.9,
+    "reference": 1.38,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 200.0,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 4.46,
+      "share_pct": 5.3
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 4.46,
+      "share_pct": 5.3
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 4.46,
+      "share_pct": 5.3
+     },
+     {
+      "product_name": "500G DE CECCO RADI",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 4.46,
+      "share_pct": 5.3
+     },
+     {
+      "product_name": "PENNE RIGATE 500G",
+      "food": "PASTA",
+      "date": "2025-06-27",
+      "amount": 4.46,
+      "share_pct": 5.3
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 5.3
+   },
+   "Riboflavin": {
+    "value": 2.33,
+    "coverage_pct": 86.5,
+    "reference": 1.75,
+    "reference_kind": "EU NRV/RI",
+    "pct_of_reference": 133.4,
+    "scored": true,
+    "top_contributors": [
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 2.54,
+      "share_pct": 3.6
+     },
+     {
+      "product_name": "600G GAUFFRE POT",
+      "food": "WAFFLE",
+      "date": "2025-02-02",
+      "amount": 2.54,
+      "share_pct": 3.6
+     },
+     {
+      "product_name": "185G LAYS PAPRIKA",
+      "food": "PAPRIKA",
+      "date": "2025-02-15",
+      "amount": 2.28,
+      "share_pct": 3.2
+     },
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 2.16,
+      "share_pct": 3.0
+     },
+     {
+      "product_name": "1KG TRESOR MILK",
+      "food": "MILK",
+      "date": "2025-06-12",
+      "amount": 2.16,
+      "share_pct": 3.0
+     }
+    ],
+    "dominated_by_single_item": false,
+    "top_item_share_pct": 3.6
+   },
+   "_energy_pool_rows": 125
+  }
+ },
+ "sensitivity_estimated_quantities": [
+  {
+   "nutrient": "Cholesterol",
+   "observed_only": 212.47,
+   "with_estimates": 518.89,
+   "delta_pct": 144.2
+  },
+  {
+   "nutrient": "Vitamin B-12",
+   "observed_only": 2.63,
+   "with_estimates": 5.93,
+   "delta_pct": 125.5
+  },
+  {
+   "nutrient": "Protein",
+   "observed_only": 62.27,
+   "with_estimates": 133.16,
+   "delta_pct": 113.8
+  },
+  {
+   "nutrient": "Sodium",
+   "observed_only": 1571.87,
+   "with_estimates": 3123.93,
+   "delta_pct": 98.7
+  },
+  {
+   "nutrient": "Zinc",
+   "observed_only": 9.43,
+   "with_estimates": 18.28,
+   "delta_pct": 93.8
+  },
+  {
+   "nutrient": "Vitamin A, RAE",
+   "observed_only": 955.24,
+   "with_estimates": 1555.1,
+   "delta_pct": 62.8
+  },
+  {
+   "nutrient": "Thiamin",
+   "observed_only": 2.0,
+   "with_estimates": 3.13,
+   "delta_pct": 56.5
+  },
+  {
+   "nutrient": "Vitamin D (D2 + D3)",
+   "observed_only": 2.76,
+   "with_estimates": 4.06,
+   "delta_pct": 47.1
+  },
+  {
+   "nutrient": "Riboflavin",
+   "observed_only": 1.88,
+   "with_estimates": 2.66,
+   "delta_pct": 41.5
+  },
+  {
+   "nutrient": "Potassium",
+   "observed_only": 2976.47,
+   "with_estimates": 3750.5,
+   "delta_pct": 26.0
+  },
+  {
+   "nutrient": "Fatty acids, total saturated",
+   "observed_only": 59.93,
+   "with_estimates": 44.45,
+   "delta_pct": -25.8
+  },
+  {
+   "nutrient": "Calcium",
+   "observed_only": 801.95,
+   "with_estimates": 1001.57,
+   "delta_pct": 24.9
+  },
+  {
+   "nutrient": "Sugars, Total",
+   "observed_only": 134.48,
+   "with_estimates": 103.96,
+   "delta_pct": -22.7
+  },
+  {
+   "nutrient": "Total fat",
+   "observed_only": 115.66,
+   "with_estimates": 98.7,
+   "delta_pct": -14.7
+  },
+  {
+   "nutrient": "Carbohydrate",
+   "observed_only": 309.27,
+   "with_estimates": 274.71,
+   "delta_pct": -11.2
+  },
+  {
+   "nutrient": "Folate, total",
+   "observed_only": 585.07,
+   "with_estimates": 529.75,
+   "delta_pct": -9.5
+  },
+  {
+   "nutrient": "Vitamin C",
+   "observed_only": 104.86,
+   "with_estimates": 95.62,
+   "delta_pct": -8.8
+  },
+  {
+   "nutrient": "Magnesium",
+   "observed_only": 430.68,
+   "with_estimates": 401.13,
+   "delta_pct": -6.9
+  },
+  {
+   "nutrient": "Iron",
+   "observed_only": 18.75,
+   "with_estimates": 18.29,
+   "delta_pct": -2.5
+  },
+  {
+   "nutrient": "Fiber",
+   "observed_only": 28.47,
+   "with_estimates": 28.87,
+   "delta_pct": 1.4
+  }
+ ],
+ "quarantined": [
+  {
+   "product_name": "SAL BLE EMB 100GR",
+   "rows": 13,
+   "reason": "Bagged lamb's-lettuce salad most likely mapped to table salt; 100 g of salt is not a plausible grocery line.",
+   "spend": 18.07
+  },
+  {
+   "product_name": "PIZZA MOZZA PESTO",
+   "rows": 10,
+   "reason": "Whole pizza mapped to pesto sauce.",
+   "spend": 52.9
+  },
+  {
+   "product_name": "DES DE FILET THAI",
+   "rows": 9,
+   "reason": "Diced meat fillet, Thai style, mapped to Thai tea.",
+   "spend": 55.71
+  },
+  {
+   "product_name": "PAIN DE VIANDE",
+   "rows": 6,
+   "reason": "Meatloaf mapped to bread.",
+   "spend": 71.76
+  },
+  {
+   "product_name": "190G THIN ROMARIN",
+   "rows": 6,
+   "reason": "Rosemary crackers mapped to pure rosemary herb.",
+   "spend": 14.34
+  },
+  {
+   "product_name": "MENTHE GROS PO BIO",
+   "rows": 3,
+   "reason": "Fresh mint mapped to creme-de-menthe liqueur.",
+   "spend": 6.97
+  },
+  {
+   "product_name": "MINT-PIMENTS MIX",
+   "rows": 1,
+   "reason": "Chilli-pepper mix mapped to pure mint.",
+   "spend": 1.79
+  },
+  {
+   "product_name": "MINT GRENAILLES 50",
+   "rows": 1,
+   "reason": "Baby potatoes ('grenailles') mapped to pure mint.",
+   "spend": 1.79
+  },
+  {
+   "product_name": "6X33CL SCH GINGER",
+   "rows": 1,
+   "reason": "Ginger ale (6x33 cl beverage) mapped to pure ginger root, and 1.98 L of liquid counted as 1980 g of spice.",
+   "spend": 6.59
+  },
+  {
+   "product_name": "40G DLL PATE NOI",
+   "rows": 1,
+   "reason": "Pate mapped to pie crust, and a 40 g package recorded as 400 g.",
+   "spend": 2.55
+  }
+ ],
+ "needs_review": [
+  {
+   "mapping": "224G GAUF VANI CHO -> WAFFLE",
+   "rows": 3
+  },
+  {
+   "mapping": "250G MKA MELO CAKE -> RICE CAKE",
+   "rows": 3
+  },
+  {
+   "mapping": "75G CHIPS POIS BIO -> PEA",
+   "rows": 2
+  },
+  {
+   "mapping": "600G GAUFFRE POT -> WAFFLE",
+   "rows": 2
+  }
+ ],
+ "unresolved": [
+  {
+   "product_name": "HACHIS PORC-VEAU",
+   "rows": 72,
+   "state": "quantity_unknown",
+   "spend": 578.03
+  },
+  {
+   "product_name": "HET TRAAGSTE BROOD P",
+   "rows": 49,
+   "state": "quantity_unknown",
+   "spend": 224.06
+  },
+  {
+   "product_name": "AVOCAT",
+   "rows": 63,
+   "state": "quantity_unknown",
+   "spend": 191.9
+  },
+  {
+   "product_name": "ORAL B PREC CL REF",
+   "rows": 5,
+   "state": "not_food_or_unmatched",
+   "spend": 134.95
+  },
+  {
+   "product_name": "MANGUE",
+   "rows": 56,
+   "state": "quantity_unknown",
+   "spend": 131.37
+  },
+  {
+   "product_name": "CARPACCIO",
+   "rows": 26,
+   "state": "quantity_unknown",
+   "spend": 117.3
+  },
+  {
+   "product_name": "DES DE POULET",
+   "rows": 16,
+   "state": "quantity_unknown",
+   "spend": 112.92
+  },
+  {
+   "product_name": "MOZZARELLA MAXI",
+   "rows": 33,
+   "state": "quantity_unknown",
+   "spend": 108.35
+  },
+  {
+   "product_name": "ROSBIF",
+   "rows": 6,
+   "state": "quantity_unknown",
+   "spend": 103.27
+  },
+  {
+   "product_name": "BIO BANANEN",
+   "rows": 37,
+   "state": "quantity_unknown",
+   "spend": 94.31
+  },
+  {
+   "product_name": "JAMBON A L OS AUTH",
+   "rows": 19,
+   "state": "quantity_unknown",
+   "spend": 87.51
+  },
+  {
+   "product_name": "HACHIS BOEUF&PORC",
+   "rows": 11,
+   "state": "quantity_unknown",
+   "spend": 82.36
+  },
+  {
+   "product_name": "6PC POMME PINK LAD",
+   "rows": 21,
+   "state": "quantity_unknown",
+   "spend": 81.97
+  },
+  {
+   "product_name": "HET TRAGSTE BROOD P",
+   "rows": 17,
+   "state": "quantity_unknown",
+   "spend": 80.9
+  },
+  {
+   "product_name": "NOISETTES D AGNEAU",
+   "rows": 9,
+   "state": "quantity_unknown",
+   "spend": 79.67
+  }
+ ],
+ "items": [
+  {
+   "date": "2023-01-10",
+   "product_name": "185G LAYS S&BL.DEP",
+   "food": "",
+   "price": 2.99,
+   "qty_amount": 185.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "SERVIETTES 33CM",
+   "food": "",
+   "price": 2.99,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "BIO ECHALOTE",
+   "food": "",
+   "price": 4.29,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "3X400G TOMAT PEL C",
+   "food": "",
+   "price": 2.39,
+   "qty_amount": 1200.0,
+   "qty_unit": "g",
+   "qty_method": "label_multipack",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "500ML ERA SIRO BIO",
+   "food": "",
+   "price": 2.99,
+   "qty_amount": 500.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 500.0,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [
+    "quantity_estimated_not_observed"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "185G LAYS NATUREL",
+   "food": "",
+   "price": 1.99,
+   "qty_amount": 185.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "5G SM SAFFRAN",
+   "food": "",
+   "price": 9.09,
+   "qty_amount": 5.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "70G PATE CURRY JAU",
+   "food": "",
+   "price": 2.99,
+   "qty_amount": 70.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "not_food_or_unmatched",
+   "issues": [],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "50CC SQC CANE C FT",
+   "food": "SUGAR",
+   "price": 2.55,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": 50.0,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "AVOCAT",
+   "food": "AVOCADO",
+   "price": 2.78,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "BASILIC EN POT BIO",
+   "food": "BASIL",
+   "price": 2.99,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "PERSIL EN POT BIO",
+   "food": "PARSLEY",
+   "price": 2.99,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": 30.0,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "SAN MARZANO",
+   "food": "TOMATO",
+   "price": 7.16,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": 400.0,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "PROSC CRUDO ITALIA",
+   "food": "PROSCIUTTO",
+   "price": 8.89,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": 100.0,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "CITRON VERT",
+   "food": "LEMON",
+   "price": 0.83,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": 400.0,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-10-21",
+   "product_name": "MANGUE",
+   "food": "MANGO",
+   "price": 1.89,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quantity_unknown",
+   "issues": [
+    "quantity_not_on_label"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "MINT-PIMENTS MIX",
+   "food": "MINT",
+   "price": 1.79,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-01-10",
+   "product_name": "MINT GRENAILLES 50",
+   "food": "MINT",
+   "price": 1.79,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-10-21",
+   "product_name": "PIZZA MOZZA PESTO",
+   "food": "PESTO",
+   "price": 5.19,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-10-21",
+   "product_name": "PIZZA MOZZA PESTO",
+   "food": "PESTO",
+   "price": 5.19,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-10-25",
+   "product_name": "PIZZA MOZZA PESTO",
+   "food": "PESTO",
+   "price": 4.99,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-11-09",
+   "product_name": "PAIN DE VIANDE",
+   "food": "BREAD",
+   "price": 11.52,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-11-09",
+   "product_name": "PAIN DE VIANDE",
+   "food": "BREAD",
+   "price": 10.81,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-11-09",
+   "product_name": "PIZZA MOZZA PESTO",
+   "food": "PESTO",
+   "price": 5.19,
+   "qty_amount": null,
+   "qty_unit": null,
+   "qty_method": "not_on_label",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "quarantined",
+   "issues": [
+    "bad_mapping"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-10-21",
+   "product_name": "400G EXQUISE BAG",
+   "food": "BREAD",
+   "price": 2.19,
+   "qty_amount": 400.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 1007.1
+  },
+  {
+   "date": "2023-10-21",
+   "product_name": "MYRTILLES 500GR",
+   "food": "BLUEBERRY",
+   "price": 7.49,
+   "qty_amount": 500.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 291.4
+  },
+  {
+   "date": "2023-10-21",
+   "product_name": "FRAMBOIS 125G",
+   "food": "RASPBERRY",
+   "price": 2.99,
+   "qty_amount": 125.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 64.3
+  },
+  {
+   "date": "2023-10-21",
+   "product_name": "FRAISE 500G",
+   "food": "STRAWBERRY",
+   "price": 4.99,
+   "qty_amount": 500.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 157.7
+  },
+  {
+   "date": "2023-10-25",
+   "product_name": "GALBANI MOZZA 125G",
+   "food": "MOZZARELLA CHEESE",
+   "price": 1.99,
+   "qty_amount": 125.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 362.0
+  },
+  {
+   "date": "2023-10-30",
+   "product_name": "100GR JEUNES POUSS",
+   "food": "SALAD GREENS",
+   "price": 1.99,
+   "qty_amount": 100.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 21.0
+  },
+  {
+   "date": "2023-10-30",
+   "product_name": "MYRTILLES 500GR",
+   "food": "BLUEBERRY",
+   "price": 7.49,
+   "qty_amount": 500.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 291.4
+  },
+  {
+   "date": "2023-10-30",
+   "product_name": "500G SP K LAIT CHO",
+   "food": "MILK CHOCOLATE",
+   "price": 4.95,
+   "qty_amount": 500.0,
+   "qty_unit": "g",
+   "qty_method": "label_single",
+   "declared_g": null,
+   "line_type": "product",
+   "state": "usable",
+   "issues": [],
+   "energy": 2440.0
+  },
+  {
+   "date": "2023-11-09",
+   "product_name": "500ML BECEL HUILE",
+   "food": "VEGETABLE OIL",
+   "price": 3.95,
+   "qty_amount": 500.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 500.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2023-11-09",
+   "product_name": "500ML BECEL HUILE",
+   "food": "VEGETABLE OIL",
+   "price": 3.95,
+   "qty_amount": 500.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 500.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2024-07-25",
+   "product_name": "GARZPACHO 1L",
+   "food": "TOMATO",
+   "price": 5.39,
+   "qty_amount": 1000.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 1000.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2024-07-25",
+   "product_name": "GARZPACHO 1L",
+   "food": "TOMATO",
+   "price": 5.39,
+   "qty_amount": 1000.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 1000.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2025-02-07",
+   "product_name": "SHERBET 1L",
+   "food": "SHERBET",
+   "price": 5.99,
+   "qty_amount": 1000.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 1000.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2025-03-29",
+   "product_name": "500ML DLL MAYO OEU",
+   "food": "MAYONNAISE",
+   "price": 1.59,
+   "qty_amount": 500.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 500.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2025-03-29",
+   "product_name": "6X55ML MAGNUM ALMO",
+   "food": "ICE CREAM",
+   "price": 3.99,
+   "qty_amount": 330.0,
+   "qty_unit": "ml",
+   "qty_method": "label_multipack",
+   "declared_g": 330.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  },
+  {
+   "date": "2025-06-22",
+   "product_name": "250ML REAL MAYO SQ",
+   "food": "MAYONNAISE",
+   "price": 2.95,
+   "qty_amount": 250.0,
+   "qty_unit": "ml",
+   "qty_method": "label_single",
+   "declared_g": 250.0,
+   "line_type": "product",
+   "state": "volume_no_density",
+   "issues": [
+    "quantity_estimated_not_observed",
+    "volume_without_official_density"
+   ],
+   "energy": null
+  }
+ ]
+}
