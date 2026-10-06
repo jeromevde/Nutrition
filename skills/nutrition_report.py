@@ -48,8 +48,39 @@ REPORT_YEARLY = OUT_DIR / "nutrition_yearly.csv"
 REPORT_TRIPS  = OUT_DIR / "nutrition_pertrip.csv"
 
 FAMILY_KCAL   = 2500          # reference daily energy for scaling
-DEFAULT_GRAMS = 100           # fallback when no weight info at all
 MIN_COVERAGE_PCT = 70.0       # below this, nutrient values are informational only
+
+# Rows without a quantity (no label weight, no agent estimate) contribute no
+# nutrients. They are counted and shown as "no quantity" coverage instead of
+# being silently assumed to weigh 100 g.
+
+# Reference values: EU Regulation 1169/2011 Annex XIII adult reference intakes
+# and nutrient reference values, defined at 2000 kcal and rescaled to
+# FAMILY_KCAL. Fibre uses the EFSA adequate intake (no EU NRV exists);
+# cholesterol has no reference value. This compares the nutrient density of a
+# purchase basket with a published standard; it is not an intake assessment.
+_EU_RI_2000: dict[str, float] = {
+    "Energy": 2000.0,
+    "Protein": 50.0,
+    "Carbohydrate": 260.0,
+    "Sugars, Total": 90.0,
+    "Total fat": 70.0,
+    "Fatty acids, total saturated": 20.0,
+    "Fiber": 25.0,              # EFSA AI
+    "Sodium": 2400.0,           # 6 g salt expressed as sodium
+    "Vitamin A, RAE": 800.0,
+    "Vitamin D (D2 + D3)": 5.0,
+    "Vitamin C": 80.0,
+    "Thiamin": 1.1,
+    "Riboflavin": 1.4,
+    "Folate, total": 200.0,
+    "Vitamin B-12": 2.5,
+    "Calcium": 800.0,
+    "Iron": 14.0,
+    "Magnesium": 375.0,
+    "Zinc": 10.0,
+    "Potassium": 2000.0,
+}
 
 # If a nutrient looks low AND coverage is high, flag as "suspicious low".
 # This catches cases like Zinc looking near-zero even when coverage suggests we
@@ -87,16 +118,14 @@ def load_pyfooda() -> tuple[pd.DataFrame, dict[str, float], dict[str, str]]:
     elif 'Total Sugars' in foods_df.columns and 'Sugars, Total' not in foods_df.columns:
         foods_df['Sugars, Total'] = foods_df['Total Sugars']
 
-    # DRV
+    # Units from pyfooda; reference values from EU Reg. 1169/2011 scaled to FAMILY_KCAL
     drv_df = api.get_drv_df()
-    drv: dict[str, float] = {}
     units: dict[str, str] = {}
     for _, row in drv_df.iterrows():
         n = row['nutrientName']
-        if n not in drv and pd.notna(row.get('drv')):
-            drv[n] = float(row['drv'])
         if n not in units:
             units[n] = str(row.get('unit_name', ''))
+    drv: dict[str, float] = {k: v * FAMILY_KCAL / 2000.0 for k, v in _EU_RI_2000.items()}
 
     return foods_df, drv, units
 
@@ -119,12 +148,10 @@ def nutrient_contribution(
     """
     if not pyfooda_name or pyfooda_name not in foods_df.index:
         return {}
+    if grams is None or not np.isfinite(grams) or grams <= 0:
+        return {}   # no quantity: excluded from totals, counted in coverage
 
     row = foods_df.loc[pyfooda_name]
-
-    if grams is None:
-        grams = DEFAULT_GRAMS
-
     scale = grams / 100.0
     result: dict[str, float] = {}
     for col in nutrient_cols:
@@ -354,9 +381,9 @@ def build_report_data(
     year_keys = ['all'] + [str(y) for y in years]
 
     def _effective_grams(pname: str, grams: float | None) -> float | None:
-        if grams is not None and pd.notna(grams):
+        if grams is not None and pd.notna(grams) and float(grams) > 0:
             return float(grams)
-        return float(DEFAULT_GRAMS)
+        return None
 
     def _valid_matched(yk: str) -> pd.DataFrame:
         sub = matched if yk == 'all' else matched[matched['year'] == int(yk)]
@@ -444,6 +471,8 @@ def build_report_data(
         llm_matched_rows = int((yr_p.get('llm_action', pd.Series(dtype=str)) == 'match').sum())
         matched_rows = int(len(yr_m))
         total_rows = int(len(yr_p))
+        g = pd.to_numeric(yr_m['grams_in_name'], errors='coerce')
+        usable_rows = int((g > 0).sum())
         return {
             'trips':     int(len(yr_t)),
             'items':     total_rows,
@@ -453,6 +482,10 @@ def build_report_data(
             'matched_items': matched_rows,
             'unmatched_items': int(max(total_rows - matched_rows, 0)),
             'match_pct': round(matched_rows / max(total_rows, 1) * 100, 1),
+            # matched AND carrying a quantity: the only rows that feed the totals
+            'usable_items': usable_rows,
+            'no_quantity_items': matched_rows - usable_rows,
+            'usable_pct': round(usable_rows / max(total_rows, 1) * 100, 1),
         }
 
     def _nutrients(yk: str) -> dict:
@@ -624,12 +657,8 @@ def build_report_data(
     def _purchases(yk: str) -> list:
         """Build a flat list of ALL purchase rows (matched + unmatched) for the JS table.
 
-        For matched rows, always resolve an effective_grams value using the same
-        fallback chain as nutrient_contribution():
-          1. grams_in_name (explicit from product label)
-          2. DEFAULT_GRAMS (100 g) as last resort
-        The 'grams_source' field records which step was used so the UI can flag
-        inferred values clearly.
+        Matched rows without a quantity get grams=None and grams_src='none';
+        they contribute nothing to the totals and the UI flags them.
         """
         # Pre-compute which nutrients are suppressed (density cap) per food
         _sup_cache: dict[str, list[str]] = {}
@@ -653,8 +682,9 @@ def build_report_data(
             if not pname or pname not in foods_df.index:
                 return {}
             frow = foods_df.loc[pname]
-            g = grams if grams is not None else DEFAULT_GRAMS
-            scale = g / 100.0
+            if grams is None:
+                return {}
+            scale = grams / 100.0
             out: dict = {}
             for nut in nutrient_cols:
                 val = frow.get(nut, np.nan)
@@ -683,12 +713,12 @@ def build_report_data(
 
             # Resolve effective grams using the same fallback as nutrient_contribution()
             if action == 'match' and pname:
-                if pd.notna(g_raw):
+                if pd.notna(g_raw) and float(g_raw) > 0:
                     eff_grams  = round(float(g_raw), 1)
-                    grams_src  = 'label'                  # weight read from product name
+                    grams_src  = 'label'                  # label weight or agent estimate
                 else:
-                    eff_grams = float(DEFAULT_GRAMS)
-                    grams_src = 'default'
+                    eff_grams = None
+                    grams_src = 'none'                    # excluded from totals
             else:
                 eff_grams = None
                 grams_src = None
@@ -699,7 +729,7 @@ def build_report_data(
                 'product_name':        str(row.get('product_name', '')),
                 'pyfooda_name':        pname,
                 'grams':               eff_grams,
-                'grams_src':           grams_src,  # 'label' | 'portion' | 'default' | null
+                'grams_src':           grams_src,  # 'label' | 'none' | null
                 'price':               round(float(row['price']), 2) if pd.notna(row.get('price')) else None,
                 'matched':             action == 'match',
                 'suppressed_nutrients': _suppressed_for(pname) if pname else [],
@@ -820,7 +850,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   <!-- nutrients view -->
   <section id="v-nutrients">
     <table class="nut-table">
-      <thead><tr><th>Nutrient</th><th style="min-width:200px">vs DRV</th><th>Coverage</th><th>Value</th></tr></thead>
+      <thead><tr><th>Nutrient</th><th style="min-width:200px">vs EU reference intake</th><th>Coverage</th><th>Value</th></tr></thead>
       <tbody id="nut-tbody"></tbody>
     </table>
   </section>
@@ -848,13 +878,12 @@ function fmt(v,d){if(v==null)return'\u2014';d=d??1;return Number(v).toLocaleStri
 function sh(n,mx){mx=mx||48;return n.length>mx?n.slice(0,mx-1)+'\u2026':n;}
 
 // Format grams with source indicator:
-//   label   → "400 g"         (bold, extracted from product name)
-//   default → "~100 g"ᵈ       (italic yellow, 100 g fallback)
+//   label → "400 g"  (bold: label weight or agent estimate)
+//   none  → "no qty" (yellow: matched but excluded from totals)
 function fmtG(r){
+  if(r.grams_src==='none')return'<span class="g-default" title="No quantity on label and no estimate: excluded from nutrient totals">no qty</span>';
   if(r.grams==null)return'\u2014';
-  const v=fmt(r.grams,0)+'\u202fg';
-  if(r.grams_src==='label')  return`<span class="p-grams">${v}</span>`;
-  return`<span class="g-default" title="100 g default (no weight info)">~${v}</span>`;
+  return`<span class="p-grams">${fmt(r.grams,0)}\u202fg</span>`;
 }
 
 function renderMeta(){
@@ -862,7 +891,9 @@ function renderMeta(){
   document.getElementById('meta-bar').innerHTML=
     `<span>${s.trips} trips</span><span>${s.items.toLocaleString()} items</span>`+
     `<span>${s.matched_items.toLocaleString()} matched</span><span>${s.unmatched_items.toLocaleString()} unmatched</span>`+
-    `<span>${DATA.family_kcal} kcal ref</span>`;
+    `<span title="Matched rows that also carry a quantity. Only these feed the nutrient totals.">${s.usable_items.toLocaleString()} with quantity (${s.usable_pct}% of items)</span>`+
+    `<span>${s.no_quantity_items.toLocaleString()} no quantity</span>`+
+    `<span>${DATA.family_kcal} kcal ref \u00b7 EU RI</span>`;
 }
 
 function renderWarnings(){
@@ -924,8 +955,8 @@ function renderPurchases(){
 
   // Always render the grams legend (above any table)
   const LEGEND=`<p style="font-size:.72rem;color:var(--muted);margin-bottom:8px">
-    Grams: <strong style="color:var(--text)">400 g</strong> from label &nbsp;·&nbsp;
-    <em class="g-default">~100 g</em> 100 g default (hover for details)</p>`;
+    Grams: <strong style="color:var(--text)">400 g</strong> label weight or agent estimate &nbsp;·&nbsp;
+    <em class="g-default">no qty</em> matched but no quantity, excluded from totals</p>`;
 
     if(state.group==='date'){
         const rows=allRows;
@@ -973,7 +1004,7 @@ function renderPurchases(){
       const gStr=fmt(e.totalG,0)+'\u202fg';
       const gCell=allLabel
         ?`<span class="p-grams">${gStr}</span>`
-        :`<span class="g-portion" title="${e.nLabel}/${e.count} items had explicit weight; rest inferred">~${gStr}</span>`;
+        :`<span class="g-portion" title="${e.nLabel}/${e.count} items had a quantity; the rest are excluded from totals">${gStr} (${e.nLabel}/${e.count})</span>`;
             h+=`<tr${rowStyle}><td class="p-muted" style="font-size:.78rem">${uniqOrig}${extra}</td>`+
                 `<td style="font-weight:500">${e.matched?sh(e.name,42):'<em>unmatched</em>'}</td>`+
                 `<td style="font-weight:600;color:${e.matched?'var(--accent)':'var(--muted)'}">${e.count}</td>`+
@@ -1003,7 +1034,7 @@ function openItemModal(r){
     +'<th style="text-align:left">Nutrient</th>'
     +'<th style="text-align:right">per 100g</th>'
     +'<th style="text-align:right">this item</th>'
-    +'<th style="text-align:right">% DRV</th>'
+    +'<th style="text-align:right">% RI</th>'
     +'</tr></thead><tbody>';
   keys.forEach(n=>{
     const d=nuts[n];
@@ -1026,7 +1057,7 @@ function openNutModal(nut){
         if(d.coverage_pct!=null) covParts.push(`Energy coverage ${d.coverage_pct}%`);
         if(d.row_coverage_pct!=null) covParts.push(`Row coverage ${d.row_coverage_pct}% (${d.coverage_rows}/${d.coverage_total_rows} matched rows)`);
     const cov=covParts.length?` \u00b7 `+covParts.join(' \u00b7 '):'';
-    const sub=`avg ${fmt(d.value)} ${d.unit} \u00b7 ${d.pct!=null?d.pct+'% of DRV':'no DRV'}`+cov+(d.drv?` (DRV ${fmt(d.drv,0)} ${d.unit})`:'');
+    const sub=`avg ${fmt(d.value)} ${d.unit} \u00b7 ${d.pct!=null?d.pct+'% of EU RI':'no reference value'}`+cov+(d.drv?` (RI ${fmt(d.drv,0)} ${d.unit})`:'');
   let body;
   if(!top.length){body='<p style="color:var(--muted);font-size:.82rem">No data.</p>';}
   else{
@@ -1104,7 +1135,7 @@ def build_html(data: dict) -> str:
 
 def main() -> None:
     if not PURCHASES_CSV.exists():
-        raise FileNotFoundError(f"Run 01_build_mapping.py first. Missing: {PURCHASES_CSV}")
+        raise FileNotFoundError(f"Run `python -m skills.agent_remap --ingest` first. Missing: {PURCHASES_CSV}")
 
     tlog("Loading pyfooda…")
     foods_df, drv, units = load_pyfooda()
@@ -1114,7 +1145,7 @@ def main() -> None:
     purchases = pd.read_csv(PURCHASES_CSV, dtype=str)
 
     # Always re-join with the mapping CSV so manual corrections take effect
-    # immediately without needing to re-run 01_build_mapping.py.
+    # immediately without needing to re-run the ingest step.
     if MAPPING_CSV.exists():
         mapping = pd.read_csv(MAPPING_CSV, dtype=str).rename(columns={
             'delhaize_name': 'product_name',
@@ -1148,8 +1179,11 @@ def main() -> None:
         purchases.to_csv(PURCHASES_CSV, index=False)
         tlog(f"  downgraded {stale_count:,} stale match rows to ignore (missing pyfooda key)")
 
-    tlog(f"  {len(purchases):,} rows  ·  "
-          f"{(purchases['llm_action'] == 'match').sum():,} matched")
+    _m = purchases['llm_action'] == 'match'
+    _q = _m & (purchases['grams_in_name'] > 0)
+    tlog(f"  {len(purchases):,} rows  ·  {int(_m.sum()):,} matched  ·  "
+          f"{int(_q.sum()):,} with quantity ({_q.sum() / max(len(purchases), 1) * 100:.1f}% of rows feed the totals)  ·  "
+          f"{int((_m & ~_q).sum()):,} matched without quantity (excluded)")
 
     nutrient_cols = [c for c in KEY_NUTRIENTS if c in foods_df.columns]
     missing = [c for c in KEY_NUTRIENTS if c not in foods_df.columns]
@@ -1222,7 +1256,7 @@ def main() -> None:
     _inject_summary(REPORT_HTML)
 
     # Quick console summary
-    tlog("\n── Yearly snapshot (% DRV at 2500 kcal) ──")
+    tlog("\n── Yearly snapshot (% EU RI at 2500 kcal) ──")
     snap_nuts = ["Energy", "Protein", "Calcium", "Iron", "Vitamin C", "Vitamin D (D2 + D3)"]
     for year in sorted(yearly_df['year'].unique()):
         row = yearly_df[yearly_df['year'] == year].iloc[0]

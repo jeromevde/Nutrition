@@ -21,14 +21,14 @@ data/
 skills/
   delhaize.py                  ← Delhaize browser scraper
   mobile_receipts.py           ← Carrefour/Xtra Android ticket capture
-  build_mapping.py             ← product → pyfooda mapping pipeline
-  nutrition_report.py          ← nutrient report generation
   ocr_batch.py                 ← batch receipt OCR entry point
-  matcher.py                   ← reusable semantic-search + LLM food matcher
-  report_verifier.py           ← audits report outliers and suspicious mappings
   ocr.py                       ← reusable vision-LLM receipt OCR wrapper
-  source_normalizer.py         ← canonical schema for future grocery sources
+  source_normalizer.py         ← canonical schema + receipt-noise filter
+  agent_remap.py               ← ingest receipts, product → pyfooda mapping (agent-driven)
+  nutrition_report.py          ← nutrient report generation
 ```
+
+See `skills/README.md` for the current pipeline (ingest → remap → report).
 
 ---
 
@@ -97,37 +97,35 @@ Model: `qwen/qwen-2-vl-7b-instruct` (~$0.03–0.08 / 100 receipts).
 ## Step 3 — Nutrient report
 
 ```bash
-pip install pandas numpy pyfooda sentence-transformers faiss-cpu openai
-export OPENROUTER_API_KEY="your-key-here"
+pip install pandas numpy pyfooda
 
-python -m skills.build_mapping       # map products → USDA foods
-python -m skills.nutrition_report    # generate HTML report
+python -m skills.agent_remap --ingest    # receipts CSVs → data/purchases_enriched.csv
+python -m skills.agent_remap --generate  # list unmatched products for the agent
+#   the coding agent fills data/agent_remap_responses.jsonl (see skills/README.md)
+python -m skills.agent_remap --apply     # apply matches, re-enrich
+python -m skills.nutrition_report        # generate HTML report
 ```
 
 Report: `data/nutrition_report.html`, auto-deployed to
 **GitHub Pages** on every push to `main`.
 
----
+Matching is done by the coding agent (Copilot / Claude), not by a separate
+matcher module. See `skills/README.md` for the response format and grams rules.
 
-## LLM skills
+### Data-quality rules
 
-The `skills/` package contains reusable modules for making the pipeline more
-LLM-driven and easier to extend to new grocery sources.
-
-```bash
-python -m skills.source_normalizer data/delhaize --source delhaize --output data/purchases_normalized.csv
-python -m skills.matcher data/delhaize --dry-run --output /tmp/matcher_candidates.csv --limit 25
-python -m skills.nutrition_report
-python -m skills.report_verifier
-```
-
-Suggested loop:
-
-```text
-scraper/OCR → source_normalizer → matcher → nutrition_report → report_verifier → targeted remap/fix
-```
-
-See `skills/README.md` for the skill-specific commands.
+- Receipt lines that are totals, payment, loyalty points or discounts are
+  dropped at ingest (`skills/source_normalizer.py`).
+- A matched product without a quantity (no label weight, no agent estimate)
+  contributes nothing. The report shows how many rows carry a quantity; there
+  is no silent 100 g default.
+- Label quantities are parsed multipack-first (`6X33CL` → 1980 g, not 33 g).
+  Volumes are taken as 1 ml = 1 g.
+- Reference values are the EU Regulation 1169/2011 adult reference intakes,
+  rescaled from 2000 to 2500 kcal. Fibre uses the EFSA adequate intake;
+  cholesterol has no reference value.
+- The report describes the nutrient composition of groceries bought, not what
+  anyone ate.
 
 ---
 

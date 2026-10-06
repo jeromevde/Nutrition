@@ -116,7 +116,7 @@ def main() -> int:
         scrape_colruyt(pw)
 
     print("\nNext: build the nutrition mapping:")
-    print("  python -m skills.build_mapping")
+    print("  python -m skills.agent_remap --ingest")
     return 0
 
 

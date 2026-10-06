@@ -40,6 +40,25 @@ _NON_FOOD_RE = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
+# Receipt lines that are not purchases: totals, payment, loyalty points, VAT,
+# discounts. Before this filter, a 6 096-point loyalty balance was counted as a
+# EUR 6 096 product. Kept separate from _NON_FOOD_RE because these are matched
+# anywhere in the line, not only as a whole line.
+_RECEIPT_META_RE = re.compile(
+    r"^TOTAA?L|SOUS[- ]?TOTAL|SUBTOTAA?L|^TOT\b"
+    r"|SOLDE DE POINTS|\bPOINTS\b|PUNTEN"
+    r"|\bCHEQ|BANCONTACT|MAESTRO|\bVISA\b|MASTERCARD|BETAALD|ESPECES|CONTANT|\bCASH\b|PAIEMENT|BETALING"
+    r"|\bBTW\b|\bTVA\b|\bHTVA\b"
+    r"|KORTING|REMISE|RISTOURNE|REDUCTION|NUTRI-BOOST|GRATUIT|1/2 PRIX"
+    r"|^SN\s*\d|^GS\s*:|^EUR\b|CARTE (CREDIT|CLIENT)|KLANTEN|\bXTRA\b"
+    r"|NOMBRE D ARTICLES|AANTAL ARTIKELEN|^A PAYER|TE BETALEN"
+    r"|^\d+[.,]?\d*\s*KG\s*X$|^\d{1,6}$",
+    re.IGNORECASE,
+)
+# A single grocery line above this price on a Belgian supermarket receipt is a
+# total or a payment instrument that OCR mislabelled, not a product.
+MAX_LINE_PRICE_EUR = 100.0
+
 
 class SourceNormalizerSkill:
     """Convert OCR/scraper CSVs from any retailer into one canonical shape."""
@@ -80,9 +99,12 @@ class SourceNormalizerSkill:
     def filter_food_rows(data: pd.DataFrame) -> pd.DataFrame:
         data = data.dropna(subset=["product_name"]).copy()
         data = data[data["product_name"].astype(str).str.len() > 0]
-        data = data[~data["product_name"].astype(str).apply(lambda name: bool(_NON_FOOD_RE.match(name)))]
+        names = data["product_name"].astype(str)
+        data = data[~names.apply(lambda name: bool(_NON_FOOD_RE.match(name)))]
+        data = data[~data["product_name"].astype(str).apply(lambda name: bool(_RECEIPT_META_RE.search(name)))]
         if "price" in data.columns:
-            data = data[data["price"].fillna(0) >= 0]
+            price = data["price"].fillna(0)
+            data = data[(price >= 0) & (price < MAX_LINE_PRICE_EUR)]
         return data.reset_index(drop=True)
 
     @staticmethod

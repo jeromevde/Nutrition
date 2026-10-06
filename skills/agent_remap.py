@@ -2,6 +2,7 @@
 
 Pipeline
 --------
+   python -m skills.agent_remap --ingest        # data/delhaize/*.csv -> purchases_enriched.csv (+ enrich)
    python -m skills.agent_remap --generate      # see what's unmatched
    # agent reads data/agent_remap_requests.jsonl and writes data/agent_remap_responses.jsonl
    python -m skills.agent_remap --apply         # apply matches + sanitize stale keys
@@ -19,7 +20,9 @@ grams rules for agent:
     egg ~60g, onion ~150g, pepper/bell pepper ~150g
 - Infer from price when both weight and count are unknown:
     butter €2/250g €3/500g · salmon €4/150g €8/300g · chicken breast €5/300g
-- If truly unknown, omit grams (null) — report will use 100g default
+- If truly unknown, omit grams (null) — the row is then excluded from nutrient
+  totals and counted as "no quantity" in the report's coverage figures. There
+  is no silent 100 g default.
 """
 
 from __future__ import annotations
@@ -31,7 +34,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .common import DEFAULT_MAPPING, DEFAULT_PURCHASES, OUTPUT_DIR, get_pyfooda_foods_df
+from .common import DEFAULT_MAPPING, DEFAULT_PURCHASES, DELHAIZE_DATA_DIR, OUTPUT_DIR, get_pyfooda_foods_df
+from .source_normalizer import SourceNormalizerSkill
 
 DEFAULT_REQUESTS = OUTPUT_DIR / "agent_remap_requests.jsonl"
 DEFAULT_RESPONSES = OUTPUT_DIR / "agent_remap_responses.jsonl"
@@ -114,20 +118,27 @@ def _extract_weight_hint(product_name: str) -> str | None:
     return None
 
 
+# Label quantities. Multipacks are resolved before single units so that
+# "6X33CL" yields 1980 and never 33. Volumes are taken as 1 ml = 1 g (no
+# density table), which is within a few percent for drinks, milk and oil.
+_UNIT_TO_G = {"G": 1.0, "GR": 1.0, "KG": 1000.0, "ML": 1.0, "CL": 10.0, "L": 1000.0}
+_MULTIPACK_RE = re.compile(r"(?<!\d)(\d{1,2})\s*[X*]\s*(\d+(?:[.,]\d+)?)\s*(KG|GR?|ML|CL|L)(?![A-Z])", re.I)
+_SINGLE_RE = re.compile(r"(?<![\dX*])(\d+(?:[.,]\d+)?)\s*(KG|GR?|ML|CL|L)(?![A-Z])", re.I)
+
+
 def infer_grams(product_name: str) -> float | None:
     """Try to extract grams numerically from the product name."""
     name = product_name.upper()
 
-    # Explicit weight in label
-    m = re.search(r"\b(\d[\d,.]*)\s*(KG|GR?)\b", name, re.I)
+    m = _MULTIPACK_RE.search(name)
     if m:
-        qty, unit = m.group(1).replace(",", "."), m.group(2).upper()
-        return float(qty) * (1000 if unit == "KG" else 1)
+        count, qty, unit = int(m.group(1)), float(m.group(2).replace(",", ".")), m.group(3).upper()
+        return count * qty * _UNIT_TO_G[unit]
 
-    m = re.search(r"\b(\d[\d,.]*)\s*(ML|CL)\b", name, re.I)
+    m = _SINGLE_RE.search(name)
     if m:
-        qty, unit = m.group(1).replace(",", "."), m.group(2).upper()
-        return float(qty) * (10 if unit == "CL" else 1)
+        qty, unit = float(m.group(1).replace(",", ".")), m.group(2).upper()
+        return qty * _UNIT_TO_G[unit]
 
     # Piece count × known unit weight
     pm = _PIECE_RE.search(name)
@@ -211,6 +222,23 @@ def generate_requests(
     return len(grp)
 
 
+def ingest_purchases(purchases_csv: Path, receipts_dir: Path = DELHAIZE_DATA_DIR) -> int:
+    """Rebuild purchases from the OCR CSVs in data/delhaize/ (one per receipt).
+
+    Receipt metadata lines (totals, payment, loyalty points, discounts) are
+    dropped by the normalizer. Dates come from the file name. Existing
+    mapping columns are then re-applied by enrich_purchases().
+    """
+    rows = SourceNormalizerSkill().normalize_many([receipts_dir], source="delhaize")
+    rows = rows.drop(columns=["source"]).sort_values(["date", "source_file"]).reset_index(drop=True)
+    for col in ("llm_action", "pyfooda_name", "grams_in_name"):
+        rows[col] = ""
+    rows.to_csv(purchases_csv, index=False)
+    n_files = rows["source_file"].nunique()
+    print(f"  Ingested {len(rows)} product rows from {n_files} receipts")
+    return len(rows)
+
+
 def enrich_purchases(mapping_csv: Path, purchases_csv: Path) -> int:
     """Re-enrich purchases from mapping and sanitize stale pyfooda keys.
 
@@ -241,7 +269,7 @@ def enrich_purchases(mapping_csv: Path, purchases_csv: Path) -> int:
 
     def _grams(row: pd.Series) -> str:
         mapped_grams = lookup.get(row["product_name"], {}).get("grams", "")
-        if mapped_grams and str(mapped_grams).strip():
+        if pd.notna(mapped_grams) and str(mapped_grams).strip():
             return str(mapped_grams)
         inferred = infer_grams(row["product_name"])
         if inferred is not None:
@@ -328,6 +356,7 @@ def apply_responses(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Agent-driven remap — single matching entry point")
+    parser.add_argument("--ingest", action="store_true", help="Rebuild purchases from data/delhaize/*.csv, then enrich")
     parser.add_argument("--generate", action="store_true", help="Write unmatched items to requests JSONL")
     parser.add_argument("--apply", action="store_true", help="Apply agent responses JSONL to mapping + purchases")
     parser.add_argument("--enrich", action="store_true", help="Re-enrich purchases from existing mapping (no responses needed)")
@@ -338,7 +367,10 @@ def main() -> None:
     parser.add_argument("--min-count", type=int, default=2)
     args = parser.parse_args()
 
-    if args.generate:
+    if args.ingest:
+        ingest_purchases(args.purchases)
+        enrich_purchases(args.mapping, args.purchases)
+    elif args.generate:
         generate_requests(args.purchases, args.requests, min_count=args.min_count)
     elif args.apply:
         apply_responses(args.mapping, args.purchases, args.responses)

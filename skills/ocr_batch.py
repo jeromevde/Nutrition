@@ -35,7 +35,7 @@ Tweak these constants at the top of this file:
     MODEL = "qwen/qwen-2-vl-7b-instruct"
 
 After OCR, run the nutrient analysis pipeline:
-    python -m skills.build_mapping
+    python -m skills.agent_remap --ingest
     python -m skills.nutrition_report
 """
 

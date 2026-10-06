@@ -10,18 +10,21 @@ pip install playwright && playwright install chromium   # once
 python -m skills.delhaize          # may quit/reopen Chrome briefly to sync cookies
 python -m skills.ocr_batch         # OCR image receipts into CSVs
 
-# 2. Find what needs matching
+# 2. Rebuild purchases from the OCR CSVs (drops totals/payment/points lines)
+python -m skills.agent_remap --ingest
+
+# 3. Find what needs matching
 python -m skills.agent_remap --generate
 # → data/agent_remap_requests.jsonl (product name, count, price, weight hint)
 
-# 3. Agent fills data/agent_remap_responses.jsonl
+# 4. Agent fills data/agent_remap_responses.jsonl
 # Each line: {"product_name": "...", "pyfooda_name": "...", "grams": 250}
 # Non-food:  {"product_name": "...", "action": "ignore"}
 
-# 4. Apply + re-enrich
+# 5. Apply + re-enrich
 python -m skills.agent_remap --apply
 
-# 5. Report
+# 6. Report
 python -m skills.nutrition_report
 ```
 
@@ -65,7 +68,7 @@ python -m skills.ocr data/carrefour/2026_07_18_01.png data/carrefour/2026_07_18_
 
 | Skill | Purpose |
 |-------|---------|
-| `agent_remap.py` | **Main entry point.** Generate requests, apply responses, enrich purchases, sanitize stale keys. |
+| `agent_remap.py` | **Main entry point.** Ingest receipts, generate requests, apply responses, enrich purchases, sanitize stale keys. |
 | `nutrition_report.py` | Compute per-trip/yearly nutrients, generate HTML report. |
 | `source_normalizer.py` | Normalize raw scraper/OCR CSVs into canonical schema. |
 | `common.py` | Shared utilities: pyfooda access, search index, paths, JSON helpers. |
@@ -89,4 +92,5 @@ python -m skills.ocr data/carrefour/2026_07_18_01.png data/carrefour/2026_07_18_
 - Infer from piece count × typical unit weight:
   - apple/pear ~150g, banana ~120g, orange ~200g, lemon ~100g, avocado ~170g, egg ~60g
 - Infer from price when weight is unknown (e.g. butter €2/250g, salmon €4/150g)
-- Omit grams if truly unknown — report falls back to 100g default
+- Omit grams if truly unknown — the row is excluded from nutrient totals and
+  counted as "no quantity" in the report's coverage figures (no 100 g default)

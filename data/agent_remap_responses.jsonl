@@ -1,378 +1,314 @@
-{"product_name": "HACHIS PORC-VEAU", "pyfooda_name": "PORK", "grams": 500}
-{"product_name": "BIO BANANEN", "pyfooda_name": "BANANA", "grams": 700}
-{"product_name": "JAMBON A L OS AUTH", "pyfooda_name": "HAM", "grams": 250}
-{"product_name": "LINDT EXCELLENCE", "action": "ignore"}
-{"product_name": "CARPACCIO", "pyfooda_name": "BEEF", "grams": 120}
-{"product_name": "BIO CAROTTES", "pyfooda_name": "CARROT", "grams": 1000}
-{"product_name": "CAROTTES BIO", "pyfooda_name": "CARROT", "grams": 500}
-{"product_name": "200GR HOUMOUS", "pyfooda_name": "HUMMUS", "grams": 200}
-{"product_name": "JAMBON CUIT AU FOU", "pyfooda_name": "HAM", "grams": 200}
-{"product_name": "DANONE ACT FRAISES", "pyfooda_name": "YOGURT", "grams": 500}
-{"product_name": "JAMBON DEGRAISSE", "pyfooda_name": "HAM", "grams": 200}
-{"product_name": "BRUIN STOKBROOD KLEI", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "HACHIS BOEUF&PORC", "pyfooda_name": "BEEF", "grams": 500}
-{"product_name": "400G NUTELLA", "pyfooda_name": "CHOCOLATE HAZELNUT SPREAD", "grams": 400}
-{"product_name": "HERTA JAMBON SUP", "pyfooda_name": "HAM", "grams": 200}
-{"product_name": "NOISETTES D AGNEAU", "pyfooda_name": "LAMB", "grams": 200}
-{"product_name": "200G MEDAILLON DE VEAU", "pyfooda_name": "VEAL", "grams": 200}
-{"product_name": "100GR JEUNES POUSS", "pyfooda_name": "SALAD GREENS", "grams": 100}
-{"product_name": "HOUMOUS", "pyfooda_name": "HUMMUS", "grams": 200}
-{"product_name": "PICCOLINI PENNE", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "125GR MESCLUN", "pyfooda_name": "SALAD GREENS", "grams": 125}
-{"product_name": "500G SP K LAIT CHO", "pyfooda_name": "MILK CHOCOLATE", "grams": 500}
-{"product_name": "MEDAILLON DE VEAU", "pyfooda_name": "VEAL", "grams": 200}
-{"product_name": "MANDARINES A FEUIL", "pyfooda_name": "CLEMENTINE", "grams": 500}
-{"product_name": "185G LAYS NATUREL", "pyfooda_name": "POTATO", "grams": 185}
-{"product_name": "BIO HOUMOUS 200G", "pyfooda_name": "HUMMUS", "grams": 200}
-{"product_name": "NECTARINE JAUNE", "pyfooda_name": "NECTARINE", "grams": 600}
-{"product_name": "BOURSIN POIVRE", "pyfooda_name": "CREAM CHEESE", "grams": 150}
-{"product_name": "100GR JEUNES POUS", "pyfooda_name": "SALAD GREENS", "grams": 100}
-{"product_name": "BURGER LIMOUSIN", "pyfooda_name": "BEEF", "grams": 200}
-{"product_name": "FILET PUR DE PORC", "pyfooda_name": "PORK", "grams": 300}
-{"product_name": "375G CHOCO LAIT", "pyfooda_name": "MILK CHOCOLATE", "grams": 375}
-{"product_name": "MYRTILLES 500GR", "pyfooda_name": "BLUEBERRY", "grams": 500}
-{"product_name": "HARICOT PRIN 500GR", "pyfooda_name": "GREEN BEAN", "grams": 500}
-{"product_name": "CIBOULETTE BIO", "pyfooda_name": "CHIVE", "grams": 30}
-{"product_name": "SOMA MULTIGRAIN 40", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "PETIT LION HOM NA", "pyfooda_name": "COOKIE", "grams": 100}
-{"product_name": "GAROF MOZZA BUFAL D", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "200GR EPINARD JEU", "pyfooda_name": "SPINACH", "grams": 200}
-{"product_name": "ROSBIF", "pyfooda_name": "BEEF", "grams": 600}
-{"product_name": "MINI BURGER LIMOUS", "pyfooda_name": "BEEF", "grams": 150}
-{"product_name": "NOIR DE NOIR C OR", "pyfooda_name": "CHOCOLATE", "grams": 100}
-{"product_name": "EXCELLENCE 70%", "action": "ignore"}
-{"product_name": "300G LOTUS JUM GAU", "pyfooda_name": "COOKIE BUTTER", "grams": 300}
-{"product_name": "PDT GRENAILLE 1KG", "pyfooda_name": "POTATO", "grams": 1000}
-{"product_name": "HACHIS BOUEF/PORC", "pyfooda_name": "BEEF", "grams": 300}
-{"product_name": "200G SM MINI TORTI", "pyfooda_name": "TORTELLINI", "grams": 200}
-{"product_name": "PATE A PIZZA", "pyfooda_name": "PIZZA CRUST", "grams": 230}
-{"product_name": "ORAL B PREC CL REF", "action": "ignore"}
-{"product_name": "365 HARICOTS V COU", "pyfooda_name": "GREEN BEAN", "grams": 400}
-{"product_name": "20CL CAPR-SUN TROP", "action": "ignore"}
-{"product_name": "COLUMBUS OEUFS 6PC", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "33CL SCHWEPPES TON", "action": "ignore"}
-{"product_name": "6 WRAPS DE BLE", "pyfooda_name": "FLOUR TORTILLA", "grams": 240}
-{"product_name": "DLL OEUVS BIO MIX", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "NUGGETS", "pyfooda_name": "CHICKEN", "grams": 300}
-{"product_name": "250ML AXE SG MOJIT", "action": "ignore"}
-{"product_name": "400G HONEY LOOPS", "pyfooda_name": "CEREAL", "grams": 400}
-{"product_name": "200G NUTELLA", "pyfooda_name": "CHOCOLATE HAZELNUT SPREAD", "grams": 200}
-{"product_name": "DINOSAURUS CHOCOLA", "pyfooda_name": "COOKIE", "grams": 200}
-{"product_name": "OEUFS COLUMBUS", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "MANDARINES", "pyfooda_name": "CLEMENTINE", "grams": 500}
-{"product_name": "TOTAAL", "action": "ignore"}
-{"product_name": "MEERGRANENSTOKB.GROO", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "BURGER ANGUS", "pyfooda_name": "BEEF", "grams": 200}
-{"product_name": "TRAITEUR", "action": "ignore"}
-{"product_name": "GAROF MOZZA BUFFA C", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "MERCERENSTOK.GROO", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "GAROF MOZZA BUF A D", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "ESCALOPE DE VEAU", "pyfooda_name": "VEAL", "grams": 150}
-{"product_name": "FENOUILS", "pyfooda_name": "FENNEL", "grams": 500}
-{"product_name": "EM 335G FRAISE", "pyfooda_name": "STRAWBERRY", "grams": 335}
-{"product_name": "BROCHETTE PORC MA", "pyfooda_name": "PORK", "grams": 200}
-{"product_name": "FRUIT & LEGUMES", "action": "ignore"}
-{"product_name": "PENNE RIGATE 500G", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "MINI BURGER ANGUS", "pyfooda_name": "BEEF", "grams": 150}
-{"product_name": "6X33CL HOEG 0.0 CA", "action": "ignore"}
-{"product_name": "OEUFS BIO 12 PCS", "pyfooda_name": "EGG", "grams": 720}
-{"product_name": "MANDARINES FEUILLE", "pyfooda_name": "CLEMENTINE", "grams": 500}
-{"product_name": "COEUR DOUX LIT GEM", "pyfooda_name": "LETTUCE", "grams": 200}
-{"product_name": "WRAPS DE BLE", "pyfooda_name": "FLOUR TORTILLA", "grams": 120}
-{"product_name": "COLIMBUS OEUFS 5+1", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "GEMARINEERDE RIBS", "pyfooda_name": "PORK", "grams": 300}
-{"product_name": "MESCLUN", "pyfooda_name": "SALAD GREENS", "grams": 125}
-{"product_name": "DE CECCO CASARECCI", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "FRAMBOIS 125G", "pyfooda_name": "RASPBERRY", "grams": 125}
-{"product_name": "FRAMBOISE 125G", "pyfooda_name": "RASPBERRY", "grams": 125}
-{"product_name": "JEUNE POUSSE MIX", "pyfooda_name": "SALAD GREENS", "grams": 100}
-{"product_name": "POMME GRENA", "pyfooda_name": "POMEGRANATE", "grams": 400}
-{"product_name": "ROTI DE VEAU", "pyfooda_name": "VEAL", "grams": 700}
-{"product_name": "GAROF MOZZA BUFALINA", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "500G DE CECCO RADI", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "PEREN", "pyfooda_name": "PEAR", "grams": 1000}
-{"product_name": "FRASSE 500G", "pyfooda_name": "STRAWBERRY", "grams": 500}
-{"product_name": "CHOUX CHINOIS", "pyfooda_name": "CABBAGE", "grams": 500}
-{"product_name": "450G DLL POIS BIOL", "pyfooda_name": "PEA", "grams": 450}
-{"product_name": "EM 335G RHUBARBE", "pyfooda_name": "RHUBARB", "grams": 335}
-{"product_name": "150ML REX COB DRY", "action": "ignore"}
-{"product_name": "185G LAYS S&L.PEP", "pyfooda_name": "POTATO", "grams": 185}
-{"product_name": "250G MKA MELO CAKE", "pyfooda_name": "RICE CAKE", "grams": 250}
-{"product_name": "250G CRUNCHY BIO", "pyfooda_name": "GRANOLA", "grams": 250}
-{"product_name": "ECHALOTES 500G", "pyfooda_name": "SHALLOT", "grams": 500}
-{"product_name": "CHARCUTERIE", "pyfooda_name": "SALAMI", "grams": 150}
-{"product_name": "CORIANDRE BIO", "pyfooda_name": "CORIANDER", "grams": 30}
-{"product_name": "NOISETTES D'AGNEAU", "pyfooda_name": "LAMB", "grams": 200}
-{"product_name": "LAISE NATUREL", "pyfooda_name": "LETTUCE", "grams": 200}
-{"product_name": "750G MCC DUCHESSE", "pyfooda_name": "POTATO", "grams": 750}
-{"product_name": "BIO CAROTTES 2,29", "pyfooda_name": "CARROT", "grams": 1000}
-{"product_name": "BARILLA SPAGHETTI5", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "750G POMMES NOISET", "pyfooda_name": "POTATO", "grams": 750}
-{"product_name": "BIO CAROTTES 100GR JEUNES POUSS", "pyfooda_name": "CARROT", "grams": 100}
-{"product_name": "MOUSSEL.POM.MATER", "pyfooda_name": "APPLE", "grams": 100}
-{"product_name": "750G ROSTY", "pyfooda_name": "POTATO", "grams": 750}
-{"product_name": "MYRTELLE 150GR", "pyfooda_name": "BLUEBERRY", "grams": 150}
-{"product_name": "75CL PROSECCO DOC", "action": "ignore"}
-{"product_name": "75G CHIPS POIS BIO", "pyfooda_name": "PEA", "grams": 75}
-{"product_name": "LEEGGOD", "action": "ignore"}
-{"product_name": "PENNE RIGATE BARI", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "450G DLT FOIS BIOL", "pyfooda_name": "PEA", "grams": 450}
-{"product_name": "450G QUAK MUE MULT", "pyfooda_name": "MUESLI", "grams": 450}
-{"product_name": "KIWI GOLD 6P", "pyfooda_name": "KIWI", "grams": 720}
-{"product_name": "KIWI GOLD", "pyfooda_name": "KIWI", "grams": 500}
-{"product_name": "KIWI 6PC", "pyfooda_name": "KIWI", "grams": 720}
-{"product_name": "6PC KIWI GOLD", "pyfooda_name": "KIWI", "grams": 720}
-{"product_name": "KIWI JAUNE 4PC", "pyfooda_name": "KIWI", "grams": 480}
-{"product_name": "KIWI", "pyfooda_name": "KIWI", "grams": 500}
-{"product_name": "DLL YA MAIG NAT 8X", "pyfooda_name": "YOGURT", "grams": 800}
-{"product_name": "HERTA LRDNS NATUR", "pyfooda_name": "LARD", "grams": 200}
-{"product_name": "HERTA LARDNS NATUR", "pyfooda_name": "LARD", "grams": 200}
-{"product_name": "HERTA LARDNS NAT", "pyfooda_name": "LARD", "grams": 200}
-{"product_name": "HERTA PATE FNE RON", "pyfooda_name": "LARD", "grams": 100}
-{"product_name": "HERTA PATE BRISSEE", "pyfooda_name": "PIE CRUST", "grams": 230}
-{"product_name": "6PC PUREE BELGE", "pyfooda_name": "POTATO", "grams": 750}
-{"product_name": "CARLS BEURRE SALE", "pyfooda_name": "BUTTER", "grams": 250}
-{"product_name": "PRESID BEURRE 250G", "pyfooda_name": "BUTTER", "grams": 250}
-{"product_name": "DLH BEURRE BIO", "pyfooda_name": "BUTTER", "grams": 250}
-{"product_name": "LE BEURRE BIO", "pyfooda_name": "BUTTER", "grams": 250}
-{"product_name": "CARLS BEURRE FT D", "pyfooda_name": "BUTTER", "grams": 250}
-{"product_name": "AUBEL BEURRE 500G", "pyfooda_name": "BUTTER", "grams": 500}
-{"product_name": "DLL BEURRE BIO", "pyfooda_name": "BUTTER", "grams": 250}
-{"product_name": "SAUMON BELLE-VUE", "pyfooda_name": "SALMON", "grams": 150}
-{"product_name": "SAUMON FUME", "pyfooda_name": "SALMON", "grams": 100}
-{"product_name": "SAUMON FUME DL", "pyfooda_name": "SALMON", "grams": 100}
-{"product_name": "SAUM FUM CHAU ANET", "pyfooda_name": "SALMON", "grams": 100}
-{"product_name": "FILET SAUMON", "pyfooda_name": "SALMON", "grams": 200}
-{"product_name": "SAUMON ENTIER", "pyfooda_name": "SALMON", "grams": 800}
-{"product_name": "FILET PUR", "pyfooda_name": "BEEF", "grams": 250}
-{"product_name": "FILET PUR DE DORC", "pyfooda_name": "PORK", "grams": 300}
-{"product_name": "FILET POITRINE DE", "pyfooda_name": "PORK", "grams": 400}
-{"product_name": "FILETS PORC-VEAU", "pyfooda_name": "PORK", "grams": 400}
-{"product_name": "HACHIS", "pyfooda_name": "BEEF", "grams": 400}
-{"product_name": "HACHIS P&V S/EPICE", "pyfooda_name": "BEEF", "grams": 400}
-{"product_name": "BRUNIR/SERVIR VEAU", "pyfooda_name": "VEAL", "grams": 300}
-{"product_name": "CONTFEILLET", "pyfooda_name": "BEEF", "grams": 300}
-{"product_name": "STEW MARINE", "pyfooda_name": "BEEF", "grams": 400}
-{"product_name": "BIOESCHE FILET POUL", "pyfooda_name": "CHICKEN", "grams": 300}
-{"product_name": "DELTO VEG CHIC CUR", "pyfooda_name": "CHICKEN", "grams": 250}
-{"product_name": "CAMP FROM FR ENT", "pyfooda_name": "BREAD", "grams": 500}
-{"product_name": "CAMP FROM FR ENTIE", "pyfooda_name": "BREAD", "grams": 500}
-{"product_name": "DLL TOA CHEST", "pyfooda_name": "BREAD", "grams": 250}
-{"product_name": "TOAST KROKANT HAU", "pyfooda_name": "BREAD", "grams": 100}
-{"product_name": "DUN STOKERBROOD", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "MEERGRANENSTOKBROOD", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "400G EXQUISE BAG", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "4X50G DLL PAIN BIO", "pyfooda_name": "BREAD", "grams": 200}
-{"product_name": "220G PAIN", "pyfooda_name": "BREAD", "grams": 220}
-{"product_name": "220G PAIN 8X", "pyfooda_name": "BREAD", "grams": 220}
-{"product_name": "340G PAIN TOM KET", "pyfooda_name": "BREAD", "grams": 340}
-{"product_name": "400G TRAGSTE BROOD P", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "HET TRAAGSTE BROOD P", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "HET TRAGSTE BROOD P", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "SOMI MULTIGRAIN 40", "pyfooda_name": "BREAD", "grams": 400}
-{"product_name": "DLL SAMOURAI TD", "pyfooda_name": "MAYONNAISE", "grams": 200}
-{"product_name": "DLL MAYO TD", "pyfooda_name": "MAYONNAISE", "grams": 200}
-{"product_name": "250ML REAL MAYO SQ", "pyfooda_name": "MAYONNAISE", "grams": 250}
-{"product_name": "REAL MAYO", "pyfooda_name": "MAYONNAISE", "grams": 250}
-{"product_name": "PHILADELPHIA ORIGI", "pyfooda_name": "CREAM CHEESE", "grams": 200}
-{"product_name": "FAIREBEL 1/2 E", "pyfooda_name": "MILK", "grams": null}
-{"product_name": "FAIRBEL 1/2 E", "pyfooda_name": "MILK", "grams": null}
-{"product_name": "MEI BABYBEL", "pyfooda_name": "GOUDA CHEESE", "grams": 180}
-{"product_name": "MAREDSOUS TRADITIO", "pyfooda_name": "CHEDDAR CHEESE", "grams": 300}
-{"product_name": "GOUDA 500G", "pyfooda_name": "GOUDA CHEESE", "grams": 500}
-{"product_name": "GRANA PADANO 100G", "pyfooda_name": "GRANA PADANO", "grams": 100}
-{"product_name": "GALBANI MOZZA 125G", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "GALBANI CROCC MOZZ", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "MOZZA BUFALINA", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "MOZZA SX10", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "MOZZARELLA MAXI", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 250}
-{"product_name": "MOZZARELLA 125GR", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
-{"product_name": "ROSETTE", "pyfooda_name": "SALAMI", "grams": 150}
-{"product_name": "PROSCIUTTO DI SAN", "pyfooda_name": "PROSCIUTTO", "grams": 100}
-{"product_name": "PROSC CRUDO ITALIA", "pyfooda_name": "PROSCIUTTO", "grams": 100}
-{"product_name": "HERTA PATE BRIS", "pyfooda_name": "PIE CRUST", "grams": 230}
-{"product_name": "COOP HOUMOUS", "pyfooda_name": "HUMMUS", "grams": 200}
-{"product_name": "200GR HUMOUS", "pyfooda_name": "HUMMUS", "grams": 200}
-{"product_name": "BIO HOMOUS 200G", "pyfooda_name": "HUMMUS", "grams": 200}
-{"product_name": "HOUMOUS 200G", "pyfooda_name": "HUMMUS", "grams": 200}
-{"product_name": "TORTELLONI BASILI", "pyfooda_name": "TORTELLINI", "grams": 250}
-{"product_name": "250G DLL TORI RIC", "pyfooda_name": "TORTELLINI", "grams": 250}
-{"product_name": "250G DLL TORT RIC", "pyfooda_name": "TORTELLINI", "grams": 250}
-{"product_name": "250G DLI TORT RIC", "pyfooda_name": "TORTELLINI", "grams": 250}
-{"product_name": "500G MACCHERONI", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "500G DLL BIO SPAGH", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "FETTUCCINE 300G", "pyfooda_name": "PASTA", "grams": 300}
-{"product_name": "500G DE CECCO GNOC", "pyfooda_name": "GNOCCHI", "grams": 500}
-{"product_name": "350G GRANOLA CHOC", "pyfooda_name": "GRANOLA", "grams": 350}
-{"product_name": "350G HG GRANOLA", "pyfooda_name": "GRANOLA", "grams": 350}
-{"product_name": "450G QUAK MEUS NOI", "pyfooda_name": "MUESLI", "grams": 450}
-{"product_name": "390G VERMICEL LAIT", "pyfooda_name": "PASTA", "grams": 390}
-{"product_name": "MIKADO CHOC LAIT", "pyfooda_name": "COOKIE", "grams": 75}
-{"product_name": "MKADO CHOC LAIT", "pyfooda_name": "COOKIE", "grams": 75}
-{"product_name": "SUZI CHOCO LAIT 8P", "pyfooda_name": "MILK CHOCOLATE", "grams": 200}
-{"product_name": "4X4G DOUBLE LAIT", "pyfooda_name": "MILK CHOCOLATE", "grams": 16}
-{"product_name": "100G COTE D'OR PAI", "pyfooda_name": "CHOCOLATE", "grams": 100}
-{"product_name": "300G COTE D OR PAT", "pyfooda_name": "CHOCOLATE", "grams": 300}
-{"product_name": "375G XTRA CHO NOIR", "pyfooda_name": "CHOCOLATE", "grams": 375}
-{"product_name": "GERLINEA CHOCOLAT", "pyfooda_name": "CHOCOLATE", "grams": 100}
-{"product_name": "GERLINA CHOCOLAT", "pyfooda_name": "CHOCOLATE", "grams": 100}
-{"product_name": "500G ROMB DESSERT", "pyfooda_name": "CHOCOLATE", "grams": 500}
-{"product_name": "ROMB CACHET DOR G", "pyfooda_name": "CHOCOLATE", "grams": 100}
-{"product_name": "100G MKA CHOC LAIT", "pyfooda_name": "MILK CHOCOLATE", "grams": 100}
-{"product_name": "224G GAUF VANI CHO", "pyfooda_name": "WAFFLE", "grams": 224}
-{"product_name": "600G GAUFFRE POT", "pyfooda_name": "WAFFLE", "grams": 600}
-{"product_name": "GAUFRES", "pyfooda_name": "WAFFLE", "grams": 300}
-{"product_name": "250ML AXE SG MOJIT", "action": "ignore"}
-{"product_name": "250G LAVAZZA ROMA", "pyfooda_name": "COFFEE", "grams": 250}
-{"product_name": "250G DLL NICARAGUA", "pyfooda_name": "COFFEE", "grams": 250}
-{"product_name": "NESPRESSO", "pyfooda_name": "COFFEE", "grams": 50}
-{"product_name": "500ML BECEL HUILE", "pyfooda_name": "VEGETABLE OIL", "grams": 500}
-{"product_name": "BECEL 500ML", "pyfooda_name": "VEGETABLE OIL", "grams": 500}
-{"product_name": "3X200G THON NATURE", "pyfooda_name": "TUNA", "grams": 600}
-{"product_name": "125G D365 MAQ TOUR", "pyfooda_name": "MACKEREL", "grams": 125}
-{"product_name": "DIKKE AJUIN", "pyfooda_name": "ONION", "grams": 1000}
-{"product_name": "OIGNON JAUNE GEANT", "pyfooda_name": "ONION", "grams": 500}
-{"product_name": "OIGNONS JAUNE 1KG", "pyfooda_name": "ONION", "grams": 1000}
-{"product_name": "POIVRONS ROUGES", "pyfooda_name": "BELL PEPPER", "grams": 400}
-{"product_name": "SPINAZIE 450GR", "pyfooda_name": "SPINACH", "grams": 450}
-{"product_name": "JEUNE POUSS MIK", "pyfooda_name": "SALAD GREENS", "grams": 100}
-{"product_name": "CELERI VERT", "pyfooda_name": "CELERY", "grams": 500}
-{"product_name": "CHOU-FLEUR", "pyfooda_name": "CAULIFLOWER", "grams": 800}
-{"product_name": "AUBERGINES", "pyfooda_name": "EGGPLANT", "grams": 400}
-{"product_name": "COURGETTES", "pyfooda_name": "ZUCCHINI", "grams": 500}
-{"product_name": "PASTEQUE MINI", "pyfooda_name": "WATERMELON", "grams": 2000}
-{"product_name": "BIO GINGEMBRE", "pyfooda_name": "GINGER", "grams": 100}
-{"product_name": "ECHALOTES", "pyfooda_name": "SHALLOT", "grams": 500}
-{"product_name": "PERSIL EN POT BIO", "pyfooda_name": "PARSLEY", "grams": 30}
-{"product_name": "BOTTE POIREAU", "pyfooda_name": "LEEK", "grams": 500}
-{"product_name": "BIO AIL 2 PC", "pyfooda_name": "GARLIC", "grams": 80}
-{"product_name": "CONF.NOSTALGIE", "pyfooda_name": "JAM", "grams": 300}
-{"product_name": "ROSTIER PURE DORC", "pyfooda_name": "POTATO", "grams": 500}
-{"product_name": "MOUSSEL POM.MATER", "pyfooda_name": "APPLE", "grams": 100}
-{"product_name": "6X55ML MAGNUM ALMO", "pyfooda_name": "ICE CREAM", "grams": 330}
-{"product_name": "MAGNUM DOUBLE", "pyfooda_name": "ICE CREAM", "grams": 110}
-{"product_name": "BIO PDT FARINE 2KG", "pyfooda_name": "POTATO", "grams": 2000}
-{"product_name": "600G POM DUCH DLL", "pyfooda_name": "POTATO", "grams": 600}
-{"product_name": "6PC POMME PINK LAD", "pyfooda_name": "APPLE", "grams": 900}
-{"product_name": "6PC POMME PINK LADY", "pyfooda_name": "APPLE", "grams": 900}
-{"product_name": "APPEL PINK LADY 6P", "pyfooda_name": "APPLE", "grams": 900}
-{"product_name": "PEL PINK LADY 6P", "pyfooda_name": "APPLE", "grams": 900}
-{"product_name": "6BC POMME PINK LAD", "pyfooda_name": "APPLE", "grams": 900}
-{"product_name": "300G POMME PINK LAD", "pyfooda_name": "APPLE", "grams": 300}
-{"product_name": "POMME DUCHESSE", "pyfooda_name": "POTATO", "grams": 750}
-{"product_name": "SHEZZA PATE PIZZA", "pyfooda_name": "PIZZA CRUST", "grams": 230}
-{"product_name": "CLEMENTINES FEUIL", "pyfooda_name": "CLEMENTINE", "grams": 500}
-{"product_name": "CLEMENTINES A FEUI", "pyfooda_name": "CLEMENTINE", "grams": 500}
-{"product_name": "CERISE 1KG", "pyfooda_name": "CHERRY", "grams": 1000}
-{"product_name": "CERISES", "pyfooda_name": "CHERRY", "grams": 500}
-{"product_name": "EM 335G FRAISE", "pyfooda_name": "STRAWBERRY", "grams": 335}
-{"product_name": "250G DLL FRAISES", "pyfooda_name": "STRAWBERRY", "grams": 250}
-{"product_name": "FRAISE 500G", "pyfooda_name": "STRAWBERRY", "grams": 500}
-{"product_name": "FRAISE 400GR", "pyfooda_name": "STRAWBERRY", "grams": 400}
-{"product_name": "125G D365 MAQ TOUR", "pyfooda_name": "MACKEREL", "grams": 125}
-{"product_name": "450G SKYR NATURE", "pyfooda_name": "YOGURT", "grams": 450}
-{"product_name": "4X125GR ACTIVIA Y.", "pyfooda_name": "YOGURT", "grams": 500}
-{"product_name": "ACTIVIA MAXI MA", "pyfooda_name": "YOGURT", "grams": 200}
-{"product_name": "ACTIVIA YOG ENT NA", "pyfooda_name": "YOGURT", "grams": 150}
-{"product_name": "YAOURT MIGRE BIO", "pyfooda_name": "YOGURT", "grams": 150}
-{"product_name": "CREME FRAICHE", "pyfooda_name": "CREME FRAICHE", "grams": 200}
-{"product_name": "325G EPERCAC CREME", "pyfooda_name": "CREME FRAICHE", "grams": 325}
-{"product_name": "325G PAT CAC CREME", "pyfooda_name": "CREME FRAICHE", "grams": 325}
-{"product_name": "D365 CREME 20 CL", "pyfooda_name": "CREME FRAICHE", "grams": 200}
-{"product_name": "TERUG", "action": "ignore"}
-{"product_name": "VIDANGE VAL 0.6E", "action": "ignore"}
-{"product_name": "ELEC CHEQ REPAS", "action": "ignore"}
-{"product_name": "HMC SERVIETTE 33CM", "action": "ignore"}
-{"product_name": "NIVEA ST. CLEAR", "action": "ignore"}
-{"product_name": "FRISK CLEAN BR PEP", "action": "ignore"}
-{"product_name": "DLL PAP. CUISSON", "action": "ignore"}
-{"product_name": "6X25CL CRISTAL ORI", "action": "ignore"}
-{"product_name": "6X25CL JUPILER BAS", "action": "ignore"}
-{"product_name": "6X33 SCHWEPPES LEM", "action": "ignore"}
-{"product_name": "6X33CL SCHWEPPES M", "action": "ignore"}
-{"product_name": "6X33CL LEFFE 0.0 C", "action": "ignore"}
-{"product_name": "75 CROZES HERM GAL", "action": "ignore"}
-{"product_name": "75CL PROSECCO DOC", "action": "ignore"}
-{"product_name": "DOC PROSECCO DOC", "action": "ignore"}
-{"product_name": "1.5L SCHWEPPES TON", "action": "ignore"}
-{"product_name": "6X33CL SCHWEPPES T", "action": "ignore"}
-{"product_name": "33CL SCHW MOJITO Z", "action": "ignore"}
-{"product_name": "33CL SCH GINGER AL", "action": "ignore"}
-{"product_name": "6X33 SCH GINGER AL", "action": "ignore"}
-{"product_name": "ORALB ENAMEL 1+1", "action": "ignore"}
-{"product_name": "PERSIL BOUTE", "action": "ignore"}
-{"product_name": "PERSIL EN POT BIO", "pyfooda_name": "PARSLEY", "grams": 30}
-{"product_name": "TOTAL POINTS TICKET", "action": "ignore"}
-{"product_name": "TOTAL TIMBRE(S) TICKET MASCOTTE", "action": "ignore"}
-{"product_name": "400G BICARBONATE", "action": "ignore"}
-{"product_name": "2145", "action": "ignore"}
-{"product_name": "1,005 KG X 3,79/ KG", "action": "ignore"}
-{"product_name": "1,25 KG X", "action": "ignore"}
-{"product_name": "2400 G SANS GL/LAC", "action": "ignore"}
-{"product_name": "250G L28 INDONESIA", "action": "ignore"}
-{"product_name": "75 NUVOOLA 19R BIO", "action": "ignore"}
-{"product_name": "500GR L RIS GRAI", "pyfooda_name": "RICE", "grams": 500}
-{"product_name": "175GR CHICON GAST 3,00", "pyfooda_name": "CHICORY", "grams": 175}
-{"product_name": "DORITOS NACHO CHEE", "pyfooda_name": "POTATO", "grams": 185}
-{"product_name": "185G LAYS S4BL PEP", "pyfooda_name": "POTATO", "grams": 185}
-{"product_name": "185G LAYS S&BL.DEP", "pyfooda_name": "POTATO", "grams": 185}
-{"product_name": "125G DLL CASSAVE", "pyfooda_name": "CASSAVA", "grams": 125}
-{"product_name": "GARZPACHO 1L", "pyfooda_name": "TOMATO", "grams": 1000}
-{"product_name": "SAN MARZANO", "pyfooda_name": "TOMATO", "grams": 400}
-{"product_name": "250G TORRICOLO TOM", "pyfooda_name": "TOMATO", "grams": 250}
-{"product_name": "250G DLL TOM CERI", "pyfooda_name": "TOMATO", "grams": 250}
-{"product_name": "400G TOM.CRISES", "pyfooda_name": "TOMATO", "grams": 400}
-{"product_name": "400GR TOM CERISES", "pyfooda_name": "TOMATO", "grams": 400}
-{"product_name": "BANANA", "pyfooda_name": "BANANA", "grams": 700}
-{"product_name": "BANANEN", "pyfooda_name": "BANANA", "grams": 700}
-{"product_name": "EPINARDS", "pyfooda_name": "SPINACH", "grams": 500}
-{"product_name": "EPINARDS 500GR", "pyfooda_name": "SPINACH", "grams": 500}
-{"product_name": "ITAL STYLE GRAINS", "pyfooda_name": "FARRO", "grams": 200}
-{"product_name": "OLIVES KALAMATA", "pyfooda_name": "KALAMATA OLIVE", "grams": 200}
-{"product_name": "POMME GRENA", "pyfooda_name": "POMEGRANATE", "grams": 400}
-{"product_name": "FAIREBEL 1/2 E", "pyfooda_name": "MILK", "grams": null}
-{"product_name": "BIO BANANEN 0,560 KG X", "pyfooda_name": "BANANA", "grams": 560}
-{"product_name": "1 PATRON BUTTERNUT", "pyfooda_name": "BUTTERNUT SQUASH", "grams": 800}
-{"product_name": "140G ROCK SALT", "pyfooda_name": "SALT", "grams": 140}
-{"product_name": "185G SM NACHO TORTILLA", "pyfooda_name": "FLOUR TORTILLA", "grams": 185}
-{"product_name": "1KG TRESOR MILK", "pyfooda_name": "MILK", "grams": 1000}
-{"product_name": "2025 GINGER BIO", "pyfooda_name": "GINGER", "grams": 100}
-{"product_name": "250G PEST BASIL", "pyfooda_name": "BASIL", "grams": 250}
-{"product_name": "250G TORRICOLO TOM", "pyfooda_name": "TOMATO", "grams": 250}
-{"product_name": "25G LIME GRILLS", "pyfooda_name": "LIME", "grams": 25}
-{"product_name": "2PC MINI CAKE CHO", "pyfooda_name": "RICE CAKE", "grams": 200}
-{"product_name": "2X90G LENTIL 0%SEL", "pyfooda_name": "LENTIL", "grams": 180}
-{"product_name": "300G LECHE", "pyfooda_name": "DULCE DE LECHE", "grams": 300}
-{"product_name": "350G CACAH/CACAO", "pyfooda_name": "CACAO POWDER", "grams": 350}
-{"product_name": "350G CHOCO-CARAMEL", "pyfooda_name": "CHOCOLATE", "grams": 350}
-{"product_name": "360G CRUNCHY CREAM", "pyfooda_name": "CREAM", "grams": 360}
-{"product_name": "40G DLL PATE NOI", "pyfooda_name": "PIE CRUST", "grams": 400}
-{"product_name": "400G DLL PATE NOI", "pyfooda_name": "PIE CRUST", "grams": 400}
-{"product_name": "300G DLL CARE PATE", "pyfooda_name": "LARD", "grams": 300}
-{"product_name": "100G DLF 4 BOUCHEE", "pyfooda_name": "PIE CRUST", "grams": 100}
-{"product_name": "500G COUSCOUS PERL", "pyfooda_name": "COUSCOUS", "grams": 500}
-{"product_name": "50C COCA COL REG.", "action": "ignore"}
-{"product_name": "50CC SQC CANE C FT", "pyfooda_name": "SUGAR", "grams": 50}
-{"product_name": "6 SM WRAP TORTILLA", "pyfooda_name": "FLOUR TORTILLA", "grams": 180}
-{"product_name": "6BC POMME PINK LAD", "pyfooda_name": "APPLE", "grams": 900}
-{"product_name": "250G L28 BRAZIL", "pyfooda_name": "BRAZIL NUT", "grams": 250}
-{"product_name": "CHIQUITA C BANANES", "pyfooda_name": "BANANA", "grams": 700}
-{"product_name": "POIRES D'OLLE", "pyfooda_name": "PEAR", "grams": 1000}
-{"product_name": "NECTARINES JAUNES", "pyfooda_name": "NECTARINE", "grams": 600}
-{"product_name": "NECTARINES", "pyfooda_name": "NECTARINE", "grams": 600}
-{"product_name": "MINI TORTI", "pyfooda_name": "TORTELLINI", "grams": 200}
-{"product_name": "TORTELLINI BASIL", "pyfooda_name": "TORTELLINI", "grams": 250}
-{"product_name": "PENNE RIGATE", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "SAUCISSE P&V", "pyfooda_name": "ITALIAN SAUSAGE", "grams": 200}
-{"product_name": "BARILLA SPAGHETTI", "pyfooda_name": "PASTA", "grams": 500}
-{"product_name": "COLIMBUS OEUFS 5+1", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "DLL BIO OEUFS 6PC 2,95", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "OEUFS COQUUES", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "OEUFS FRAIS BIO 12PC", "pyfooda_name": "EGG", "grams": 720}
-{"product_name": "OEUVFS BIO 12 PCS", "pyfooda_name": "EGG", "grams": 720}
-{"product_name": "OEUVS COLUMBUS", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "JOLIBOIS OEUFS 5+1", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "DLL OEUFS BIO MIX", "pyfooda_name": "EGG", "grams": 360}
-{"product_name": "CHARCUTERIE", "pyfooda_name": "SALAMI", "grams": 150}
-{"product_name": "PEPPERONI", "pyfooda_name": "SALAMI", "grams": 100}
-{"product_name": "LARDONS", "pyfooda_name": "LARD", "grams": 200}
+{"product_name": "MOZZARELLA 125", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
+{"product_name": "PETIT LION HOUM NA", "pyfooda_name": "HUMMUS", "grams": 200}
+{"product_name": "400GR TOM.CERISES", "pyfooda_name": "TOMATO", "grams": 400}
+{"product_name": "AVOCAT 5X", "pyfooda_name": "AVOCADO", "grams": 850}
+{"product_name": "6PC POMME ROYAL GA", "pyfooda_name": "APPLE", "grams": 900}
+{"product_name": "CHATEAUBRIAND", "pyfooda_name": "BEEF", "grams": 250}
+{"product_name": "DLH MOZZARELLA 125", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
+{"product_name": "DLL CREME 35% 25CL", "pyfooda_name": "CREAM", "grams": 250}
+{"product_name": "ENTREM COMTE FRUIT", "pyfooda_name": "COMTE CHEESE", "grams": 250}
+{"product_name": "GAROF MOZZA BUFA D", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 125}
+{"product_name": "HOUMOUS NATURE BIO", "pyfooda_name": "HUMMUS", "grams": 200}
+{"product_name": "MANGUE 2X", "pyfooda_name": "MANGO", "grams": 800}
+{"product_name": "MINI GRENAILLES 50", "pyfooda_name": "POTATO", "grams": 500}
+{"product_name": "26T SUN OPTIM REG", "action": "ignore"}
+{"product_name": "450G SKYR FRAISE", "pyfooda_name": "YOGURT", "grams": 450}
+{"product_name": "AVOCAT 3X", "pyfooda_name": "AVOCADO", "grams": 510}
+{"product_name": "AVOCAT 4X", "pyfooda_name": "AVOCADO", "grams": 680}
+{"product_name": "AVOCAT 6X", "pyfooda_name": "AVOCADO", "grams": 1020}
+{"product_name": "DLL CREME 1L", "pyfooda_name": "CREAM", "grams": 1000}
+{"product_name": "DLL PIZZA MARGHERI", "pyfooda_name": "PIZZA CRUST", "grams": 400}
+{"product_name": "DRAAGTAS", "action": "ignore"}
+{"product_name": "FILET POITRINE POU", "pyfooda_name": "CHICKEN", "grams": 1000}
+{"product_name": "QUICHE JAM/POIREAU", "pyfooda_name": "PIE CRUST", "grams": 450}
+{"product_name": "SAC PAIN CLASS. N4", "pyfooda_name": "BREAD", "grams": 800}
+{"product_name": "SAUM.ATL.NORV.130G", "pyfooda_name": "SMOKED SALMON", "grams": 130}
+{"product_name": "SAUMON ATL FUME DL", "pyfooda_name": "SMOKED SALMON", "grams": 150}
+{"product_name": "200G SKYR FRAISE", "pyfooda_name": "YOGURT", "grams": 200}
+{"product_name": "600G GAUFFRE PDT", "pyfooda_name": "POTATO", "grams": 600}
+{"product_name": "AIG FILET POUL EF", "pyfooda_name": "CHICKEN", "grams": 600}
+{"product_name": "BANANES 1KG", "pyfooda_name": "BANANA", "grams": 1000}
+{"product_name": "DE CECCO SPAGHETTI", "pyfooda_name": "PASTA", "grams": 500}
+{"product_name": "DLL CREME 7% 25CL", "pyfooda_name": "CREAM", "grams": 250}
+{"product_name": "DLL GRENADE", "pyfooda_name": "POMEGRANATE", "grams": 300}
+{"product_name": "GERLINEA CAFE FRAP", "pyfooda_name": "MILK", "grams": 700}
+{"product_name": "MANGUE 3X", "pyfooda_name": "MANGO", "grams": 1200}
+{"product_name": "MYRTILLES 300GR", "pyfooda_name": "BLUEBERRY", "grams": 300}
+{"product_name": "SOUVLAKI AGNEAU", "pyfooda_name": "LAMB", "grams": 250}
+{"product_name": "STEAK MARINE", "pyfooda_name": "BEEF", "grams": 300}
+{"product_name": "VIANDE FRAICHE", "pyfooda_name": "MEAT", "grams": 250}
+{"product_name": "175GR  CHICON GAST", "pyfooda_name": "ENDIVE", "grams": 175}
+{"product_name": "190G DEL CRISP AIL", "pyfooda_name": "CRACKER", "grams": 190}
+{"product_name": "365 LASAGNE 400G", "pyfooda_name": "PASTA", "grams": 400}
+{"product_name": "75C VRANKEN B GR", "pyfooda_name": "CHAMPAGNE", "grams": 750}
+{"product_name": "CORDON BLEU", "pyfooda_name": "CHICKEN", "grams": 250}
+{"product_name": "DLL POMME DUCHESSE", "pyfooda_name": "POTATO", "grams": 500}
+{"product_name": "GAZPACHO 1L", "pyfooda_name": "VEGETABLE JUICE", "grams": 1000}
+{"product_name": "HERTA PATE RECT F", "pyfooda_name": "PUFF PASTRY", "grams": 230}
+{"product_name": "MACHE", "pyfooda_name": "SALAD GREENS", "grams": 100}
+{"product_name": "SAC A PAIN TRADITI", "pyfooda_name": "BREAD", "grams": 800}
+{"product_name": "1 SAC PP TISSE", "action": "ignore"}
+{"product_name": "150G PARMI REG BIO", "pyfooda_name": "PARMESAN CHEESE", "grams": 150}
+{"product_name": "200G MINI GAUFR CH", "pyfooda_name": "WAFFLE", "grams": 200}
+{"product_name": "200GR  HOUMOUS", "pyfooda_name": "HUMMUS", "grams": 200}
+{"product_name": "250G PRESID FRIGO", "pyfooda_name": "BUTTER", "grams": 250}
+{"product_name": "300G CRISPBR FIBRE", "pyfooda_name": "CRISPBREAD", "grams": 300}
+{"product_name": "340G MIEL D'ALGARV", "pyfooda_name": "HONEY", "grams": 340}
+{"product_name": "350G WRAP TORTILLA", "pyfooda_name": "FLOUR TORTILLA", "grams": 350}
+{"product_name": "360G CRUNCH NO/CAC", "pyfooda_name": "CEREAL", "grams": 360}
+{"product_name": "400G HOUMOUS MAXI", "pyfooda_name": "HUMMUS", "grams": 400}
+{"product_name": "450G DLL CRE 26/30", "pyfooda_name": "SHRIMP", "grams": 450}
+{"product_name": "450G QUAKER CHOCO", "pyfooda_name": "CEREAL", "grams": 450}
+{"product_name": "500G CRUNCHY CHOCO", "pyfooda_name": "CEREAL", "grams": 500}
+{"product_name": "510G HARRYS MAXI B", "pyfooda_name": "BRIOCHE", "grams": 510}
+{"product_name": "6 PACK LEO", "pyfooda_name": "CHOCOLATE", "grams": 200}
+{"product_name": "600G DLL ROSTI", "pyfooda_name": "POTATO", "grams": 600}
+{"product_name": "675G MIRACOLI TRAD", "pyfooda_name": "PASTA", "grams": 675}
+{"product_name": "75 CH RAMBAUDS 20R", "pyfooda_name": "RED WINE", "grams": 750}
+{"product_name": "ACTIV CER MUESLI", "pyfooda_name": "CEREAL", "grams": 500}
+{"product_name": "AIGUILLETTE POULET", "pyfooda_name": "CHICKEN", "grams": 500}
+{"product_name": "BODART BEURRE 250G", "pyfooda_name": "BUTTER", "grams": 250}
+{"product_name": "BROCHETTE DE BOEUF", "pyfooda_name": "BEEF", "grams": 400}
+{"product_name": "BROCHETTE POULET MAR", "pyfooda_name": "CHICKEN", "grams": 800}
+{"product_name": "C.OR INTENSE NOIR", "pyfooda_name": "CHOCOLATE", "grams": 100}
+{"product_name": "CHIPO MIX", "pyfooda_name": "SAUSAGE", "grams": 400}
+{"product_name": "CHOU FLEUR BIO", "pyfooda_name": "CAULIFLOWER", "grams": 800}
+{"product_name": "CIBOULETTE 20GR", "pyfooda_name": "CHIVE", "grams": 20}
+{"product_name": "COLOMBIA", "pyfooda_name": "COFFEE", "grams": 250}
+{"product_name": "COURGETTES 0,730 KG", "pyfooda_name": "ZUCCHINI", "grams": 730}
+{"product_name": "DANONE FRUIX 4X125", "pyfooda_name": "YOGURT", "grams": 500}
+{"product_name": "DLL CHOCOLAT NOIR", "pyfooda_name": "CHOCOLATE", "grams": 100}
+{"product_name": "DLL CRACK EPEAUTRE", "pyfooda_name": "CRACKER", "grams": 200}
+{"product_name": "DLL PIZZA MOZZA PE", "pyfooda_name": "PIZZA CRUST", "grams": 400}
+{"product_name": "DLL PIZZA PROSC CO", "pyfooda_name": "PIZZA CRUST", "grams": 400}
+{"product_name": "DOUBLE LAIT C OR", "pyfooda_name": "MILK CHOCOLATE", "grams": 200}
+{"product_name": "FILET AMERICAIN PR", "pyfooda_name": "BEEF", "grams": 150}
+{"product_name": "GRILL AGN MAR PROV", "pyfooda_name": "LAMB", "grams": 300}
+{"product_name": "GRILLADE AGN.MAR.A", "pyfooda_name": "LAMB", "grams": 300}
+{"product_name": "HARICOTS 200G", "pyfooda_name": "GREEN BEAN", "grams": 200}
+{"product_name": "JAMBON A L'OS MAGI", "pyfooda_name": "HAM", "grams": 200}
+{"product_name": "JONAGOLD 6PC", "pyfooda_name": "APPLE", "grams": 900}
+{"product_name": "LASAGNE BOLO 1KG", "pyfooda_name": "PASTA", "grams": 1000}
+{"product_name": "MULTIGRAINS BUN", "pyfooda_name": "BREAD", "grams": 300}
+{"product_name": "OIGNON VINAI.DEVO", "pyfooda_name": "PICKLED ONION", "grams": 300}
+{"product_name": "PITCH CHOCOLAT 6X", "pyfooda_name": "BRIOCHE", "grams": 190}
+{"product_name": "PIZZA PROSCUITTO C", "pyfooda_name": "PIZZA CRUST", "grams": 400}
+{"product_name": "PREMIUM PEPPER BUN", "pyfooda_name": "BREAD", "grams": 300}
+{"product_name": "QUICHE LORRAINE", "pyfooda_name": "PIE CRUST", "grams": 400}
+{"product_name": "RISTORANTE MOZZARE", "pyfooda_name": "PIZZA CRUST", "grams": 335}
+{"product_name": "SAC  PAIN BASIC N2", "pyfooda_name": "BREAD", "grams": 800}
+{"product_name": "SAC A PAIN AVERBO", "pyfooda_name": "BREAD", "grams": 800}
+{"product_name": "SAC PAIN BIO", "pyfooda_name": "BREAD", "grams": 800}
+{"product_name": "SALADE DE BLE", "pyfooda_name": "SALAD GREENS", "grams": 100}
+{"product_name": "SALAMI POIVRE", "pyfooda_name": "SALAMI", "grams": 150}
+{"product_name": "SCE BRAZIL DLL TD", "pyfooda_name": "MAYONNAISE", "grams": 300}
+{"product_name": "1.5L DLL MULTI TET", "pyfooda_name": "FRUIT JUICE", "grams": 1500}
+{"product_name": "100G TANZANIE 72%", "pyfooda_name": "CHOCOLATE", "grams": 100}
+{"product_name": "12X15C COCA COLA R", "pyfooda_name": "COLA", "grams": 1800}
+{"product_name": "130G CRIPSBR PRV H", "pyfooda_name": "CRISPBREAD", "grams": 130}
+{"product_name": "135G TOAST ORIGINA", "pyfooda_name": "CRACKER", "grams": 135}
+{"product_name": "135G TOAST ROMARIN", "pyfooda_name": "CRACKER", "grams": 135}
+{"product_name": "150G DELICHOC LAIT", "pyfooda_name": "COOKIE", "grams": 150}
+{"product_name": "150G MEVGAL", "pyfooda_name": "YOGURT", "grams": 150}
+{"product_name": "165G PR HOT&SPICY", "pyfooda_name": "CRACKER", "grams": 165}
+{"product_name": "165G PR SWEET PAPR", "pyfooda_name": "CRACKER", "grams": 165}
+{"product_name": "190G PESTO ROQUET", "pyfooda_name": "PESTO", "grams": 190}
+{"product_name": "1KG DLL PUREE PDT", "pyfooda_name": "POTATO", "grams": 1000}
+{"product_name": "1KG GROS SEL MER", "pyfooda_name": "SALT", "grams": 1000}
+{"product_name": "200G NOISETTES BIO", "pyfooda_name": "HAZELNUT", "grams": 200}
+{"product_name": "240G MINI CAKE CHO", "pyfooda_name": "SPONGE CAKE", "grams": 240}
+{"product_name": "245G POPPY & SSALT", "pyfooda_name": "CRACKER", "grams": 245}
+{"product_name": "250G CAFE GR COLOM", "pyfooda_name": "COFFEE", "grams": 250}
+{"product_name": "250G DLL FR DE BOI", "pyfooda_name": "BERRY", "grams": 250}
+{"product_name": "250G MIEL LIQ BIO", "pyfooda_name": "HONEY", "grams": 250}
+{"product_name": "250G MOUTARDE BIO", "pyfooda_name": "MUSTARD", "grams": 250}
+{"product_name": "28G DLL CL GIRO BI", "pyfooda_name": "CLOVE", "grams": 28}
+{"product_name": "2XECLAIR CHOCOLAT", "pyfooda_name": "CHOUX PASTRY", "grams": 150}
+{"product_name": "320G MULTIC.BAGUET", "pyfooda_name": "BREAD", "grams": 320}
+{"product_name": "320G MULTIC.BAGUET 2X", "pyfooda_name": "BREAD", "grams": 640}
+{"product_name": "325G PATE CACAH CR", "pyfooda_name": "PEANUT BUTTER", "grams": 325}
+{"product_name": "330G SOFT TORTILLA", "pyfooda_name": "FLOUR TORTILLA", "grams": 330}
+{"product_name": "365 CREPES 600G", "pyfooda_name": "CREPE", "grams": 600}
+{"product_name": "4 BOUCHEE REINE", "pyfooda_name": "PUFF PASTRY", "grams": 120}
+{"product_name": "400G CORN ORIGINAL", "pyfooda_name": "CORN FLAKES", "grams": 400}
+{"product_name": "400G NOCC SPR BIO", "pyfooda_name": "CHOCOLATE HAZELNUT SPREAD", "grams": 400}
+{"product_name": "4X125GR ACTIVIA Y. 4X", "pyfooda_name": "YOGURT", "grams": 2000}
+{"product_name": "4X50CL STEL CG CAN 3X", "pyfooda_name": "BEER", "grams": 6000}
+{"product_name": "4X75G BOSTO COUSCO", "pyfooda_name": "COUSCOUS", "grams": 300}
+{"product_name": "5+1X33CL JUPILER 2X", "pyfooda_name": "BEER", "grams": 3960}
+{"product_name": "500G DE CECCO PUNT", "pyfooda_name": "PASTA", "grams": 500}
+{"product_name": "500G DLL 10% YAOUR", "pyfooda_name": "YOGURT", "grams": 500}
+{"product_name": "500G PUREE DE CARO", "pyfooda_name": "VEGETABLE PUREE", "grams": 500}
+{"product_name": "500G RIZ DLONG BIO", "pyfooda_name": "RICE", "grams": 500}
+{"product_name": "50CL BIO GIMBER N1", "pyfooda_name": "GINGER", "grams": 500}
+{"product_name": "650G NOCCIOLAT BIO", "pyfooda_name": "CHOCOLATE HAZELNUT SPREAD", "grams": 650}
+{"product_name": "6X1.25L BRU LEGPET", "pyfooda_name": "WATER", "grams": 7500}
+{"product_name": "700ML GIMB N 1 BIO", "pyfooda_name": "GINGER", "grams": 700}
+{"product_name": "750G DLL FRAMBOISE", "pyfooda_name": "RASPBERRY", "grams": 750}
+{"product_name": "85G MEX STYLE BBQ", "pyfooda_name": "BARBECUE SEASONING", "grams": 85}
+{"product_name": "8X50CL STELLA ARTO", "pyfooda_name": "BEER", "grams": 4000}
+{"product_name": "8X50CL STELLA ARTO 3X", "pyfooda_name": "BEER", "grams": 12000}
+{"product_name": "95G SEL MARIN", "pyfooda_name": "SALT", "grams": 95}
+{"product_name": "APPELEN 0,930 KG", "pyfooda_name": "APPLE", "grams": 930}
+{"product_name": "AUBERGINES 0,694 KG", "pyfooda_name": "EGGPLANT", "grams": 694}
+{"product_name": "AUBERGINES 1,476 KG", "pyfooda_name": "EGGPLANT", "grams": 1476}
+{"product_name": "AVOCAT 2X", "pyfooda_name": "AVOCADO", "grams": 340}
+{"product_name": "B&J BROOKIES CREAM", "pyfooda_name": "ICE CREAM", "grams": 465}
+{"product_name": "B&J CO DO SWICH UP", "pyfooda_name": "ICE CREAM", "grams": 465}
+{"product_name": "BACON NOBLE", "pyfooda_name": "BACON", "grams": 150}
+{"product_name": "BIESLOOK 8G", "pyfooda_name": "CHIVE", "grams": 8}
+{"product_name": "BIO GINGEMBRE 0,235 KG", "pyfooda_name": "GINGER", "grams": 235}
+{"product_name": "BIO PATATE DOUCE 1,624 KG", "pyfooda_name": "SWEET POTATO", "grams": 1624}
+{"product_name": "BIO PDT DOUCE 0,300 KG", "pyfooda_name": "SWEET POTATO", "grams": 300}
+{"product_name": "BIO PDT DOUCE 0,515 KG", "pyfooda_name": "SWEET POTATO", "grams": 515}
+{"product_name": "BIO PDT DOUCE 0,820 KG", "pyfooda_name": "SWEET POTATO", "grams": 820}
+{"product_name": "BIO PDT DOUCE 0,865 KG", "pyfooda_name": "SWEET POTATO", "grams": 865}
+{"product_name": "BIO PDT DOUCE 0,900 KG", "pyfooda_name": "SWEET POTATO", "grams": 900}
+{"product_name": "BIO PDT DOUCE 1,180 KG", "pyfooda_name": "SWEET POTATO", "grams": 1180}
+{"product_name": "BIO PDT DOUCE 1,525 KG", "pyfooda_name": "SWEET POTATO", "grams": 1525}
+{"product_name": "BIO PDT GRENA 1KG", "pyfooda_name": "POTATO", "grams": 1000}
+{"product_name": "BIO YAOURT ENTIER", "pyfooda_name": "YOGURT", "grams": 500}
+{"product_name": "BLE+BETTERA 100GR", "pyfooda_name": "WHEAT", "grams": 100}
+{"product_name": "BOUCH DESS C OR", "pyfooda_name": "CHOCOLATE", "grams": 200}
+{"product_name": "BRIOCHE BUN 324G", "pyfooda_name": "BRIOCHE", "grams": 324}
+{"product_name": "C.OR BIO NOIR 70%", "pyfooda_name": "CHOCOLATE", "grams": 90}
+{"product_name": "C.OR BIO NOIR 85%", "pyfooda_name": "CHOCOLATE", "grams": 90}
+{"product_name": "CARBONNADES I CHOI", "pyfooda_name": "BEEF", "grams": 800}
+{"product_name": "CER SG CRAC FORM", "pyfooda_name": "CRACKER", "grams": 150}
+{"product_name": "CHAMP.BRUN 250GR", "pyfooda_name": "MUSHROOM", "grams": 250}
+{"product_name": "CHIQUITA C BANANES 0,510 KG", "pyfooda_name": "BANANA", "grams": 510}
+{"product_name": "CHIQUITA C BANANES 0,815 KG", "pyfooda_name": "BANANA", "grams": 815}
+{"product_name": "CHIQUITA C BANANES 0,850 KG", "pyfooda_name": "BANANA", "grams": 850}
+{"product_name": "CHIQUITA C BANANES 1,048 KG", "pyfooda_name": "BANANA", "grams": 1048}
+{"product_name": "CHIQUITA C BANANES 1,050 KG", "pyfooda_name": "BANANA", "grams": 1050}
+{"product_name": "CHIQUITA C BANANES 1,124 KG", "pyfooda_name": "BANANA", "grams": 1124}
+{"product_name": "CHIQUITA C BANANES 1,186 KG", "pyfooda_name": "BANANA", "grams": 1186}
+{"product_name": "CHIQUITA C BANANES 1,550 KG", "pyfooda_name": "BANANA", "grams": 1550}
+{"product_name": "CHOU BLANC COUPE", "pyfooda_name": "CABBAGE", "grams": 500}
+{"product_name": "CITRONS VERTS BIO", "pyfooda_name": "LIME", "grams": 300}
+{"product_name": "CLEMENT A FEUILLES 0,455 KG", "pyfooda_name": "CLEMENTINE", "grams": 455}
+{"product_name": "CLEMENT A FEUILLES 0,645 KG", "pyfooda_name": "CLEMENTINE", "grams": 645}
+{"product_name": "CLEMENT A FEUILLES 0,835 KG", "pyfooda_name": "CLEMENTINE", "grams": 835}
+{"product_name": "CLEMENT A FEUILLES 0,945 KG", "pyfooda_name": "CLEMENTINE", "grams": 945}
+{"product_name": "CLEMENT A FEUILLES 1,160 KG", "pyfooda_name": "CLEMENTINE", "grams": 1160}
+{"product_name": "CLEMENT A FEUILLES 1,225 KG", "pyfooda_name": "CLEMENTINE", "grams": 1225}
+{"product_name": "CLEMENTINES A FEUI 1,350 KG", "pyfooda_name": "CLEMENTINE", "grams": 1350}
+{"product_name": "COMTE AOP FINESSE", "pyfooda_name": "COMTE CHEESE", "grams": 250}
+{"product_name": "COMTE BIO", "pyfooda_name": "COMTE CHEESE", "grams": 300}
+{"product_name": "COURGETTE 1PC BIO 2X", "pyfooda_name": "ZUCCHINI", "grams": 500}
+{"product_name": "COURGETTE 1PC BIO 3X", "pyfooda_name": "ZUCCHINI", "grams": 750}
+{"product_name": "COURGETTES 0,700 KG", "pyfooda_name": "ZUCCHINI", "grams": 700}
+{"product_name": "COURGETTES 0,860 KG", "pyfooda_name": "ZUCCHINI", "grams": 860}
+{"product_name": "COURGETTES 1,005 KG", "pyfooda_name": "ZUCCHINI", "grams": 1004}
+{"product_name": "CREPES DE BRUGES", "pyfooda_name": "CREPE", "grams": 300}
+{"product_name": "CRISP BREAD ENTIER", "pyfooda_name": "CRISPBREAD", "grams": 250}
+{"product_name": "D365LARD PETDEJ", "pyfooda_name": "BACON", "grams": 200}
+{"product_name": "DANONE ACT FRAISES 4X", "pyfooda_name": "YOGURT", "grams": 2000}
+{"product_name": "DESSERT 58 COTE DO", "pyfooda_name": "CHOCOLATE", "grams": 150}
+{"product_name": "DLH BEURRE DE LAIT", "pyfooda_name": "BUTTER", "grams": 250}
+{"product_name": "DLL CREME 35% 25CL 3X", "pyfooda_name": "CREAM", "grams": 750}
+{"product_name": "DLL ECO VAIS. MENT", "action": "ignore"}
+{"product_name": "DLL LABNEH ZAATAR", "pyfooda_name": "CREAM CHEESE", "grams": 150}
+{"product_name": "DLL POMODORO MASCA", "pyfooda_name": "MARINARA SAUCE", "grams": 350}
+{"product_name": "DLL SAUCE 5 FROMAG", "pyfooda_name": "ALFREDO SAUCE", "grams": 350}
+{"product_name": "DRAAGTAS 2X", "action": "ignore"}
+{"product_name": "ECHALOTE GRA 500GR", "pyfooda_name": "SHALLOT", "grams": 500}
+{"product_name": "ENTR EMM RAPE 300G", "pyfooda_name": "EMMENTAL CHEESE", "grams": 300}
+{"product_name": "ENTREMONT EMMENTAL", "pyfooda_name": "EMMENTAL CHEESE", "grams": 400}
+{"product_name": "ENTRM COMTE 8TR 12", "pyfooda_name": "COMTE CHEESE", "grams": 120}
+{"product_name": "EPINARDS LAVES 400", "pyfooda_name": "SPINACH", "grams": 400}
+{"product_name": "ESTRAGON BIO", "pyfooda_name": "TARRAGON", "grams": 30}
+{"product_name": "EXCELLENCE 70% 2X", "pyfooda_name": "CHOCOLATE", "grams": 200}
+{"product_name": "FENOUILS 0,475 KG", "pyfooda_name": "FENNEL", "grams": 475}
+{"product_name": "FENOUILS 0,500 KG", "pyfooda_name": "FENNEL", "grams": 500}
+{"product_name": "FENOUILS 0,520 KG", "pyfooda_name": "FENNEL", "grams": 520}
+{"product_name": "FRAISE 400GR 4X", "pyfooda_name": "STRAWBERRY", "grams": 1600}
+{"product_name": "FUETEC TRUFFEL", "pyfooda_name": "SALAMI", "grams": 150}
+{"product_name": "GIRASOLI LEGUMES", "pyfooda_name": "RAVIOLI", "grams": 250}
+{"product_name": "GRENAILLE PDT 1KG", "pyfooda_name": "POTATO", "grams": 1000}
+{"product_name": "GV HAVER CRACKERS", "pyfooda_name": "CRACKER", "grams": 200}
+{"product_name": "GV KRAKKI'S", "pyfooda_name": "CRACKER", "grams": 150}
+{"product_name": "HERTA PATE PIZZA", "pyfooda_name": "PIZZA CRUST", "grams": 260}
+{"product_name": "HOUMOUS AIL TOMATE", "pyfooda_name": "HUMMUS", "grams": 200}
+{"product_name": "HOUMOUS MEDIT 200G", "pyfooda_name": "HUMMUS", "grams": 200}
+{"product_name": "HOUMOUS PIQU 200GR", "pyfooda_name": "HUMMUS", "grams": 200}
+{"product_name": "JENEVERBESSEN", "pyfooda_name": "JUNIPER BERRY", "grams": 30}
+{"product_name": "JEUNES POUSSES", "pyfooda_name": "SALAD GREENS", "grams": 100}
+{"product_name": "LARD MARINE PAPRIK", "pyfooda_name": "BACON", "grams": 350}
+{"product_name": "LINDAHLS SALAD CHE", "pyfooda_name": "FETA CHEESE", "grams": 150}
+{"product_name": "LINDT EXCELLENCE 2X", "pyfooda_name": "CHOCOLATE", "grams": 200}
+{"product_name": "LINDT EXCELLENCE 3X", "pyfooda_name": "CHOCOLATE", "grams": 300}
+{"product_name": "LINDT EXCELLENCE 4X", "pyfooda_name": "CHOCOLATE", "grams": 400}
+{"product_name": "LL CHOCO MOUSSE", "pyfooda_name": "PUDDING", "grams": 240}
+{"product_name": "LPO SAVON FL ORANG", "action": "ignore"}
+{"product_name": "MANDARINE A FEUIL 0,870 KG", "pyfooda_name": "TANGERINE", "grams": 870}
+{"product_name": "MANDARINE PAPILLON 0,760 KG", "pyfooda_name": "TANGERINE", "grams": 760}
+{"product_name": "MANDARINES 0,830 KG", "pyfooda_name": "TANGERINE", "grams": 830}
+{"product_name": "MANDARINES A FEUIL 1,210 KG", "pyfooda_name": "TANGERINE", "grams": 1210}
+{"product_name": "MEZZEL. PARMI. REG", "pyfooda_name": "RAVIOLI", "grams": 250}
+{"product_name": "MINI PASTEQUE 1,900 KG", "pyfooda_name": "WATERMELON", "grams": 1900}
+{"product_name": "MIX VOOR VIS", "pyfooda_name": "SPICE MIX", "grams": 50}
+{"product_name": "MOZZARELLA 125 6X", "pyfooda_name": "MOZZARELLA CHEESE", "grams": 750}
+{"product_name": "MS B SET VOYAGE 6P", "action": "ignore"}
+{"product_name": "MY MENU CURRY MADR", "pyfooda_name": "CURRY", "grams": 400}
+{"product_name": "NECTARINE BLANCHE 0,738 KG", "pyfooda_name": "NECTARINE", "grams": 738}
+{"product_name": "NECTARINE BLANCHE 1,028 KG", "pyfooda_name": "NECTARINE", "grams": 1028}
+{"product_name": "NECTARINE JAUNE 0,588 KG", "pyfooda_name": "NECTARINE", "grams": 588}
+{"product_name": "NECTARINE JAUNE 0,772 KG", "pyfooda_name": "NECTARINE", "grams": 772}
+{"product_name": "NECTARINE JAUNE 0,996 KG", "pyfooda_name": "NECTARINE", "grams": 996}
+{"product_name": "NECTARINE JAUNE 1,036 KG", "pyfooda_name": "NECTARINE", "grams": 1036}
+{"product_name": "NECTARINE JAUNE 1,316 KG", "pyfooda_name": "NECTARINE", "grams": 1316}
+{"product_name": "NECTARINE JAUNE 1,400 KG", "pyfooda_name": "NECTARINE", "grams": 1400}
+{"product_name": "NIVEA DEO ROL", "action": "ignore"}
+{"product_name": "OIGNON ROUGE 750G", "pyfooda_name": "RED ONION", "grams": 750}
+{"product_name": "OIKOS YOGH ENT 480", "pyfooda_name": "YOGURT", "grams": 480}
+{"product_name": "ORANGE A JUS 3KG", "pyfooda_name": "ORANGE", "grams": 3000}
+{"product_name": "ORANGES PAPILLON 0,266 KG", "pyfooda_name": "ORANGE", "grams": 266}
+{"product_name": "PAMPLEMOUSSE ROUGE 0,795 KG", "pyfooda_name": "GRAPEFRUIT", "grams": 795}
+{"product_name": "PAQUET FRAIS PAD", "pyfooda_name": "RICE NOODLE", "grams": 400}
+{"product_name": "PATATE DCE CHILI M", "pyfooda_name": "SWEET POTATO", "grams": 400}
+{"product_name": "PDT CHAIR FERME 1K", "pyfooda_name": "POTATO", "grams": 1000}
+{"product_name": "PDT CHAIR FERME 1K 3X", "pyfooda_name": "POTATO", "grams": 3000}
+{"product_name": "PDT CHAIR FERME BI", "pyfooda_name": "POTATO", "grams": 1500}
+{"product_name": "PDT NICOLA 1KG", "pyfooda_name": "POTATO", "grams": 1000}
+{"product_name": "POIREAUX BIO", "pyfooda_name": "LEEK", "grams": 1250}
+{"product_name": "POIVRON ROUGE 0,590 KG", "pyfooda_name": "BELL PEPPER", "grams": 590}
+{"product_name": "POIVRON ROUGE 0,655 KG", "pyfooda_name": "BELL PEPPER", "grams": 655}
+{"product_name": "POIVRON ROUGE 1,055 KG", "pyfooda_name": "BELL PEPPER", "grams": 1055}
+{"product_name": "POIVRON ROUGE 1,195 KG", "pyfooda_name": "BELL PEPPER", "grams": 1195}
+{"product_name": "POMELO P/PC", "pyfooda_name": "POMELO", "grams": 1000}
+{"product_name": "POMME GRANNY SMITH", "pyfooda_name": "APPLE", "grams": 750}
+{"product_name": "POTIRON BUTTERNUT 1,280 KG", "pyfooda_name": "BUTTERNUT SQUASH", "grams": 1280}
+{"product_name": "POTIRON BUTTERNUT 1,355 KG", "pyfooda_name": "BUTTERNUT SQUASH", "grams": 1355}
+{"product_name": "POTIRON BUTTERNUT 1,885 KG", "pyfooda_name": "BUTTERNUT SQUASH", "grams": 1885}
+{"product_name": "PREMIUM PLATEAU", "action": "ignore"}
+{"product_name": "PRIMEUR POMME DT 1,470 KG", "pyfooda_name": "POTATO", "grams": 1470}
+{"product_name": "PRIMEUR POMME DT 1,485 KG", "pyfooda_name": "POTATO", "grams": 1485}
+{"product_name": "PRIMEUR POMME DT 2,160 KG", "pyfooda_name": "POTATO", "grams": 2160}
+{"product_name": "PRUNE 1,060 KG", "pyfooda_name": "PLUM", "grams": 1060}
+{"product_name": "QUICHE TOMA MOZZA", "pyfooda_name": "PIE CRUST", "grams": 400}
+{"product_name": "ROZE BESSEN", "pyfooda_name": "BLACK PEPPER", "grams": 100}
+{"product_name": "SAC", "action": "ignore"}
+{"product_name": "SAC MINI POMME BIO", "pyfooda_name": "APPLE", "grams": 1000}
+{"product_name": "SALADE POULET ITAL", "pyfooda_name": "CHICKEN", "grams": 1000}
+{"product_name": "SAN MARZANO 0,590 KG", "pyfooda_name": "TOMATO", "grams": 590}
+{"product_name": "SAN MARZANO 0,936 KG", "pyfooda_name": "TOMATO", "grams": 936}
+{"product_name": "SAN MARZANO 0,965 KG", "pyfooda_name": "TOMATO", "grams": 965}
+{"product_name": "SAN MARZANO 1,050 KG", "pyfooda_name": "TOMATO", "grams": 1050}
+{"product_name": "SAN MARZANO 1,140 KG", "pyfooda_name": "TOMATO", "grams": 1140}
+{"product_name": "SAN MARZANO 1,290 KG", "pyfooda_name": "TOMATO", "grams": 1290}
+{"product_name": "SAN MARZANO 1,720 KG", "pyfooda_name": "TOMATO", "grams": 1720}
+{"product_name": "SAN MARZANO 1,730 KG", "pyfooda_name": "TOMATO", "grams": 1730}
+{"product_name": "STEAK PELE", "pyfooda_name": "BEEF", "grams": 400}
+{"product_name": "TAM MOELLEUX CHOCO", "pyfooda_name": "SPONGE CAKE", "grams": 500}
+{"product_name": "TAM TARTE AUX CERI", "pyfooda_name": "PIE CRUST", "grams": 600}
+{"product_name": "TARTE FRAMB.PIST", "pyfooda_name": "PIE CRUST", "grams": 600}
+{"product_name": "TEXTILE/NON FOOD", "action": "ignore"}
+{"product_name": "TOM BELG GRAPP 1,295 KG", "pyfooda_name": "TOMATO", "grams": 1295}
+{"product_name": "TOM BELG GRAPP 1,300 KG", "pyfooda_name": "TOMATO", "grams": 1300}
+{"product_name": "TOM BELG GRAPP 1,574 KG", "pyfooda_name": "TOMATO", "grams": 1574}
+{"product_name": "TOMAAT IN BULK 1,415 KG", "pyfooda_name": "TOMATO", "grams": 1415}
+{"product_name": "TOMAT GRAPPE BIO", "pyfooda_name": "TOMATO", "grams": 1000}
+{"product_name": "TOWELS FOR ALL USE", "action": "ignore"}
+{"product_name": "TRAD CRACKER 250G", "pyfooda_name": "CRACKER", "grams": 250}
+{"product_name": "UGLIES ROSTIS FOUS", "pyfooda_name": "POTATO", "grams": 400}
